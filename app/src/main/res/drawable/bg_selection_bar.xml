@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    选择态底栏
+    浮在列表上方，需要一条 1dp 上边线把它和列表分开 ——
+    只用阴影的话，在纸底（#F4F2EC）上几乎看不出边界，
+    最后一行卡片会和按钮糊在一起。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_card" />
+        </shape>
+    </item>
+    <item
+        android:height="1dp"
+        android:gravity="top">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/divider" />
+        </shape>
+    </item>
+</layer-list>

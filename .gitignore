@@ -1,0 +1,39 @@
+# ── Android / Gradle ─────────────────────────────────────────────
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+bin/
+gen/
+out/
+.kotlin/
+
+# ── 产物 ────────────────────────────────────────────────────────
+*.apk
+*.aab
+*.ap_
+*.dex
+release/
+
+# ── 签名材料（绝不入库）─────────────────────────────────────────
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# ── 凭据（构建期注入，见 README §0）─────────────────────────────
+# 仓库内的 gradle.properties 只放非敏感配置；
+# DEFAULT_API_KEY / ARK_API_KEY / AI_UNLIMITED_DEVICES 请放
+# 用户级 ~/.gradle/gradle.properties 或用 -P 传参。
+secrets.properties
+*.secret
+
+# ── 其它 ────────────────────────────────────────────────────────
+*.log
+.DS_Store
+Thumbs.db

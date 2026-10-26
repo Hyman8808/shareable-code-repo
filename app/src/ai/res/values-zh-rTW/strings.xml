@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ai 變體的應用程式名稱，可與主線同時安裝。
+-->
+<resources>
+    <string name="app_name">單字卡相機 AI</string>
+</resources>

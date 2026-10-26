@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    提示条（信息）：**左侧 3dp 竖条 + 极浅底**，不再是整块彩底。
+    信息量不变、彩块面积减半 —— 整块浅色矩形贴在满屏纸底之间会非常吵。
+    结构：底层 radius_md 实心 brand_primary_light；上层左侧 3dp 竖条（左两角圆角）。
+    同族：bg_hint_warning.xml / bg_hint_danger.xml（只换竖条与底色）。
+    ⚠️ android:width / android:gravity 的 layer-list item 属性要 API 23+（本项目 minSdk 23）。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/brand_primary_light" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+    <item
+        android:width="3dp"
+        android:gravity="start">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/brand_primary" />
+            <corners
+                android:topLeftRadius="@dimen/radius_md"
+                android:bottomLeftRadius="@dimen/radius_md" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    风格选项卡（未选中）
+    ⚠️ 描边宽度和选中态**都是 2dp**，只是颜色透明 → brand_primary。
+    如果用「1dp vs 2dp」表示选中，切换时内容会整体位移 1dp，
+    在并排两个选项上会看出轻微跳动。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card" />
+    <stroke
+        android:width="2dp"
+        android:color="#00000000" />
+    <corners android:radius="@dimen/radius_md" />
+</shape>

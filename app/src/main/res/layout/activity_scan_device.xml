@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    扫描设备页（配网第 1 步）
+    ============================================================
+    重设计要点：
+    · **补上返回按钮**：这一页原来是配网流程的「第一屏」，却没有任何退出入口，
+      用户只能靠系统返回键。顶栏加了「← 选择设备」。
+    · 标题 24sp bold → 统一字阶；顶部留白 48dp → 6dp（顶栏已占 44dp）。
+    · 扫描条改成"细线"进度条，不再用默认粗条（默认高度 4dp 但带背景色块，太抢眼）。
+    · 空状态用 drawableTop 图标 + 文案。
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:id="@+id/btnScanBack"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/common_back"
+        android:padding="10dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_primary" />
+
+    <TextView
+        android:id="@+id/tvScanTitle"
+        style="@style/Text.SectionTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="@dimen/page_horizontal"
+        android:text="@string/scan_title"
+        app:layout_constraintBottom_toBottomOf="@id/btnScanBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnScanBack"
+        app:layout_constraintTop_toTopOf="@id/btnScanBack" />
+
+    <TextView
+        android:id="@+id/tvScanHint"
+        style="@style/Text.BodySm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginEnd="@dimen/page_horizontal"
+        android:layout_marginTop="14dp"
+        android:text="@string/scan_hint"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnScanBack" />
+
+    <ProgressBar
+        android:id="@+id/pbScan"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="14dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/tvScanHint"
+        app:layout_constraintStart_toStartOf="@id/tvScanHint"
+        app:layout_constraintTop_toBottomOf="@id/tvScanHint" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvDevices"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginEnd="@dimen/page_horizontal"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toTopOf="@id/btnRescan"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pbScan" />
+
+    <TextView
+        android:id="@+id/tvScanEmpty"
+        style="@style/Text.BodySm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/ic_bluetooth_48"
+        android:drawablePadding="18dp"
+        android:drawableTint="@color/text_disabled"
+        android:gravity="center"
+        android:text="@string/scan_empty"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/rvDevices"
+        app:layout_constraintEnd_toEndOf="@id/rvDevices"
+        app:layout_constraintStart_toStartOf="@id/rvDevices"
+        app:layout_constraintTop_toTopOf="@id/rvDevices" />
+
+    <Button
+        android:id="@+id/btnRescan"
+        style="@style/Widget.ThumbCard.Button.Primary"
+        android:layout_width="0dp"
+        android:layout_height="54dp"
+        android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginEnd="@dimen/page_horizontal"
+        android:layout_marginBottom="24dp"
+        android:text="@string/common_retry"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

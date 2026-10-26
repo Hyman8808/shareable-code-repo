@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AI 美化 / 卡通化
+    ============================================================
+    页面只做一件事：把「这张卡的照片」换成更好看的一张。
+    所以结构刻意压成三段式——**上面看图、中间选风格、下面一个按钮**。
+
+    1. 顶部预览区固定 220dp：它同时充当「原图 / 生成结果」的对照位。
+       生成中在它上面盖一层半透明墨色 + 进度，不给用户「是不是卡死了」的错觉
+       （实测单张 2K 要 60–90 秒，没有进度反馈必被当成无响应）。
+    2. 风格只有两个，用竖排选项卡而不是并排小卡：
+       每个选项都要写清「会变成什么样」，并排会让描述被挤成两行以上，读不完。
+    3. 额度行放在主按钮**上方**：用户点之前就该知道还剩几张，
+       点完才弹「要付费」是最伤转化的一种做法。
+    4. 一屏只允许一个实心主按钮（底部「开始生成」）。
+       生成完成后它变成「再生成一张」，次级操作（存相册/看大图）走幽灵按钮。
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fitsSystemWindows="true"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/page_horizontal"
+        android:paddingTop="6dp"
+        android:paddingEnd="@dimen/page_horizontal"
+        android:paddingBottom="32dp">
+
+        <!-- ============ 顶栏 ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/touch_min"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btnAiBack"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/common_back"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                app:tint="@color/text_primary" />
+
+            <TextView
+                style="@style/Text.SectionTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/ai_title" />
+
+            <!-- VIP 调试版才出现：一眼看出装的是哪个包 -->
+            <TextView
+                android:id="@+id/tvAiVipTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_soft"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
+                android:text="@string/ai_vip_debug"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/text_micro"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <!-- ============ 预览区（原图 / 结果共用） ============ -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card_hero"
+            android:clipToOutline="true"
+            android:elevation="2dp">
+
+            <!--
+                预览用 fitCenter 不用 centerCrop（v2.5）：
+                这一页展示的是「生成结果」，用户接下来会点「保存到相册」，
+                存的却是完整的那张 —— 如果这里裁了，看到和拿到的不是同一张图。
+                容器高度固定（220dp）是为了下方按钮不跳动，多出来的留白由卡片底色承担。
+                客户相机可能是 4:3 / 16:9 / 1:1，裁切会导致观感差异，完整显示最稳。
+            -->
+            <ImageView
+                android:id="@+id/ivAiPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/ai_title"
+                android:scaleType="fitCenter" />
+
+            <!-- 生成中的遮罩：进度 + 一句「在做什么」 -->
+            <LinearLayout
+                android:id="@+id/groupAiRunning"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#B314130F"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:indeterminateTint="@color/brand_accent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/ai_running"
+                    android:textColor="@color/viewer_icon"
+                    android:textSize="@dimen/text_body" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/ai_running_hint"
+                    android:textColor="@color/viewer_hint"
+                    android:textSize="@dimen/text_caption" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- 结果状态 / 错误提示，一行就够，不做 Toast（错误要留在屏幕上可重读） -->
+        <TextView
+            android:id="@+id/tvAiStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_body_sm"
+            android:visibility="gone"
+            tools:text="已生成 2160×1080 高清图" />
+
+        <!-- ============ 风格选择 ============ -->
+        <TextView
+            style="@style/Text.Label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/ai_choose_style" />
+
+        <!-- 选项一：高清修复 -->
+        <LinearLayout
+            android:id="@+id/tileHd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_style_tile_on"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_sparkle"
+                app:tint="@color/brand_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/ai_style_hd"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_h2" />
+
+                    <TextView
+                        android:id="@+id/badgeHd"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_pill_soft"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingBottom="2dp"
+                        android:text="@string/ai_badge_exists"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="@dimen/text_micro"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/ai_style_hd_desc"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="@dimen/text_body_sm" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 选项二：卡通插画 -->
+        <LinearLayout
+            android:id="@+id/tileCartoon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_style_tile"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_sparkle"
+                app:tint="@color/accent_graphics" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/ai_style_cartoon"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_h2" />
+
+                    <TextView
+                        android:id="@+id/badgeCartoon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_pill_soft"
+                        android:paddingStart="6dp"
+                        android:paddingTop="2dp"
+                        android:paddingEnd="6dp"
+                        android:paddingBottom="2dp"
+                        android:text="@string/ai_badge_exists"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="@dimen/text_micro"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/ai_style_cartoon_desc"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="@dimen/text_body_sm" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 额度 ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <TextView
+                android:id="@+id/tvAiQuota"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_body_sm"
+                tools:text="还能生成 2 张（免费）" />
+
+            <TextView
+                android:id="@+id/btnAiBuy"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="@string/ai_buy_entry"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/text_body_sm" />
+        </LinearLayout>
+
+        <!-- ============ 主操作 ============ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAiGenerate"
+            style="@style/Widget.ThumbCard.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_marginTop="10dp"
+            android:text="@string/ai_generate" />
+
+        <!-- ============ 次级操作（仅结果存在时出现） ============ -->
+        <LinearLayout
+            android:id="@+id/groupAiResultActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAiSave"
+                style="@style/Widget.ThumbCard.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:text="@string/ai_save_to_gallery" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAiView"
+                style="@style/Widget.ThumbCard.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/ai_view_full" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAiRevert"
+                style="@style/Widget.ThumbCard.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/ai_use_original" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/ai_disclaimer"
+            android:textColor="@color/text_tertiary"
+            android:textSize="@dimen/text_micro" />
+    </LinearLayout>
+</ScrollView>

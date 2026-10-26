@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    standard 变体的应用名（main 里那份会被本文件覆盖）
+    见 app/build.gradle 的 productFlavors。三语各一份，保证语言切换后名字也对。
+-->
+<resources>
+    <string name="app_name">单词卡相机</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    底部导航的图标 / 文字着色。
+    ⚠️ 选中态必须是 text_on_accent，**不是** brand_primary：
+       深色下 brand_primary(#C3CFE4) 压在荧光药丸 brand_accent(#9FB44B) 上
+       只有 1.47:1，图标和文字会糊成一团。亮色下同理（墨压荧光 5.9:1 尚可，
+       但两套皮肤必须用同一个可读性最强的组合：荧光底 + 墨字 = 11.93:1）。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/text_on_accent" android:state_checked="true" />
+    <item android:color="@color/text_tertiary" />
+</selector>

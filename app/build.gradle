@@ -1,0 +1,164 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 敏感凭据不写进仓库：全部从 gradle.properties（本地，不入库）或命令行 -P 读取。
+// 需要在本地复现时，在 app 同级目录建 gradle.properties 并补上：
+//
+//   DEFAULT_API_KEY=<设备出厂烧录的 32 位 APIKEY>
+//   ARK_API_KEY=<火山方舟 API Key>
+//   AI_UNLIMITED_DEVICES=<演示机 deviceId，逗号分隔>
+//
+// 详细说明见仓库根目录 README.md「凭据与第三方能力」章节。
+// ─────────────────────────────────────────────────────────────────────────────
+def prop = { String key -> (project.findProperty(key) ?: "").toString() }
+
+android {
+    namespace 'com.turing.thumbcard'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.turing.thumbcard"
+        minSdk 23
+        targetSdk 35
+        versionCode 44
+        versionName "2.10.0"
+
+        // 设备 APIKEY（出厂烧录，整批公用）。生产环境应改为运行时从设备读取，不硬编码。
+        buildConfigField "String", "DEFAULT_API_KEY", "\"${prop('DEFAULT_API_KEY')}\""
+        buildConfigField "String", "RECORD_BASE_URL",
+                "\"https://nglearn.turingapi.com/\""
+
+        // 词典接口（TuringOS-Retrieval-V2.0）
+        // ✅ 不需要 Secret：实测该接口的 data 字段用明文即可查询成功，
+        //    文档描述的 AES 加密反而恒返回 4008（详见 DictRequest 类注释）。
+        //    因此这里**不内置任何 Secret**，从根上避免反编译泄露风险。
+        buildConfigField "String", "DICT_WS_URL",
+                "\"ws://ws-api.turingapi.com/api/v2\""
+
+        // ===== AI 图片美化（火山方舟 Doubao Seedream） =====
+        // ⚠️ 本项目开发期的图片美化，用的是**项目负责人私人方舟账号**，
+        //    密钥不入库、不进 APK 源码。图片美化能力需要**图灵自建服务端代理**
+        //    （App → 图灵服务端 → 方舟），密钥留在服务端。
+        //    在服务端代理落地之前，本仓库里的图片美化按钮会因空 Key 而不可用，
+        //    这是预期行为，详见 README.md「凭据与第三方能力」。
+        buildConfigField "String", "ARK_API_KEY", "\"${prop('ARK_API_KEY')}\""
+        buildConfigField "String", "ARK_BASE_URL",
+                "\"https://ark.cn-beijing.volces.com/\""
+        buildConfigField "String", "ARK_MODEL",
+                "\"doubao-seedream-5-0-pro-260628\""
+        /**
+         * 生成分辨率：
+         *  - `"auto"`（默认）→ 按原图宽高比算出确切 `宽x高`，长边 2048。
+         *    客户相机可能是 4:3 / 16:9 / 1:1，只有这样才能让出图与拍摄比例一比一。
+         *  - `"2K"` / `"1.5K"` / `"1K"` → 强制档位（比例由模型决定），仅用于排查问题。
+         */
+        buildConfigField "String", "ARK_SIZE",
+                "\"auto\""
+        /** 免费额度（张），两种风格共用 */
+        buildConfigField "int", "AI_FREE_QUOTA", "2"
+        /**
+         * 不限额度的设备白名单（逗号分隔的 deviceId）。
+         *
+         * 这些设备（自研/演示机）生成图**不校验、不扣减**额度，
+         * 用来做长周期压测与客户演示——否则演示时中途弹出「买张数」很难看。
+         * ⚠️ 只认云端 deviceId（整批清单里的那串），不是 BLE 广播 MAC：
+         *    广播 MAC 末位普遍 +1，拿它比对会永远匹配不上。
+         *
+         * 演示机 / 压测机的 deviceId 不入库，用 -P 或 gradle.properties 传入。
+         */
+        buildConfigField "String", "AI_UNLIMITED_DEVICES", "\"${prop('AI_UNLIMITED_DEVICES')}\""
+    }
+
+    /**
+     * 两个可共存安装的 App，同一套代码：
+     *  - standard：「单词卡相机」com.turing.thumbcard —— 主线，日常迭代都进这里
+     *  - ai      ：「单词卡相机 AI」com.turing.thumbcard.ai —— 独立包名 + 独立图标，
+     *              与主线**保证能同时安装**（包名不同 = 两个完全独立的沙箱）
+     *
+     * ⚠️ applicationIdSuffix 只能改 applicationId，**不会**改源代码里的 package
+     *    （namespace 稳在 com.turing.thumbcard），所以两边共用同一套 Kotlin 代码与 Room 类。
+     *
+     * 名称与图标不写在 main 里，改由 flavors 覆盖：
+     *   src/{standard,ai}/res/values{-en,-zh-rTW}/strings.xml  → app_name
+     *   src/ai/res/drawable/ic_launcher_foreground.xml + values/ic_launcher_background.xml
+     * 这样三语文案与墨标图标不用为「第二个 App」再分叉一套。
+     */
+    flavorDimensions = ["edition"]
+    productFlavors {
+        standard {
+            dimension "edition"
+            buildConfigField "boolean", "IS_AI_EDITION", "false"
+        }
+        ai {
+            dimension "edition"
+            applicationIdSuffix ".ai"
+            versionNameSuffix "-ai"
+            buildConfigField "boolean", "IS_AI_EDITION", "true"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
+
+    // 协程
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.activity:activity-ktx:1.8.2'
+
+    // 网络
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // 数据库
+    // ⚠️ 关键：Room 必须配合注解处理器（KSP），否则编译期不会生成
+    //    AppDatabase_Impl 类，运行时会抛
+    //    "Cannot find implementation for ... AppDatabase_Impl does not exist"
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    ksp 'androidx.room:room-compiler:2.6.1'
+
+    // 安全存储 + BLE 需要的 BouncyCastle（官方 SDK 依赖）
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+
+    // 图片
+    implementation 'io.coil-kt:coil:2.5.0'
+
+    // EXIF：给存进相册的图写「身份标识」（哪张卡、哪种风格），
+    // 用于「从相册找回已生成的图」，见 GalleryTag
+    implementation 'androidx.exifinterface:exifinterface:1.3.6'
+}

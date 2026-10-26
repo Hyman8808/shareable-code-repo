@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    拇指相机 · 设计 Token：字体与主题（V2.0 墨标 Inkmark）
+    ============================================================
+    为什么要重写字阶：
+      原实现的字号是「随手挑的」——页面标题有 26 / 24 / 20 / 30sp 四种，
+      同层级不同尺寸，整个 App 看起来像四个不同人做的。
+      现在收敛成 12 阶（见 dimens.xml），**任何界面都只能从这 12 阶里选**。
+
+    为什么用 sans-serif-medium 而不是 android:textStyle="bold"：
+      中文字体没有真正的 Bold 字重，bold 是系统**伪粗**（横向加粗笔画），
+      小字号下笔画会糊在一起；serif 上更明显，会在细笔画外描一圈边。
+      层级靠**字号跃迁（≥3sp）+ 颜色 4 阶 + 字距正负**拉开，不靠加粗。
+
+    字体对立 = 本设计的辨识度来源：
+      **英文词头用 serif（Noto Serif），中文用 sans-serif-medium**。
+      模板生成器只会给同一字体加粗减细，做不出两种字体系统的张力。
+
+    主题：
+      父主题用 DayNight，配合 values-night/colors.xml 实现深色；
+      同时把 M3 的 color* 全部显式指到自有 token，
+      避免「系统默认配色」漏进来。
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============ 主题 ============ -->
+    <style name="Theme.ThumbCard" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 品牌色映射到 M3 角色 -->
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/text_on_brand</item>
+        <item name="colorPrimaryContainer">@color/brand_primary_light</item>
+        <item name="colorOnPrimaryContainer">@color/brand_primary</item>
+        <item name="colorSecondary">@color/brand_accent</item>
+        <item name="colorOnSecondary">@color/text_on_accent</item>
+        <item name="colorSurface">@color/bg_card</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/bg_card_alt</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/stroke_soft</item>
+        <item name="colorOutlineVariant">@color/divider</item>
+        <item name="colorError">@color/danger</item>
+        <item name="android:colorBackground">@color/bg_page</item>
+        <item name="android:windowBackground">@color/bg_page</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_disabled</item>
+
+        <!-- 系统栏：与页面同色（暖纸 / 暖黑），顶部不再出现一条割裂的色带。
+             图标明暗由 @bool/light_system_bars 控制（values-night 里翻成 false）。 -->
+        <item name="android:statusBarColor">@color/bg_page</item>
+        <item name="android:navigationBarColor">@color/bg_page</item>
+        <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">
+            @bool/light_system_bars
+        </item>
+
+        <!-- 强制反色会让照片和图标在深色模式下失真，必须关 -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+
+        <!-- 弹窗圆角 -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.ThumbCard.Dialog</item>
+    </style>
+
+    <!-- ============ 看图页专用主题 ============
+         整页永远是黑底（不跟 DayNight 翻），因为「看照片」时周围越黑，
+         图的色彩与对比度越准；暖纸底会给照片蒙一层黄。
+         状态栏图标因此必须是**浅色**（windowLightStatusBar=false）。 -->
+    <style name="Theme.ThumbCard.Viewer" parent="Theme.ThumbCard">
+        <item name="android:windowBackground">@color/viewer_bg</item>
+        <item name="android:statusBarColor">@color/viewer_bg</item>
+        <item name="android:navigationBarColor">@color/viewer_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+    </style>
+
+    <style name="ThemeOverlay.ThumbCard.Dialog"
+        parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.ThumbCard.Dialog</item>
+        <item name="colorSurface">@color/bg_card</item>
+    </style>
+
+    <style name="ShapeAppearance.ThumbCard.Dialog"
+        parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_xl</item>
+    </style>
+
+    <!-- 导航药丸 / chip 用的全圆角 -->
+    <style name="ShapeAppearance.ThumbCard.Pill"
+        parent="ShapeAppearance.Material3.Corner.Full" />
+
+    <!-- ============ 字阶：TextAppearance（12 阶，唯一合法来源） ============ -->
+
+    <style name="TextAppearance.ThumbCard.Display" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">@dimen/text_display</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- 详情页英文词头（主角）：34sp serif regular，不加粗 -->
+    <style name="TextAppearance.ThumbCard.HeadwordXl"
+        parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/text_headword_xl</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- 词头为中文时的替身：中文不套 serif（会落到 NotoSerifCJK 或直接回退 sans，字重不可控） -->
+    <style name="TextAppearance.ThumbCard.HeadwordXlCjk"
+        parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/text_headword_xl_cjk</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- 列表行英文词：19sp serif，英语是主角 -->
+    <style name="TextAppearance.ThumbCard.Headword" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">@dimen/text_headword</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- 列表行中文释义：15sp，退到第二层级 -->
+    <style name="TextAppearance.ThumbCard.HeadwordCjk" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/text_headword_cjk</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- 音标：serif（condensed 会把 ˈ ˌ 压成窄钩、ː 压成细竖线）
+         14sp × 1.42 行高；includeFontPadding **必须 true**，
+         关掉会裁掉 ˈ 上半截 —— 这是「音标被切掉」最常见的原因。 -->
+    <style name="TextAppearance.ThumbCard.Phonetic" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/text_phonetic</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:includeFontPadding">true</item>
+        <item name="android:lineSpacingMultiplier">1.42</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+    </style>
+
+    <!-- 指标数字：30sp condensed，窄比例形成「仪表盘」感 -->
+    <style name="TextAppearance.ThumbCard.Metric" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/text_metric</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.H1" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">@dimen/text_h1</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.H2" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">@dimen/text_h2</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.H3" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">@dimen/text_h3</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:lineSpacingMultiplier">1.55</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.BodySm" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:lineSpacingMultiplier">1.5</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:lineSpacingMultiplier">1.4</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.Micro" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">@dimen/text_micro</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- 11sp 标签：**+0.06 正字距**让「标签感」从间距里出来，
+         与 22sp 标题的 -0.01 收字距形成正负一对，替代加粗。 -->
+    <style name="TextAppearance.ThumbCard.Label" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- ============ 语义化文字样式（布局里直接 style="@style/Text.X"） ============
+         ⚠️ 用 parent="" 显式断开隐式继承：AAPT 对带点号的样式名会自动去找
+            去掉末段的父样式（Text.PageTitle → Text），不存在就报
+            "resource style/Text not found"。 -->
+
+    <style name="Text.PageTitle" parent="">
+        <item name="android:textSize">@dimen/text_h1</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Text.SectionTitle" parent="">
+        <item name="android:textSize">@dimen/text_h2</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="Text.CardTitle" parent="">
+        <item name="android:textSize">@dimen/text_h3</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="Text.Body" parent="">
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:lineSpacingMultiplier">1.45</item>
+    </style>
+
+    <style name="Text.BodySm" parent="">
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:lineSpacingMultiplier">1.4</item>
+    </style>
+
+    <style name="Text.Caption" parent="">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:lineSpacingMultiplier">1.35</item>
+    </style>
+
+    <style name="Text.Micro" parent="">
+        <item name="android:textSize">@dimen/text_micro</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+    </style>
+
+    <!-- 列表行英文词 = 主角，19sp serif -->
+    <style name="Text.Headword" parent="">
+        <item name="android:textSize">@dimen/text_headword</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- 列表行中文释义 = 第二层级，15sp -->
+    <style name="Text.HeadwordCjk" parent="">
+        <item name="android:textSize">@dimen/text_headword_cjk</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- 音标：serif + 保留 FontPadding + 上下 2dp，保证 ˈ ˌ ː 不被裁 -->
+    <style name="Text.Phonetic" parent="">
+        <item name="android:textSize">@dimen/text_phonetic</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:includeFontPadding">true</item>
+        <item name="android:lineSpacingMultiplier">1.42</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+    </style>
+
+    <!-- 音标两端的斜杠：12sp tertiary serif，把音标框成一个整体 -->
+    <style name="Text.PhoneticSlash" parent="">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- 11sp 标签 / 单位 / 分组标题：+0.06 正字距 -->
+    <style name="Text.Label" parent="">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- 列表行 meta（拼音 / 时间）：13sp serif tertiary，单行省略 -->
+    <style name="Text.MetaRow" parent="">
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- 旧名保留（CardListActivity / item_device 仍在用），内部指向新字阶 -->
+    <style name="CardTitle">
+        <item name="android:textSize">@dimen/text_h3</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="CardSubtitle">
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="CardCaption">
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- ============ 按钮（4 级，覆盖全 App） ============
+         统一 stateListAnimator=@null：M3 默认按下抬升会在纸底上投出一圈灰边，
+         与「描边代替阴影」的体系冲突。 -->
+
+    <!-- 主按钮：一个页面只允许出现 1 个 -->
+    <style name="Widget.ThumbCard.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:layout_height">@dimen/btn_height</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_on_brand</item>
+        <item name="backgroundTint">@color/brand_primary</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- 次按钮：浅底主色字（播放中文、重试等） -->
+    <style name="Widget.ThumbCard.Button.Secondary" parent="Widget.Material3.Button">
+        <item name="android:layout_height">@dimen/btn_height_md</item>
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="backgroundTint">@color/brand_primary_light</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- 描边按钮：第三级操作 -->
+    <style name="Widget.ThumbCard.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_height">@dimen/btn_height_sm</item>
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="strokeColor">@color/stroke_soft</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- 荧光主按钮：只给「黑底看图页」的 AI 美化入口用
+         荧光是体系里唯一的高饱和填充，规则是「只做填充、不描边、
+         字必须是 text_on_accent」。它在这套 App 里一共出现 4 处：
+         导航选中药丸 / 已收藏圆底 / 今日标记条 / 这里的预览页 CTA。
+         第 4 处之所以成立：这一页整页是 #0E0E0C 的黑，荧光压上去
+         对比度约 12:1，是全 App 唯一「荧光反而最不糊」的场景；
+         反过来在暖纸上它只有 1.25:1，所以别把这个样式搬去纸底页面。 -->
+    <style name="Widget.ThumbCard.Button.Accent" parent="Widget.Material3.Button">
+        <item name="android:layout_height">@dimen/btn_height_md</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textSize">@dimen/text_body</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_on_accent</item>
+        <item name="backgroundTint">@color/brand_accent</item>
+        <!-- 22dp = btn_height_md(44dp) 的一半，即完整胶囊。
+             不写 999：MaterialShapeDrawable 拿到大于半边的角半径会画出畸形路径。 -->
+        <item name="cornerRadius">22dp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:stateListAnimator">@null</item>
+        <!-- 四角星图标：默认是黑色填充，在荧光底上必须压成墨色 -->
+        <item name="iconTint">@color/text_on_accent</item>
+        <item name="iconSize">18dp</item>
+        <item name="iconPadding">6dp</item>
+    </style>
+
+    <!-- 幽灵按钮：无底墨字，行内轻量操作 -->
+    <style name="Widget.ThumbCard.Button.Ghost" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_height">@dimen/btn_height_sm</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="cornerRadius">@dimen/radius_sm</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- 危险版幽灵按钮：删除用 danger 字色，不用实心红 -->
+    <style name="Widget.ThumbCard.Button.Ghost.Danger" parent="Widget.ThumbCard.Button.Ghost">
+        <item name="android:textColor">@color/danger</item>
+    </style>
+
+    <!-- 小圆角 pill：行内轻量操作 -->
+    <style name="Widget.ThumbCard.Button.Pill" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_height">36dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:textSize">@dimen/text_body_sm</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="cornerRadius">@dimen/radius_pill</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- ============ 底部导航 ============
+         与页面同色（bg_page）+ 0 阴影：V1.9 的 8dp 阴影在纸底上会留一圈灰边。
+         选中态不靠颜色，靠「实心图标 + medium 字 + 荧光药丸」三重编码。 -->
+
+    <style name="Widget.ThumbCard.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@color/bg_page</item>
+        <item name="android:elevation">0dp</item>
+        <item name="itemIconSize">22dp</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.ThumbCard.NavActive</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.ThumbCard.NavInactive</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.ThumbCard.NavIndicator</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.NavActive"
+        parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.ThumbCard.NavInactive"
+        parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">@dimen/text_label</item>
+    </style>
+
+    <!-- ⚠️ 药丸是 brand_accent（荧光），所以图标/文字 tint 必须是 text_on_accent：
+         深色下 brand_primary(#C3CFE4) 压在荧光药丸(#9FB44B) 上只有 1.47:1。 -->
+    <style name="Widget.ThumbCard.NavIndicator"
+        parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/brand_accent</item>
+        <item name="android:width">@dimen/nav_indicator_w</item>
+        <item name="android:height">@dimen/nav_indicator_h</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.ThumbCard.Pill</item>
+    </style>
+
+</resources>

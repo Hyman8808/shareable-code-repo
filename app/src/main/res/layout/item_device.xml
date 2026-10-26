@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    设备行（我的设备 / 设备管理 / 扫描结果 三处共用）
+    ============================================================
+    重设计要点：
+    · 左侧 8dp 绿点 → 40dp 圆底蓝牙图标。8dp 的点既看不出是「信号」，
+      也撑不起一行 60dp 的视觉重量，整行看起来很空。
+    · 右侧「连接」文字 → 浅主色 pill。原来纯文字没有边界，用户不确定那是不是按钮。
+    · 整行挂圆角 ripple：原来点击完全没有反馈。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_card"
+    android:foreground="@drawable/bg_ripple"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_empty_circle">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_bluetooth"
+            app:tint="@color/brand_primary" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvDeviceName"
+            style="@style/Text.CardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="拇指相机 6A63E2" />
+
+        <TextView
+            android:id="@+id/tvDeviceMac"
+            style="@style/Text.Micro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="C8:58:6A:63:E2:0E · -52dBm" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvDeviceAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/bg_pill_soft"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
+        android:text="@string/device_state_switch"
+        android:textColor="@color/brand_primary"
+        android:textSize="@dimen/text_micro" />
+
+</LinearLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 圆角药丸标签底（语言标签、词性、词典类型等）：墨的浅底 + 全圆角 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/brand_primary_light" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

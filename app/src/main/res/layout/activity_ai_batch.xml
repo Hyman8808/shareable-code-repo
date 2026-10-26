@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    批量修复（收藏页多选后进入）
+    ============================================================
+    这一页只服务一件事：把「已选 N 张」一张一张跑完，并且让人**随时知道跑到哪了**。
+
+    结构三段的理由：
+    1. 顶部一个大数字「3 / 8」而不是一行小字：
+       批量生成要跑几分钟，用户会反复回来看，一眼能读的只有这个数字。
+    2. 中间放当前正在处理的那张图。批量任务最容易让人焦虑的是
+       「它到底在干活还是卡住了」—— 图跟着换，就说明在动。
+    3. 底部两个动作：进行中是「停止」（破坏性，要确认）+「放入后台」（默认选择，不打断任务）。
+       v2.3 时代这里是「只能看着」，v2.4 把执行搬到前台服务后，
+       **离开这一页 = 转后台继续跑**，所以「放入后台」是主动作，「停止」是次要动作。
+
+    V2.0 墨标要点：左右 20dp、圆角走 radius_md(14dp)、按钮高度 44dp、
+    数字用 sans-serif-condensed（等宽数字，跳动时不会左右晃）。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/page_horizontal"
+    android:paddingTop="6dp"
+    android:paddingEnd="@dimen/page_horizontal"
+    android:paddingBottom="20dp">
+
+    <!-- ============ 顶栏 ============ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/touch_min"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/btnBatchBack"
+            android:layout_width="@dimen/touch_min"
+            android:layout_height="@dimen/touch_min"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/common_back"
+            android:padding="10dp"
+            android:src="@drawable/ic_back"
+            app:tint="@color/text_primary" />
+
+        <TextView
+            style="@style/Text.SectionTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:text="@string/batch_title" />
+    </LinearLayout>
+
+    <!-- ============ 进度 ============ -->
+    <TextView
+        android:id="@+id/tvBatchCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_16"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_metric"
+        tools:text="3 / 8" />
+
+    <TextView
+        android:id="@+id/tvBatchSub"
+        style="@style/Text.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        tools:text="高清修复 · 共 8 张" />
+
+    <ProgressBar
+        android:id="@+id/pbBatch"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="@dimen/space_16"
+        android:max="100"
+        android:progress="0"
+        android:progressBackgroundTint="@color/divider"
+        android:progressTint="@color/brand_primary" />
+
+    <!-- ============ 当前这张 ============ -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="168dp"
+        android:layout_marginTop="@dimen/space_16"
+        android:background="@drawable/bg_card_tile"
+        android:clipToOutline="true">
+
+        <!-- 当前这张的预览：完整性优先于铺满（同美化页）。批量跑的是「照片」，
+             客户相机可能是 4:3 / 16:9 / 1:1，centerCrop 会把不同比例的图裁得不一样，
+             同一批次看起来像被随机切过。 -->
+        <ImageView
+            android:id="@+id/ivBatchPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/batch_title"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvBatchWord"
+        style="@style/Text.CardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_12"
+        android:ellipsize="end"
+        android:maxLines="1"
+        tools:text="electric kettle" />
+
+    <TextView
+        android:id="@+id/tvBatchStatus"
+        style="@style/Text.BodySm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        tools:text="正在处理：电水壶" />
+
+    <TextView
+        android:id="@+id/tvBatchStats"
+        style="@style/Text.Micro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        tools:text="成功 3 · 跳过 0 · 失败 0" />
+
+    <!--
+        后台提示（v2.4 新增）
+        这一行解决的是本次改版最核心的心理障碍：「我是不是得盯着这十几分钟」。
+        所以它必须**常驻在进度下方**，而不是弹一次就消失的 Toast ——
+        用户中途回来还要能再看到一遍，才敢放心按返回。
+    -->
+    <TextView
+        android:id="@+id/tvBatchHint"
+        style="@style/Text.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_12"
+        android:lineSpacingExtra="2dp"
+        android:visibility="gone"
+        tools:text="可以离开这一页。App 会在后台继续生成，完成后通知你。"
+        tools:visibility="visible" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- ============ 底部动作 ============ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnBatchStop"
+            style="@style/Widget.ThumbCard.Button.Ghost"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_height"
+            android:layout_weight="1"
+            android:text="@string/batch_stop_btn" />
+
+        <Button
+            android:id="@+id/btnBatchFinish"
+            style="@style/Widget.ThumbCard.Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_height"
+            android:layout_marginStart="@dimen/space_12"
+            android:layout_weight="1"
+            android:text="@string/batch_finish"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</LinearLayout>

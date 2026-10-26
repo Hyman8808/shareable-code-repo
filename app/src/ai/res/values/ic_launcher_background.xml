@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        AI 版的图标底色 = brand_accent #D9F24F。
+        与主线的墨蓝 #172742 形成「一亮一暗」的强区分，
+        桌面上一眼就能分出哪个是「单词卡相机」、哪个是「AI 版」。
+    -->
+    <color name="ic_launcher_background">#FFD9F24F</color>
+</resources>

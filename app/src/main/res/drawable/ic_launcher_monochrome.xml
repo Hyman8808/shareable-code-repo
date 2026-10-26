@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    墨标 Inkmark · 单色层（Android 13+ 主题图标 / monochrome）
+    系统只取 alpha 并统一染色，所以这层只表达「形状」：
+      机身（含梯形取景器）做实心剪影 → 镜片用 evenOdd 挖空 → AI 落在这个洞里。
+    染色后读作「一块墨色相机、一眼透明镜片、镜片里写着 AI」，与彩色版一一对应。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 机身外圈 + 镜片内圈合成一条 evenOdd 路径：内圈即镂空 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M47.5,28.5 L60.5,28.5 A1.5,1.5 0 0 1 62,30 L65,33 L74,33 A5,5 0 0 1 79,38 L79,70 A5,5 0 0 1 74,75 L34,75 A5,5 0 0 1 29,70 L29,38 A5,5 0 0 1 34,33 L43,33 L46,30 A1.5,1.5 0 0 1 47.5,28.5 Z M39,54 A15,15 0 1 0 69,54 A15,15 0 1 0 39,54 Z" />
+
+    <!-- 闪光灯 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M69.5,40.5 A2,2 0 1 0 73.5,40.5 A2,2 0 1 0 69.5,40.5 Z" />
+
+    <!-- AI：与彩色版同一套 6° 斜体坐标 -->
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M45.59,60.3 L52.71,47.7 L57.19,60.3" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M49.47,54.9 L54.44,54.9" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M62.41,47.7 L61.09,60.3" />
+</vector>

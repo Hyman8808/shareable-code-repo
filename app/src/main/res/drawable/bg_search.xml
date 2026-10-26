@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 搜索框：radius_pill 全圆角 + bg_card_alt 填充，**无描边**。
+     描边会让搜索框看起来像「待填写的表单字段」，语义错误。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card_alt" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

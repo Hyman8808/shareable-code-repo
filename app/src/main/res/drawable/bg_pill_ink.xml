@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    实心墨底药丸：用于「当前设备」这类唯一状态标记。
+    纸底页面上不允许用荧光做状态块（荧光只做填充且仅 4 处合法），
+    所以「选中」用墨实心 + 反白字，未选中用 bg_pill_soft。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/brand_primary" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

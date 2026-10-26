@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    选中的胶囊。
+    荧光底 + 墨色字是 brand_accent 的合法用途之一（填充，不是描边）。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/brand_accent" />
+    <corners android:radius="100dp" />
+</shape>

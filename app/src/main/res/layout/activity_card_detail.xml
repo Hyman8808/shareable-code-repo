@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    单词卡详情
+    ============================================================
+    V2.0 墨标要点：
+    1. **首屏重组**：主卡改成「相纸」——图片出血到卡边（主卡裁角、无内边距），
+       图片正下方依次是 英文衬线大字 → 美/英两条音标 → 中文释义 → 播放按钮。
+       不滚动就能拿到「怎么拼、怎么读」这两件最重要的事。
+    2. **英文当主角**：34sp 英文衬线 regular 排第一行，中文 17sp medium + secondary 色
+       降为释义。旧实现是中文 28sp 居上、英文 18sp 居下，读起来像「中文词的英文注释」。
+    3. **音标从「基础信息」卡搬进主卡**：旧实现音标在第二张卡（约 y≈600dp），
+       想看一眼音标要滚半屏。整块搬上来，id 全部沿用。
+    4. **播放入口 44dp 热区**：喇叭图标仍是 24dp，但 ImageButton 撑到 44dp
+       （padding 10dp），避免「按三次才出声」。
+    5. 一屏只允许一个实心按钮：英文播放 Primary，中文播放 Ghost。
+       删除按钮改 Ghost.Danger，危险操作不该比主操作更抢眼。
+    6. 音标文字用 Text.Phonetic（serif，**保留 FontPadding**）：
+       关掉 includeFontPadding 会把 ˈ 的上半截裁掉，音标第一个字符就没了。
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fitsSystemWindows="true"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/page_horizontal"
+        android:paddingEnd="@dimen/page_horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="32dp">
+
+        <!-- ============ 顶栏 ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/touch_min"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/common_back"
+                android:padding="10dp"
+                android:src="@drawable/ic_back"
+                app:tint="@color/text_primary" />
+
+            <TextView
+                style="@style/Text.SectionTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/card_detail_title" />
+
+            <!--
+                第几张 / 共几张（v2.8.0）：只在可左右滑动时出现。
+                位置固定在标题右侧、收藏左侧 —— 浏览时眼睛不需要移动就能看到进度。
+            -->
+            <TextView
+                android:id="@+id/tvDetailPos"
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:textColor="@color/text_tertiary"
+                android:visibility="gone"
+                tools:text="3 / 12" />
+
+            <!-- 收藏：决定这张卡是否进「单词卡」页 -->
+            <FrameLayout
+                android:layout_width="@dimen/touch_min"
+                android:layout_height="@dimen/touch_min">
+
+                <ImageButton
+                    android:id="@+id/btnFavoriteCard"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_heart_unfav"
+                    android:contentDescription="@string/a11y_favorite"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_heart_outline" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- ============ 主卡（相纸）：图 + 英文名 + 音标 + 中文释义 + 播放 ============
+             首屏必须回答「这是什么词、怎么读」——所以英文大字、两条音标、两个播放热区
+             全部上移到图片正下方，不滚动就能看到。
+             视觉上做成「相纸」：图片出血到卡片边缘（主卡裁外四角），
+             不再在卡里塞一张带独立圆角的小图。 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card_hero"
+            android:clipToOutline="true"
+            android:elevation="2dp"
+            android:orientation="vertical">
+
+            <!--
+                图片区：点一下进大图预览（可缩放、可存相册）。
+                图外面套一层 FrameLayout 只为了左下角那颗状态角标——
+                角标要压在照片上，不能挤在照片下面（那样会把首屏又推高一行）。
+
+                角标一行同时承担两个信息：
+                  · 现在显示的是原图还是 AI 图（高清 / 卡通）
+                  · 「点开看原图」这个操作提示
+                所以它是一个控件，不是两个，避免照片角上挂满小标签。
+            -->
+            <!--
+                图片区：点一下进大图预览（可缩放、可存相册）。
+
+                🔴 v2.5.2 起图框**不再固定 4:3**，改为按图片真实比例自适应
+                （宽度撑满，高度跟随图片，上限由代码里的 ivDetailImage.maxHeight 控制）。
+                改的原因：
+                  · 旧实现固定 4:3 + centerCrop，而这张图正是**列表封面的那张裁切图**，
+                    于是「列表缩略图 = 详情页主图 = 被裁过的一版」，用户点开卡片后
+                    看到的还是缩略图，看不到 AI 生成的全貌；
+                  · 全尺寸图的产品定义是「拍摄事实，一张都不许裁」。裁切只应发生在
+                    列表封面这一侧（ImageStore.CARD_ASPECT），详情页是看事实的地方。
+                竖图会偏高，所以代码给了 maxHeight（约屏高 55%），超出时 fitCenter 居中；
+                minHeight 160dp 是为了 Coil 还没解码完时不塌成一条。
+            -->
+            <FrameLayout
+                android:id="@+id/boxDetailImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/ivDetailImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:contentDescription="@string/detail_view_original"
+                    android:focusable="true"
+                    android:minHeight="160dp"
+                    android:scaleType="fitCenter" />
+
+                <TextView
+                    android:id="@+id/tvImageBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/bg_chip"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingStart="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp"
+                    android:text="@string/detail_view_original"
+                    android:textColor="@color/viewer_icon"
+                    android:textSize="@dimen/text_micro" />
+            </FrameLayout>
+
+            <!-- 相纸下方的信息区：20dp 内边距，与图片边距解耦 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- 主角：英文衬线大字（regular，不加粗——衬线体靠字形本身站住）
+                     字号固定 34sp，**不用 autosize**：autoSizeTextType 在
+                     wrap_content + maxLines=2 的组合上会跟 maxLines 互相算，
+                     低版本可能算出 0 行高；超长短语由第二行 + ellipsize 兜住。 -->
+                <TextView
+                    android:id="@+id/tvDetailEnglish"
+                    style="@style/TextAppearance.ThumbCard.HeadwordXl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:textColor="@color/text_primary"
+                    tools:text="tea tray" />
+
+                <!-- 音标（美 / 英）：从「基础信息」卡整块搬上来，id 全部沿用 -->
+                <LinearLayout
+                    android:id="@+id/grpPhonetic"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- 美式发音 -->
+                    <LinearLayout
+                        android:id="@+id/grpPhoneticUs"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_min"
+                        android:background="@drawable/bg_pill_soft"
+                        android:backgroundTint="@color/phonetic_us_soft"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_4"
+                        android:paddingEnd="14dp">
+
+                        <!-- 图标 24dp，热区 44dp：超出 chip 高度一点点是可接受的，
+                             换来的是「一按就中」而不是「按三次才出声」 -->
+                        <ImageButton
+                            android:id="@+id/btnSpeakUs"
+                            android:layout_width="@dimen/touch_min"
+                            android:layout_height="@dimen/touch_min"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/a11y_play_us"
+                            android:padding="10dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_speaker" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="@string/detail_us"
+                            android:textColor="@color/phonetic_us"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            android:id="@+id/tvPhoneticUs"
+                            style="@style/Text.Phonetic"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_10"
+                            android:layout_weight="1"
+                            tools:text="/ˈtiː treɪ/" />
+                    </LinearLayout>
+
+                    <!-- 英式发音 -->
+                    <LinearLayout
+                        android:id="@+id/grpPhoneticUk"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_min"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:background="@drawable/bg_pill_soft"
+                        android:backgroundTint="@color/phonetic_uk_soft"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/space_4"
+                        android:paddingEnd="14dp">
+
+                        <ImageButton
+                            android:id="@+id/btnSpeakUk"
+                            android:layout_width="@dimen/touch_min"
+                            android:layout_height="@dimen/touch_min"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/a11y_play_uk"
+                            android:padding="10dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_speaker" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="@string/detail_uk"
+                            android:textColor="@color/phonetic_uk"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            android:id="@+id/tvPhoneticUk"
+                            style="@style/Text.Phonetic"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_10"
+                            android:layout_weight="1"
+                            tools:text="/ˈtiː treɪ/" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 中文降为释义：17sp medium，secondary 色 -->
+                <TextView
+                    android:id="@+id/tvDetailChinese"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_h2"
+                    tools:text="茶盘" />
+
+                <!-- 当前名称语言标签（中文时不显示） -->
+                <TextView
+                    android:id="@+id/tvDetailLangTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/space_8"
+                    android:background="@drawable/bg_pill_soft"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingStart="@dimen/space_10"
+                    android:paddingEnd="@dimen/space_10"
+                    android:paddingTop="@dimen/space_4"
+                    android:paddingBottom="@dimen/space_4"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="@dimen/text_micro"
+                    android:visibility="gone" />
+
+                <!-- 主名称不是中文时，把中文原词作为参考展示 -->
+                <TextView
+                    android:id="@+id/tvDetailChineseOrigin"
+                    style="@style/Text.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    tools:text="原文：茶盘" />
+
+                <!-- 译名服务未接入时的说明条 -->
+                <TextView
+                    android:id="@+id/tvLangNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_10"
+                    android:background="@drawable/bg_hint_warning"
+                    android:lineSpacingExtra="3dp"
+                    android:padding="12dp"
+                    android:textColor="@color/warning"
+                    android:textSize="@dimen/text_micro"
+                    android:visibility="gone" />
+
+                <!-- 一屏只允许一个实心主按钮：英文是主角，中文播放降为 ghost -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_16"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPlayChinese"
+                        style="@style/Widget.ThumbCard.Button.Ghost"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/card_play_chinese"
+                        android:textSize="@dimen/text_body" />
+
+                    <Space
+                        android:layout_width="@dimen/space_10"
+                        android:layout_height="1dp" />
+
+                    <Button
+                        android:id="@+id/btnPlayEnglish"
+                        style="@style/Widget.ThumbCard.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/card_play_english"
+                        android:textSize="@dimen/text_body" />
+                </LinearLayout>
+
+                <!--
+                    AI 美化入口：幽灵按钮，压在主按钮下方。
+                    它**不**做成第二个实心按钮——一屏只允许一个主操作（英文发音），
+                    美化是低频增强功能，抢主按钮的注意力会让「怎么读」这个核心动作变弱。
+                -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAiBeautify"
+                    style="@style/Widget.ThumbCard.Button.Ghost"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:text="@string/detail_ai_entry"
+                    app:icon="@drawable/ic_sparkle"
+                    app:iconGravity="textStart"
+                    app:iconPadding="6dp"
+                    app:iconTint="@color/brand_primary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 基础信息（拼音 / 释义 / 时间） ============ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 每组自带「上分隔线」：值查不到就整组 GONE，不会留下孤立的分隔线 -->
+            <LinearLayout
+                android:id="@+id/grpPinyin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    style="@style/Text.Micro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_pinyin" />
+
+                <TextView
+                    android:id="@+id/tvDetailPinyin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_h3" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/grpDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/divider" />
+
+                <TextView
+                    style="@style/Text.Micro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/detail_meaning" />
+
+                <TextView
+                    android:id="@+id/tvDetailDescription"
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/grpTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/divider" />
+
+                <TextView
+                    android:id="@+id/tvDetailTime"
+                    style="@style/Text.Micro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 短语拆解（多词短语逐词查） ============ -->
+        <LinearLayout
+            android:id="@+id/cardPhraseSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/Text.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/phrase_title" />
+
+                <TextView
+                    android:id="@+id/tvPhraseCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pill_soft"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingStart="9dp"
+                    android:paddingEnd="9dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="@dimen/text_micro" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/Text.Micro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/phrase_hint" />
+
+            <!-- 加载中 -->
+            <LinearLayout
+                android:id="@+id/grpPhraseLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:layout_width="18dp"
+                    android:layout_height="18dp" />
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/phrase_loading" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/grpPhraseBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- 词砖由代码动态填充，每行两块 -->
+                <LinearLayout
+                    android:id="@+id/grpPhraseWords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="vertical" />
+
+                <!-- 直译：把每个词的核心义串起来，再对上整词名称 -->
+                <TextView
+                    android:id="@+id/tvPhraseFormula"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_phrase_tile"
+                    android:lineSpacingExtra="3dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="11dp"
+                    android:paddingBottom="11dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_caption"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 词典释义（在线查词） ============ -->
+        <LinearLayout
+            android:id="@+id/cardDictSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/Text.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/detail_dict_en" />
+
+                <TextView
+                    android:id="@+id/tvDictType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pill_soft"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingStart="9dp"
+                    android:paddingEnd="9dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="@dimen/text_micro" />
+            </LinearLayout>
+
+            <!-- 加载中 -->
+            <LinearLayout
+                android:id="@+id/grpDictLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:layout_width="18dp"
+                    android:layout_height="18dp" />
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/detail_dict_loading" />
+            </LinearLayout>
+
+            <!-- 查询失败 -->
+            <LinearLayout
+                android:id="@+id/grpDictError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvDictError"
+                    style="@style/Text.Caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:lineSpacingExtra="3dp" />
+
+                <Button
+                    android:id="@+id/btnRetryDict"
+                    style="@style/Widget.ThumbCard.Button.Outline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="@string/common_retry"
+                    android:textSize="@dimen/text_micro" />
+            </LinearLayout>
+
+            <!-- 内容 -->
+            <LinearLayout
+                android:id="@+id/grpDictContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvDictMeanings"
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="5dp" />
+
+                <TextView
+                    android:id="@+id/tvDictForms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_phrase_tile"
+                    android:lineSpacingExtra="4dp"
+                    android:padding="12dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_caption" />
+
+                <TextView
+                    android:id="@+id/tvDictRelated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_body_sm" />
+
+                <!-- 例句 -->
+                <LinearLayout
+                    android:id="@+id/grpDictExamples"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_examples" />
+
+                    <TextView
+                        android:id="@+id/tvDictExamples"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingExtra="5dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_body_sm" />
+                </LinearLayout>
+
+                <!-- 短语搭配 -->
+                <LinearLayout
+                    android:id="@+id/grpDictPhrases"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_phrases" />
+
+                    <TextView
+                        android:id="@+id/tvDictPhrases"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_body_sm" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============ 汉语词典（拼音 / 释义 / 组词） ============ -->
+        <LinearLayout
+            android:id="@+id/cardCnSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvCnTitle"
+                    style="@style/Text.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/detail_dict_cn" />
+
+                <TextView
+                    android:id="@+id/tvCnType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_pill_soft"
+                    android:fontFamily="sans-serif-medium"
+                    android:paddingStart="9dp"
+                    android:paddingEnd="9dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="@dimen/text_micro" />
+            </LinearLayout>
+
+            <!-- 加载中 -->
+            <LinearLayout
+                android:id="@+id/grpCnLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:layout_width="18dp"
+                    android:layout_height="18dp" />
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/detail_cn_loading" />
+            </LinearLayout>
+
+            <!-- 查询失败 -->
+            <LinearLayout
+                android:id="@+id/grpCnError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvCnError"
+                    style="@style/Text.Caption"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:lineSpacingExtra="3dp" />
+
+                <Button
+                    android:id="@+id/btnRetryCnDict"
+                    style="@style/Widget.ThumbCard.Button.Outline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:minWidth="0dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:text="@string/common_retry"
+                    android:textSize="@dimen/text_micro" />
+            </LinearLayout>
+
+            <!-- 内容 -->
+            <LinearLayout
+                android:id="@+id/grpCnContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/grpCnPinyinRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_pinyin" />
+
+                    <TextView
+                        android:id="@+id/tvCnPinyin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_h3" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvCnMeta"
+                    style="@style/Text.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/grpCnMeanings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_meaning" />
+
+                    <TextView
+                        android:id="@+id/tvCnMeanings"
+                        style="@style/Text.Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingExtra="5dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvCnRelated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_body_sm" />
+
+                <LinearLayout
+                    android:id="@+id/grpCnExamples"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_examples" />
+
+                    <TextView
+                        android:id="@+id/tvCnExamples"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingExtra="5dp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_body_sm" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/grpCnCombine"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Text.Micro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/detail_compounds" />
+
+                    <TextView
+                        android:id="@+id/tvCnCombine"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_body_sm" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnDeleteCard"
+            style="@style/Widget.ThumbCard.Button.Ghost.Danger"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/detail_delete"
+            android:textSize="@dimen/text_body_sm" />
+
+    </LinearLayout>
+</ScrollView>

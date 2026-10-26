@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- BLE：Android 12+ 新权限 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"
+        tools:targetApi="s" />
+
+    <!-- BLE：Android 11 及以下的旧权限 -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+
+    <!-- 网络 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--
+        存图到相册。
+        Android 10（API 29）起走 MediaStore 分区存储，**不需要任何权限**；
+        只有 API ≤ 28 才需要写外部存储，所以用 maxSdkVersion 卡住，
+        避免在新系统上还要一堆无意义的权限请求。
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!--
+        从相册找回已生成的 AI 图（AI 版专有功能）。
+        API 33+ 读图片要 READ_MEDIA_IMAGES，API ≤ 32 走 READ_EXTERNAL_STORAGE。
+        ⚠️ 这两个都是「增量」：分区存储下本应用**自己写入**的图有隐式读权限，
+        所以拒绝授权不等于功能不可用，只是读不到别人转存进相册目录的那批。
+    -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!--
+        AI 出图的后台任务（前台服务）
+        一张 2K 图 60–90 秒、批量十几分钟，必须跑在前台服务里才不会被系统回收；
+        前台服务 = 常驻通知，所以还要 POST_NOTIFICATIONS（Android 13+ 运行时权限）。
+        跑生成时按住 PARTIAL_WAKE_LOCK：锁屏后 Doze 会掐网络，一次 90 秒的请求很容易超时。
+        `FOREGROUND_SERVICE_DATA_SYNC` 是 API 34+ 的细分类型权限，缺了会在启动时崩。
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+
+    <application
+        android:name=".ThumbCardApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ThumbCard"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.provision.ScanDeviceActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.provision.WifiConfigActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.card.CardListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.card.CardDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- 原图 / AI 图大图预览：深色全屏看图 + 存相册 -->
+        <activity
+            android:name=".ui.card.ImagePreviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ThumbCard.Viewer" />
+
+        <!-- AI 美化 / 卡通化 -->
+        <activity
+            android:name=".ui.ai.AiBeautifyActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- 批量修复：从收藏页多选进入，串行跑完整个队列 -->
+        <activity
+            android:name=".ui.ai.AiBatchActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.device.DeviceListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.diag.DiagnoseActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!--
+            AI 出图的后台执行器。
+            `foregroundServiceType="dataSync"` 必须与 ServiceCompat.startForeground 传的
+            类型一致，否则 Android 14+ 直接抛 MissingForegroundServiceTypeException。
+            exported=false：只有本 App 能启动它（避免被外部拉起后白烧 API 额度）。
+        -->
+        <service
+            android:name=".data.ai.AiTaskService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <activity
+            android:name=".ui.auth.LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.settings.LanguageActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+    </application>
+</manifest>

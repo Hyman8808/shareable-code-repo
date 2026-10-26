@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    加载失败的居中重试占位。
+    比 bg_viewer_hint 更实一层（30% 黑 vs 70% 黑）：
+    提示条是不可点的信息，占位是**可点的动作** —— 可点的东西必须是这一屏最实的那一档，
+    否则用户不知道它能点。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#4D000000" />
+    <corners android:radius="28dp" />
+</shape>

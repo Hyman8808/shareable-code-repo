@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    深色模式色板：**只覆盖同名字**，布局一行都不用改。
+    没在这里出现的名字，会沿用 values/colors.xml 的亮色值
+    —— 所以新增颜色时，务必回来判断它在深色下会不会穿帮。
+
+    这是「睡前躺读」版本，**不是反色**。三条硬规则：
+    1. 不出现纯白：最亮是 #E9E4D9（暖白 L91%），纯白在暗底上会眩光。
+    2. 主色不做「提亮」，做「明度翻转 + 降饱和」：
+       墨 #172742 在暗底不能当「面」（会消失），翻转成纸蓝 #C3CFE4，
+       同时兼作按钮底与文字色（10.95:1）。
+    3. 底色用暖调近黑（H45° S15% L7%），不用纯黑也不用蓝黑：
+       纯黑在 OLED 上边缘发灰、卡片阴影看不出来。
+-->
+<resources>
+    <!-- 墨（翻转成纸蓝） -->
+    <color name="brand_primary">#FFC3CFE4</color>
+    <color name="brand_primary_hover">#FFD6E0F0</color>
+    <color name="brand_primary_light">#FF262C36</color>
+    <color name="brand_primary_soft">#FF313846</color>
+    <!-- 荧光降饱和降亮度（原亮度夜间会「发光」） -->
+    <color name="brand_accent">#FF9FB44B</color>
+    <color name="accent_soft">#FF2E3316</color>
+    <color name="accent_graphics">#FFC9DE6A</color>
+
+    <!-- 文字 -->
+    <color name="text_primary">#FFE9E4D9</color>
+    <color name="text_secondary">#FFB4AE9F</color>
+    <color name="text_tertiary">#FF928B7C</color>
+    <color name="text_disabled">#FF6B665C</color>
+    <color name="text_on_brand">#FF12151C</color>
+    <color name="text_on_accent">#FF14130F</color>
+
+    <!-- 表面 -->
+    <color name="bg_page">#FF14130F</color>
+    <color name="bg_card">#FF1D1B16</color>
+    <color name="bg_card_alt">#FF242119</color>
+    <color name="bg_scrim">#99000000</color>
+    <color name="divider">#FF262420</color>
+    <color name="stroke_soft">#FF2A2721</color>
+    <color name="stroke_strong">#FF3A362D</color>
+
+    <!-- 语义（全部降饱和） -->
+    <color name="success">#FF63C99B</color>
+    <color name="success_soft">#FF1A2E26</color>
+    <color name="warning">#FFD9A65C</color>
+    <color name="warning_soft">#FF33281A</color>
+    <color name="danger">#FFE8796C</color>
+    <color name="danger_soft">#FF3A211E</color>
+
+    <!-- 音标 -->
+    <color name="phonetic_us">#FFC3CFE4</color>
+    <color name="phonetic_uk">#FFD08FA6</color>
+    <color name="phonetic_us_soft">#FF262C36</color>
+    <color name="phonetic_uk_soft">#FF36222A</color>
+
+    <!-- 图片占位 -->
+    <color name="placeholder">#FF24211A</color>
+    <color name="placeholder_shimmer">#FF2C281F</color>
+
+    <!-- 图片浮层 -->
+    <color name="overlay_control">#66000000</color>
+    <color name="overlay_control_active">#F2FFFFFF</color>
+    <!-- 睡前专属：照片高光是暗环境里最大的刺眼源，压 25% 黑 -->
+    <color name="photo_dim">#40000000</color>
+
+    <!-- 原图预览页：与浅色模式**同值**，故意不在深色下改。
+         看图页永远是黑底，跟着主题变会让同一张照片看起来像被处理过。 -->
+    <color name="viewer_bg">#FF14130F</color>
+    <color name="viewer_icon">#FFF2EFE7</color>
+    <color name="viewer_hint">#8AF2EFE7</color>
+    <color name="viewer_progress">#FFF2EFE7</color>
+</resources>

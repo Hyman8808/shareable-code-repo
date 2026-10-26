@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    墨标 Inkmark · 应用图标前景（v2.1.1 相机 + AI）
+    ────────────────────────────────────────────────────────────────
+    造型回到「相机」，但修掉旧版三个问题：
+      1. 旧版镜头圆心 y=46、机身中心 y=59，镜头往上顶了 13dp，整个图标头重脚轻
+         → 本版镜片、机身、字面三者同心于 (54,54)，即自适应图标可视中心。
+      2. 旧版镜片里是个空圆洞，不承载任何信息
+         → 本版镜片内嵌 AI 字标，说明「这台相机是认得字的」。
+      3. 旧版白机身 + 亮蓝 #4C6FFF 与 App 内的墨蓝暖纸完全脱节
+         → 本版沿用墨标三色：墨蓝底 / 暖白机身 / 荧光镜片。
+
+    几何（108 viewport，逐项可在 XML 内复算）：
+      机身      x 29–79 (w50) / y 33–75 (h42) / 四角 r5
+      取景器    x 43–65 底宽 22，顶宽 15，y 28.5–33，上角 r1.5 —— 梯形而非方块，一眼是取景器
+      闪光灯    (71.5,40.5) r2
+      镜片      (54,54) r15 —— 上下余 6 / 左右余 10
+      AI 字标   cap height 12.6 (y 47.7–60.3)，主笔画 2.4、横杠 2.3，字面宽 17.8
+                A 只有两条斜腿 + 横杠（不封底），横杠 y=54.9 落在 cap 的 43% 处，
+                上方三角孔净宽 2.5 —— 低于此高度孔会被摆平，高于此高度 A 会读成 Λ
+
+    最远点到圆心：机身圆角内切后 32.6，字标端点 11.75 —— 全落在中心 ⌀66 安全圆内。
+
+    AI 的「艺术字」= 6° 斜体 + 圆头笔画。Android VectorDrawable 不支持 skewX，
+    斜切量已逐点算进 pathData（x' = x − tan6°×(y − 54)），不靠 group 旋转近似。
+    6° 是比过 0/4/6/8 四档后选的：8° 会把 A 的左右腿压成 34°/20°，读起来像 Λ；
+    6° 保留动势，A 的两条腿仍是对称的 24.7°。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 机身：取景器与机身合并为单一闭合路径，任何缩放下都不出现接缝 -->
+    <path
+        android:fillColor="#FFFDF7"
+        android:pathData="M47.5,28.5 L60.5,28.5 A1.5,1.5 0 0 1 62,30 L65,33 L74,33 A5,5 0 0 1 79,38 L79,70 A5,5 0 0 1 74,75 L34,75 A5,5 0 0 1 29,70 L29,38 A5,5 0 0 1 34,33 L43,33 L46,30 A1.5,1.5 0 0 1 47.5,28.5 Z" />
+
+    <!-- 闪光灯：墨蓝实心点，补足「这是一台相机」的最后一块语义 -->
+    <path
+        android:fillColor="#FF172742"
+        android:pathData="M69.5,40.5 A2,2 0 1 0 73.5,40.5 A2,2 0 1 0 69.5,40.5 Z" />
+
+    <!-- 镜片：荧光 #D9F24F 实心圆。荧光在这里是「被标记的对象」，
+         不是装饰，与 App 内「荧光只做填充」的规则一致；
+         缩到 48dp 时它是整枚图标唯一的亮块，也是第一眼锚点。 -->
+    <path
+        android:fillColor="#FFD9F24F"
+        android:pathData="M39,54 A15,15 0 1 0 69,54 A15,15 0 1 0 39,54 Z" />
+
+    <!-- AI：6° 斜体，墨蓝 #172742，圆头笔画 -->
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M45.59,60.3 L52.71,47.7 L57.19,60.3" />
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M49.47,54.9 L54.44,54.9" />
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M62.41,47.7 L61.09,60.3" />
+</vector>

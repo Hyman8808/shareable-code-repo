@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    选择态圆点 · 未选中
+    压在照片上，所以**不跟主题**：暖白 90% + 墨色 60% 描边，在任何明暗的照片上都有边界。
+    如果改用 @color/bg_card，深色模式下会变成一块黑圆压在亮照片上，
+    看起来像「已经选中的空坑」，语义正好相反。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#E6FFFDF7" />
+    <stroke
+        android:width="1.5dp"
+        android:color="#99172742" />
+</shape>

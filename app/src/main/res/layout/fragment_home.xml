@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    首页（V2.0 墨标）
+    ============================================================
+    本次重设计的核心是**纵向预算**：目标是 640dp 高的屏 ≥3.2 行、800dp ≥5 行。
+    实测口径（88dp/行，底栏 64dp）：
+        8  page_top（保持 8：再压到 4 会让 22sp 标题贴着状态栏，看起来像「内容被截掉」）
+      + 44 顶栏（设备名 22sp + 44dp 蓝牙入口，图标化省掉「设备」两个字）
+      + 15 设备 meta（11sp 一行：2 间距 + 13 字高）
+      +  8 间距
+      + 81 今日卡（12dp 内边距 24 + 30sp 指标行 35 + 6 + 本周行 16）
+      +  8 间距
+      + 44 区块头「今天拍的」（44 是 btnAllCards 的触控底线，不能降）
+      +  2 列表间距
+      = 210dp  → 640 屏 **3.30 行** / 800 屏 **5.10 行** / 891 屏 **6.12 行**
+                 （间距三刀前 220dp 时是 3.23 / 5.05 / 6.08；按真实几何再扣
+                   24 状态栏 + 1dp hairline，是 3.88 / 5.69 / 6.73 —— 行间分割线
+                   画在行底内侧、不占高度，所以 88dp 步进不变）
+    提示条（bg_hint，64dp）**不计入**：它只在「今天 0 张」时出现（那时列表本来就是空的），
+    收藏引导（tvFavoriteHint）同理，只在「一条收藏都没有」时出现。
+
+    结构上**故意保留** SwipeRefreshLayout > NestedScrollView > LinearLayout：
+    改成「固定头 + RecyclerView 独占滚动」需要重写 Kotlin 的测量/滚动逻辑，本轮不做。
+
+    ⚠️ 所有 id 已与 HomeFragment（ViewBinding）绑定，不能改名：
+       swipeRefresh / groupBound / groupUnbound / tvDeviceName / tvDeviceMeta / btnDevicesEntry
+       cardStats / tvStatsTotal / tvTodayPhotos / tvTodayWords / tvWeekPhotos / tvWeekWords
+       tvCardCount / btnAllCards / tvFavoriteHint / rvRecent / groupEmpty / tvEmptyHint
+       btnAllRecords / cardAddDevice
+-->
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page">
+
+    <!-- 用 NestedScrollView 而不是 ScrollView：里面套的是 wrap_content 的 RecyclerView，
+         NestedScrollView 能正确测量并让它随内容整体滚动（今天拍多少就能滑多少） -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/page_horizontal"
+            android:paddingTop="@dimen/page_top"
+            android:paddingEnd="@dimen/page_horizontal"
+            android:paddingBottom="@dimen/page_bottom">
+
+            <!-- ============ 已绑定 ============ -->
+            <LinearLayout
+                android:id="@+id/groupBound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- ① 顶栏行 44dp：设备名 22sp + 44dp 蓝牙入口（只放图标） -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/touch_min"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvDeviceName"
+                        style="@style/Text.PageTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        tools:text="我的拇指相机" />
+
+                    <ImageView
+                        android:id="@+id/btnDevicesEntry"
+                        android:layout_width="@dimen/touch_min"
+                        android:layout_height="@dimen/touch_min"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/home_devices_btn"
+                        android:padding="13dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_bluetooth"
+                        app:tint="@color/brand_primary" />
+                </LinearLayout>
+
+                <!-- ② 设备 meta：11sp label 一行 -->
+                <TextView
+                    android:id="@+id/tvDeviceMeta"
+                    style="@style/Text.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="c8586a630000" />
+
+                <!-- ③ 今日卡：纸底上唯一的白卡（浮起层用 elevation，不再叠描边） -->
+                <LinearLayout
+                    android:id="@+id/cardStats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_card"
+                    android:elevation="@dimen/card_elevation"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="12dp">
+
+                    <!-- 指标第 1 行：「今天」是主角 —— 荧光竖条 + 30sp condensed 照片数 + 15sp 词数，
+                         全部挤在一行（原「标签行 + 两列双行 + 说明行」占 120dp，一屏吃掉 1.4 行卡） -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="3dp"
+                            android:layout_height="18dp"
+                            android:background="@color/brand_accent" />
+
+                        <!-- 主指标标签会切换：今天有拍 =「今天」，今天没拍 =「累计」。
+                             0 永远不做主角 —— 没拍照的日子，把 30sp 的「0 张」摆在首屏正中
+                             是最伤成就感的一件事（用户原话：「家长看到的时候没有成就感」）。 -->
+                        <TextView
+                            android:id="@+id/tvPrimaryLabel"
+                            style="@style/Text.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="@string/home_today" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:baselineAligned="true"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvPrimaryPhotos"
+                                style="@style/TextAppearance.ThumbCard.Metric"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                tools:text="12" />
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:text="@string/home_unit_photos" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:baselineAligned="true"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvPrimaryWords"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
+                                android:includeFontPadding="false"
+                                android:text="0"
+                                android:textColor="@color/text_primary"
+                                android:textSize="@dimen/text_body"
+                                tools:text="5" />
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:text="@string/home_unit_words" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 指标第 2 行：本周（13sp secondary）+ 累计（11sp tertiary，长则省略）。
+                         tvStatsTotal 用 weight=1 + ellipsize：它是第三优先级，
+                         空间不够时牺牲它，绝不去压 30sp 的数字、也不挤掉「本周」。 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:baselineAligned="true"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Text.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/home_week" />
+
+                        <TextView
+                            android:id="@+id/tvWeekPhotos"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:includeFontPadding="false"
+                            android:text="0"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_body_sm"
+                            tools:text="48" />
+
+                        <TextView
+                            style="@style/Text.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="3dp"
+                            android:text="@string/home_unit_photos" />
+
+                        <TextView
+                            android:id="@+id/tvWeekWords"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:includeFontPadding="false"
+                            android:text="0"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/text_body_sm"
+                            tools:text="17" />
+
+                        <TextView
+                            style="@style/Text.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="3dp"
+                            android:text="@string/home_unit_words" />
+
+                        <TextView
+                            android:id="@+id/tvStatsTotal"
+                            style="@style/Text.Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:gravity="end"
+                            android:maxLines="1" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- ④ 今天拍的：**卡片流**（2 列，最多 4 张）
+                     ============================================================
+                     为什么这里用「卡」而下面历史用「行」：
+                       · 今天 = 你刚做的事，值得看大图（图 154×116 + 三行字），是成就感的来源；
+                       · 历史 = 档案，只需要认出「拍过这个词」，密度优先（一屏 3 行）。
+                     同屏两种表面（卡 + 行）不违反公理 A —— 它们分属两个日期分组，
+                     中间由区块头断开，视觉上是「今天」和「更早」两段，不是一堆混排。
+
+                     今天 0 张时**整组 GONE**（不只是列表空）：
+                     没有内容的分组标题是噪声，而且原来的虚线环空态会把
+                     「今天没拍」放大成页面主体 —— 那正是用户说的没成就感。
+                     今天没拍时，首屏直接是成就卡（累计）+「全部记录」。 -->
+                <LinearLayout
+                    android:id="@+id/groupToday"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/touch_min"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/Text.SectionTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/home_today" />
+
+                        <TextView
+                            android:id="@+id/tvTodayCount"
+                            style="@style/Text.Label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1" />
+
+                        <!-- 批量修图入口（v2.4.1）。
+                             今天拍的这几张最常需要批量修，所以入口在「今天」区块头右侧 ——
+                             它与「更早的记录」区块头那一份**互斥出现**（两个分组至少有一个可见），
+                             保证任何状态下首页都能一步进多选。 -->
+                        <TextView
+                            android:id="@+id/btnTodayBatch"
+                            style="@style/Text.Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/touch_min"
+                            android:background="?attr/selectableItemBackground"
+                            android:gravity="center"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:text="@string/home_batch_entry"
+                            android:textColor="@color/text_tertiary" />
+                    </LinearLayout>
+
+                    <!-- 网格卡的坐标与收藏页完全一致：
+                         RV marginStart -20 → RV 左缘在页面 x=0；paddingStart 14 + item margin 6 = 20，
+                         卡片左缘正好落在 page_horizontal 上，与标题同一条竖线。
+                         paddingTop 10 是保阴影不被列表边缘切平（clipToPadding=false）。 -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTodayCards"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="-20dp"
+                        android:layout_marginEnd="-20dp"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false"
+                        android:paddingStart="14dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="14dp" />
+
+                    <!-- 今天超过 4 张时的出口：一行 Ghost，不抢首屏视线。
+                         没有它，拍 20 张的用户会以为「首页只存了 4 张」。 -->
+                    <TextView
+                        android:id="@+id/btnTodayMore"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:minHeight="@dimen/touch_min"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="@dimen/text_body_sm"
+                        android:visibility="gone"
+                        tools:text="今天还有 8 张 · 查看全部 ›" />
+                </LinearLayout>
+
+                <!-- ⑤ 拍摄提示：只在「一张都没拍过」时出现 -->
+                <LinearLayout
+                    android:id="@+id/groupShootHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_hint"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_camera"
+                        app:tint="@color/brand_primary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:lineSpacingExtra="3dp"
+                        android:text="@string/home_shoot_hint"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="@dimen/text_body_sm" />
+                </LinearLayout>
+
+                <!-- ⑥ 历史区块头：标题随状态切换 ——
+                     今天有拍 → 「更早的记录」（下面只放今天以外的）
+                     今天没拍 → 「全部记录」（下面就是全部，没有重复） -->
+                <!-- ⑥ 历史分组：整组显隐由 HomeFragment 控制 ——
+                     只拍了今天、没有任何历史时，连标题一起收起（不留一个空目录）。
+                     收藏引导也放在这一组里：它提示的是「长按整行」，而长按只对行生效；
+                     今日卡片流用的是卡片上那颗可见的心，不需要长按提示。 -->
+                <LinearLayout
+                    android:id="@+id/groupHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/touch_min"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvHistoryTitle"
+                        style="@style/Text.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/home_section_all" />
+
+                    <TextView
+                        android:id="@+id/tvHistoryCount"
+                        style="@style/Text.Label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1" />
+
+                    <!-- 批量修图入口（v2.4.1）。
+                         放在区块头而不是列表底部：底部要滚到底才看得见，等于没有。
+                         纵向零成本（这一行本来就是 44dp），只占一点横向空间。
+                         跳「全部记录」并直接进多选态，少一次「选择」点击。 -->
+                    <TextView
+                        android:id="@+id/btnHomeBatch"
+                        style="@style/Text.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/touch_min"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:text="@string/home_batch_entry"
+                        android:textColor="@color/text_tertiary" />
+
+                    <!-- 热区 44dp：文本里的「›」由 strings 提供（三语一致），
+                         所以这里不再挂 drawableEnd，否则会出现两个箭头 -->
+                    <TextView
+                        android:id="@+id/btnAllCards"
+                        style="@style/Text.Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical|end"
+                        android:minWidth="64dp"
+                        android:minHeight="@dimen/touch_min"
+                        android:paddingStart="10dp"
+                        android:text="@string/home_all"
+                        android:textColor="@color/brand_primary" />
+                </LinearLayout>
+
+                <!-- ⑥ 收藏引导：11sp label 一行（长按整行 = 收藏，这是本设计最关键的手势） -->
+                <TextView
+                    android:id="@+id/tvFavoriteHint"
+                    style="@style/Text.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/home_fav_hint" />
+
+                <!-- ⑦ 卡片列表：现在是「行」，不是网格。
+                     左右各 -20dp 抵消父容器的页面边距 —— 行自己带 20dp 内边距，
+                     这样 divider / ripple 能满宽，文字仍与 20dp 标题对齐。 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-20dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="-20dp"
+                    android:nestedScrollingEnabled="false" />
+
+                </LinearLayout>
+                <!-- /groupHistory -->
+
+                <!-- ⑧ 空状态：**虚线环**（不是浅色实心圆）+ 32dp 图标 + 一句话。
+                     只在「一张都没拍过」时出现；今天没拍但历史有内容时**不出现**。 -->
+                <LinearLayout
+                    android:id="@+id/groupEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingTop="36dp"
+                    android:paddingBottom="16dp"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="88dp"
+                        android:layout_height="88dp"
+                        android:background="@drawable/bg_empty_ring">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_camera"
+                            app:tint="@color/text_tertiary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvEmptyHint"
+                        style="@style/Text.BodySm"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="5dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="@string/home_empty" />
+                </LinearLayout>
+
+                <!-- ⑨ 今天拍得很多（≥20 张）时的出口：Ghost 一行，不抢首屏视线 -->
+                <TextView
+                    android:id="@+id/btnAllRecords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:minHeight="@dimen/touch_min"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="@dimen/text_body_sm"
+                    android:visibility="gone"
+                    tools:text="查看全部单词记录（共 37 张）›" />
+            </LinearLayout>
+
+            <!-- ============ 未绑定：引导页 ============ -->
+            <LinearLayout
+                android:id="@+id/groupUnbound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="8dp">
+
+                <TextView
+                    style="@style/Text.PageTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name" />
+
+                <TextView
+                    style="@style/Text.BodySm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/home_subtitle" />
+
+                <LinearLayout
+                    android:id="@+id/cardAddDevice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/bg_card"
+                    android:clickable="true"
+                    android:elevation="@dimen/card_elevation"
+                    android:focusable="true"
+                    android:foreground="@drawable/bg_ripple"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingStart="24dp"
+                    android:paddingTop="36dp"
+                    android:paddingEnd="24dp"
+                    android:paddingBottom="36dp">
+
+                    <!-- 96dp 虚线环：与空状态同一语汇（「等着被填满」，不是「出错了」） -->
+                    <FrameLayout
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:background="@drawable/bg_empty_ring">
+
+                        <ImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_camera"
+                            app:tint="@color/brand_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Text.PageTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/home_add_device" />
+
+                    <TextView
+                        style="@style/Text.Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp"
+                        android:maxLines="4"
+                        android:text="@string/home_pair_hint" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Text.Micro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="6dp"
+                    android:text="@string/home_slogan" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

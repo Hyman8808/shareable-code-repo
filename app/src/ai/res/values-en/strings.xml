@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    App name for the "ai" flavor (package com.turing.thumbcard.ai).
+         Installs side by side with the main app.
+-->
+<resources>
+    <string name="app_name">ThumbCard AI</string>
+</resources>

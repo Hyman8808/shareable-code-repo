@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  繁體中文介面（台灣用語）。
+  ⚠️ 條目必須與 values/strings.xml 一一對應（鍵完全相同）；漏一條就會退回簡體。
+  ⚠️ 用語優先照顧台灣習慣：介面 / 裝置 / 網路 / 儲存 / 登入 / 使用者條款 / 片語。
+     香港使用者會落到本檔（系統以 Hant 字集比對），因此避免只用台灣特有詞。
+-->
+<resources>
+    <string name="app_name">單字卡相機</string>
+
+    <!-- ============ 通用 ============ -->
+    <string name="common_ok">確定</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_retry">重試</string>
+    <string name="common_loading">載入中…</string>
+    <string name="common_syncing">同步中…</string>
+    <string name="common_back">‹ 返回</string>
+    <string name="common_copied">已複製</string>
+
+    <!-- ============ 底部導覽 ============ -->
+    <string name="nav_home">紀錄</string>
+    <string name="nav_cards">收藏</string>
+    <string name="nav_devices">裝置</string>
+    <string name="nav_profile">我的</string>
+
+    <!-- ============ 首頁 ============ -->
+    <string name="home_subtitle">用拇指相機拍一拍，產生單字卡</string>
+    <string name="home_add_device">新增裝置</string>
+    <string name="home_my_cards">我的單字卡</string>
+    <string name="home_my_devices">裝置管理</string>
+    <string name="home_no_device">還沒有綁定裝置\n先新增一台拇指相機吧</string>
+    <string name="home_devices_btn">裝置</string>
+    <string name="home_report_title">學習報告</string>
+    <string name="home_today">今天</string>
+    <string name="home_week">本週</string>
+    <string name="home_unit_photos">張照片</string>
+    <string name="home_unit_words">個單字</string>
+    <string name="home_report_hint">同一件東西拍多次，只算 1 個單字</string>
+    <string name="home_shoot_hint">按一下相機快門，拍下的東西會自動變成單字卡</string>
+    <string name="home_section_all">全部紀錄</string>
+    <string name="home_section_earlier">更早的紀錄</string>
+    <string name="home_total_label">累計</string>
+    <string name="home_today_more_fmt">今天還有 %1$d 張 · 查看全部 ›</string>
+    <string name="home_all">全部 ›</string>
+    <string name="home_batch_entry">批量修圖</string>
+    <string name="home_fav_hint">長按任一卡片即可收藏，收藏後會出現在「收藏」頁</string>
+    <string name="home_empty">還沒有拍過
+
+按一下相機快門，拍下的東西會出現在這裡
+長按卡片即可收藏</string>
+    <string name="home_empty_today">今天還沒有拍新的\n\n點「全部 ›」看看以前拍過的照片</string>
+    <string name="home_pair_hint">長按相機開機鍵 3 秒\n等指示燈閃爍後，點這裡開始配對</string>
+    <string name="home_slogan">拍一下就認識世界\n\n中文名 · 英文名 · 發音 · 可收藏的單字卡</string>
+    <string name="home_default_device">拇指相機</string>
+    <string name="home_total_fmt">累計 %1$d 張 · %2$d 個單字</string>
+    <string name="home_count_fmt">%1$d 張</string>
+    <string name="home_multi_device_fmt">  ·  共 %1$d 台</string>
+
+    <!-- ============ 掃描 / 網路設定 ============ -->
+    <string name="scan_title">選擇裝置</string>
+    <string name="scan_hint">正在搜尋附近的裝置…</string>
+    <string name="scan_empty">未搜尋到裝置\n請確認裝置已開機且藍牙指示燈閃爍</string>
+    <string name="scan_permission_denied">需要藍牙權限才能搜尋裝置</string>
+    <string name="scan_signal_fmt">%1$s · 訊號 %2$d dBm · 通訊協定 v%3$d.%4$d</string>
+    <string name="wifi_title">連線 WiFi</string>
+    <string name="wifi_title_setting">WiFi 設定</string>
+    <string name="wifi_hint">僅支援 2.4G WiFi</string>
+    <string name="wifi_device_fmt">裝置：%1$s  ·  僅支援 2.4G WiFi</string>
+    <string name="wifi_ssid">WiFi 名稱</string>
+    <string name="wifi_password">WiFi 密碼</string>
+    <string name="wifi_start">開始設定網路</string>
+    <string name="wifi_connecting">網路設定中，請勿離開…</string>
+    <string name="wifi_copy_log">複製偵錯日誌</string>
+    <string name="wifi_log_connect_fmt">開始連線裝置 %1$s</string>
+    <string name="wifi_log_connecting">連線中…</string>
+    <string name="wifi_log_connected">裝置已連線</string>
+    <string name="wifi_ssid_empty">請填寫 WiFi 名稱</string>
+    <string name="wifi_pwd_empty">請填寫 WiFi 密碼</string>
+
+    <!-- ============ 單字卡 / 詳情 ============ -->
+    <string name="cards_title">單字卡</string>
+    <string name="cards_empty_old">還沒有單字卡\n用相機拍一拍，就能產生卡片囉</string>
+    <string name="cards_empty_unbound">還沒有綁定裝置\n\n綁定相機後，拍下的東西會出現在首頁\n收藏後才會進入單字卡</string>
+    <string name="cards_empty_fav">還沒有收藏的單詞卡
+
+在「今天」長按任一卡片即可收藏
+收藏後會出現在這裡</string>
+    <string name="cards_go_add">去新增裝置</string>
+    <string name="cards_count_fmt">%1$d 個</string>
+    <string name="cards_no_result_fmt">沒有找到「%1$s」</string>
+    <string name="cards_search_hint">搜尋中文名 / 英文名</string>
+
+    <string name="card_title">單字卡</string>
+    <string name="card_empty">還沒有單字卡\n用相機拍一拍，就能產生卡片囉</string>
+
+    <!-- 全部單字紀錄頁（從首頁「全部 ›」進入，與「單字卡」Tab 是兩件事） -->
+    <string name="cardlist_title">全部單字紀錄</string>
+    <string name="cardlist_empty">還沒有拍攝紀錄\n用相機拍一拍，紀錄會自動出現在這裡</string>
+    <string name="home_all_records_fmt">查看全部單字紀錄（共 %1$d 張）›</string>
+    <string name="a11y_favorite">收藏</string>
+    <string name="a11y_play_us">播放美式發音</string>
+    <string name="a11y_play_uk">播放英式發音</string>
+    <string name="wifi_ssid_hint">請輸入 WiFi 名稱</string>
+    <string name="wifi_pwd_hint">請輸入 WiFi 密碼</string>
+    <string name="cards_search_placeholder">搜尋中文或英文</string>
+    <string name="card_detail_title">單字詳情</string>
+    <string name="card_play_chinese">中文發音</string>
+    <string name="card_play_english">英文發音</string>
+    <string name="detail_play_cn_origin">中文原文發音</string>
+    <string name="detail_pinyin">拼音</string>
+    <string name="detail_phonetic">音標</string>
+    <string name="detail_us">美</string>
+    <string name="detail_uk">英</string>
+    <string name="detail_meaning">釋義</string>
+    <string name="detail_dict_en">詞典釋義</string>
+    <string name="detail_dict_cn">中文釋義</string>
+    <string name="detail_dict_loading">正在查詢詞典…</string>
+    <string name="detail_cn_loading">正在查詢中文詞典…</string>
+    <string name="detail_retry">重試</string>
+    <string name="detail_examples">例句</string>
+    <string name="detail_phrases">常用搭配</string>
+    <string name="detail_compounds">造詞</string>
+    <string name="detail_delete">刪除這張卡片</string>
+    <string name="detail_delete_title">刪除卡片</string>
+    <string name="detail_delete_msg">雲端暫不支援刪除紀錄，此操作僅刪除本機卡片，重新同步後會再次出現。\n\n確定要繼續嗎？</string>
+    <string name="detail_time_fmt">拍攝時間  %1$s</string>
+    <string name="detail_cn_origin_fmt">中文原文   %1$s</string>
+    <string name="detail_translating_fmt">該詞還沒有「%1$s」名稱，暫顯示中文原詞。下次同步後會更新。</string>
+    <string name="detail_no_translation_fmt">這個詞目前沒有「%1$s」譯名，顯示中文原詞。</string>
+    <string name="detail_dict_en_failed">英文詞典連線失敗，可重新查詢</string>
+    <string name="detail_dict_cn_failed">中文詞典連線失敗，可重新查詢</string>
+    <string name="detail_stop">停止</string>
+
+    <!-- 片語拆解（多詞片語逐詞查） -->
+    <string name="phrase_title">片語拆解</string>
+    <string name="phrase_hint">一個詞一個詞拆開，看懂這串英文是怎麼組成的</string>
+    <string name="phrase_count_fmt">%1$d 個詞</string>
+    <string name="phrase_loading">正在逐詞查詢詞典…</string>
+    <string name="phrase_formula_fmt">直譯　%1$s　→　%2$s</string>
+    <string name="phrase_word_missing">詞典暫未收錄</string>
+    <string name="a11y_play_word_fmt">播放「%1$s」的發音</string>
+    <string name="a11y_play_word_us_fmt">播放「%1$s」的美式發音</string>
+    <string name="a11y_play_word_uk_fmt">播放「%1$s」的英式發音</string>
+
+    <!-- 詞條類型 -->
+    <string name="pos_en_word">英文單字</string>
+    <string name="pos_en_phrase">英文片語</string>
+    <string name="pos_en">英文</string>
+    <string name="pos_cn_word">中文詞語</string>
+    <string name="pos_cn_char">漢字</string>
+    <string name="pos_cn_idiom">成語</string>
+    <string name="pos_pinyin">拼音</string>
+    <string name="dict_synonym">近義詞</string>
+    <string name="dict_antonym">反義詞</string>
+    <string name="dict_radical_fmt">部首 %1$s    </string>
+    <string name="dict_structure_fmt">結構 %1$s    </string>
+    <string name="dict_strokes_fmt">%1$s 畫</string>
+
+    <!-- ============ 裝置 ============ -->
+    <string name="device_count_fmt">%1$d 台</string>
+    <string name="device_long_press">長按裝置可重新命名或解除綁定</string>
+    <string name="device_empty">還沒有綁定裝置</string>
+    <string name="device_add">新增裝置</string>
+    <string name="device_connect">連線</string>
+    <string name="device_default_name">拇指相機</string>
+    <string name="device_menu_cards">查看單字卡</string>
+    <string name="device_menu_rename">重新命名</string>
+    <string name="device_menu_unbind">解除綁定</string>
+    <string name="device_rename_title">重新命名</string>
+    <string name="device_rename_hint">裝置名稱</string>
+    <string name="device_unbind_title">解除綁定</string>
+    <string name="device_unbind_title_alt">解除綁定</string>
+    <string name="device_unbind_msg">解除綁定後將清除本機內的裝置綁定與單字卡快取。\n\n裝置端需長按按鍵復位才能重新設定網路。</string>
+    <string name="device_unbind_msg_alt">解除綁定後將清除本機內的裝置綁定與單字卡快取。\n\n裝置端需重新設定網路才能再次使用。</string>
+    <string name="device_unbind_ok">解除</string>
+    <string name="device_sync_at_fmt"> · 同步於 %1$s</string>
+    <string name="device_not_synced"> · 未同步</string>
+    <string name="device_unbound">已解除綁定</string>
+    <string name="device_renamed">已重新命名</string>
+
+    <string name="device_connected_toast">綁定成功</string>
+    <string name="provision_temp_mode_toast">儲存空間受限，以暫存模式顯示</string>
+
+    <!-- ============ 我的 ============ -->
+    <string name="profile_login">點選登入</string>
+    <string name="profile_account_meta">微信 / 支付寶 / 手機號碼（開發中）</string>
+    <string name="profile_group_lang">語言偏好</string>
+    <string name="profile_group_other">其他</string>
+    <string name="profile_camera">我的相機</string>
+    <string name="profile_group_device">裝置</string>
+    <string name="profile_camera_unbound">未配對</string>
+    <string name="cards_count_unit_fmt">%1$d 個</string>
+    <string name="profile_name_lang">物品名稱語言</string>
+    <string name="profile_ui_lang">介面語言</string>
+    <string name="profile_quota">美化 / 卡通額度</string>
+    <string name="profile_developing">開發中</string>
+    <string name="profile_diag">診斷資訊</string>
+    <string name="profile_privacy">隱私權政策與使用者條款</string>
+    <string name="profile_about">關於</string>
+    <string name="profile_version_fmt">單字卡相機 v%1$s</string>
+    <string name="profile_quota_toast">額度與加值包功能開發中</string>
+    <string name="profile_privacy_toast">隱私權政策將在上架前補齊</string>
+    <string name="profile_about_toast">拇指相機 · 用拍的方式認識世界</string>
+
+    <!-- ============ 語言設定 ============ -->
+    <string name="lang_title">物品名稱語言</string>
+    <string name="lang_current">目前語言</string>
+    <string name="lang_desc">相機拍下物品後，App 上顯示的名稱會切換成所選語言。\n英文名一律保留，作為第二行顯示。</string>
+    <string name="lang_note">中文為相機端辨識的原始結果，不做翻譯；繁體中文由本機直接轉換，不經伺服器；日語、韓語、西班牙語、法語、德語、俄語 6 種語言由伺服器按所選語言下發，切換後會在下一次同步時生效。</string>
+
+    <string name="ui_lang_title">介面語言</string>
+    <string name="ui_lang_desc">只改變 App 介面文字，不影響「物品名稱語言」。</string>
+    <string name="ui_lang_row_zh_sub">預設 · 簡體中文介面</string>
+    <string name="ui_lang_row_tw_sub">繁體中文介面</string>
+    <string name="ui_lang_row_en_sub">英文介面</string>
+    <string name="ui_lang_zh">中文</string>
+    <string name="ui_lang_en">English</string>
+    <string name="ui_lang_changed_fmt">介面語言已切換為%1$s</string>
+
+    <!-- ============ 登入 ============ -->
+    <string name="login_title">登入 / 註冊</string>
+    <string name="login_desc">登入後可同步你的單字卡\n換手機也不會丟失</string>
+    <string name="login_developing">功能開發中\n帳號系統依賴伺服器，介面就緒後開放</string>
+    <string name="login_wechat">微信登入</string>
+    <string name="login_alipay">支付寶登入</string>
+    <string name="login_phone">手機號碼登入</string>
+    <string name="login_terms">登入即表示同意《使用者條款》與《隱私權政策》\n未成年人請在監護人指導下使用</string>
+    <string name="login_not_ready_fmt">%1$s登入功能開發中\n伺服器介面就緒後開放</string>
+
+    <!-- ============ 診斷 / 全域提示 ============ -->
+    <string name="login_channel_wechat">微信</string>
+    <string name="login_channel_alipay">支付寶</string>
+    <string name="login_channel_phone">手機號碼</string>
+    <string name="diag_title">診斷資訊</string>
+    <string name="diag_sub">用於排查閃退等相容性問題，可複製後回報</string>
+    <string name="diag_back">返回</string>
+    <string name="diag_clear">清除紀錄</string>
+    <string name="diag_copy">複製</string>
+    <string name="diag_checking">查詢中…</string>
+    <string name="diag_cloud_check">雲端連線自我檢查</string>
+    <string name="detail_card_missing">卡片不存在</string>
+    <string name="diag_ok">✅ 雲端介面與 apikey 正常。</string>
+    <string name="diag_ok_detail">若本機裝置顯示 0 筆，表示該裝置尚未成功上傳紀錄。</string>
+    <string name="diag_ref_zero">⚠️ 參考裝置也是 0 筆 —— 可能 apikey 不正確或伺服器資料已清除。</string>
+    <string name="diag_unreachable">❌ 雲端無法連線，請檢查網路。</string>
+    <string name="detail_missing_card_info">缺少卡片資訊</string>
+    <string name="detail_no_audio">這張卡片沒有發音檔</string>
+    <string name="detail_play_failed">播放失敗，請檢查網路</string>
+    <string name="detail_deleted">已刪除本機卡片</string>
+    <string name="cardlist_missing_device">缺少裝置資訊</string>
+    <string name="cardlist_temp_mode">暫存模式：資料不會儲存，重新啟動後需再次進入</string>
+    <string name="diag_cleared">已清除診斷紀錄</string>
+    <string name="diag_copied_toast">診斷報告已複製，可直接貼上傳給我</string>
+    <string name="diag_clip_label">診斷報告</string>
+    <string name="wifi_log_clip_label">網路設定偵錯日誌</string>
+    <string name="main_compat_title">相容性提示</string>
+    <string name="main_crash_prefix">上次執行發生異常：</string>
+    <string name="main_startup_prefix">啟動期間發生問題：</string>
+    <string name="main_compat_msg">%1$s\n\nApp 已自動降級以確保可用。點「檢視診斷」可查看完整資訊。</string>
+    <string name="main_view_diag">檢視診斷</string>
+    <string name="main_got_it">知道了</string>
+
+    <!-- ============ 動態文案（佔位符）============ -->
+    <string name="common_sync_failed_fmt">同步失敗：%1$s</string>
+    <string name="home_fav_added">已收藏，已加入單字卡</string>
+    <string name="home_fav_removed">已取消收藏</string>
+    <string name="cards_fav_removed">已取消收藏，已移出單字卡</string>
+    <string name="card_meta_pending_fmt">%1$s · 待翻譯</string>
+    <string name="lang_pending_toast">切換語言後，卡片會在下一次同步時顯示對應語言的名稱；暫時沒有譯名的詞會顯示中文原詞。</string>
+    <string name="lang_ready_toast">翻譯服務已接入，切換後名稱將按所選語言顯示。</string>
+            <string name="lang_switched_src">已切換為中文（辨識原始結果）</string>
+    <string name="lang_switched_hant">已切換為繁體中文（本機簡繁轉換）</string>
+    <string name="lang_switched_pending_fmt">已切換為%1$s；譯名服務接入中，目前顯示中文原詞</string>
+    <string name="lang_switched_fmt">已切換為%1$s</string>
+    <string name="login_privacy_toast">隱私權政策與使用者條款將在上架前補齊</string>
+    <string name="cards_synced_fmt">新增 %1$d 張（本機已有 %2$d 張，未重複下載）</string>
+    <string name="cards_up_to_date_fmt">已是最新，本機共 %1$d 張</string>
+    <string name="cardlist_empty_reason_fmt">雲端沒有此裝置的紀錄\n\n查詢用的 deviceId：\n%1$s\n\n可能原因：\n① 裝置拍攝後未成功上傳（需連上 WiFi 且在背景執行）\n② 上傳有延遲，請稍後下拉重試</string>
+    <string name="cardlist_count_fmt">共 %1$d 張</string>
+
+    <!-- ==================== v2.2.0：原图预览 / 存相册 / AI 美化 ====================
+         三语必须逐键对齐（values / values-en / values-zh-rTW），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="preview_title">檢視原圖</string>
+    <string name="preview_save">存到相簿</string>
+    <string name="preview_saved">已存到相簿：%1$s</string>
+    <string name="preview_save_failed">存相簿失敗，請重試</string>
+    <string name="preview_save_wait">圖片還沒準備好，稍等一下</string>
+    <string name="preview_need_permission">需要儲存權限才能存到相簿</string>
+    <string name="preview_no_image">這筆紀錄沒有圖片</string>
+    <string name="preview_hint">雙指縮放 · 雙擊放大 · 右上角存到相簿</string>
+    <string name="preview_hint_swipe">左右滑動切換 · 雙指縮放 · 雙擊放大 · 右上角存到相簿</string>
+    <string name="preview_prev">上一張</string>
+    <string name="preview_next">下一張</string>
+    <string name="preview_zoom_locked">已放大 · 雙擊還原後可左右切換</string>
+    <string name="preview_a11y_pos_fmt">第 %1$d 張，共 %2$d 張，%3$s</string>
+    <string name="preview_load_failed">圖片載入失敗 · 點擊重試</string>
+    <string name="preview_a11y_pos_fail_fmt">第 %1$d 張，共 %2$d 張，%3$s，載入失敗</string>
+    <string name="preview_style_original">原圖</string>
+    <string name="preview_beautify">AI 美化這張</string>
+    <string name="preview_beautify_switch">換個風格</string>
+    <string name="ai_title">AI 美化</string>
+    <string name="ai_vip_debug">VIP 偵錯版</string>
+    <string name="ai_choose_style">選擇效果</string>
+    <string name="ai_style_hd">高畫質修復</string>
+    <string name="ai_style_hd_desc">保留原本拍的樣子，把低畫質圖重繪成 2K 高畫質圖</string>
+    <string name="ai_style_cartoon">卡通插畫</string>
+    <string name="ai_style_cartoon_desc">主體改成乾淨的卡通形象，背景簡化，像繪本插畫</string>
+    <string name="ai_badge_hd">高畫質</string>
+    <string name="ai_badge_cartoon">卡通</string>
+    <string name="ai_badge_exists">已生成</string>
+    <string name="ai_generate">開始生成</string>
+    <string name="ai_generating_button">正在生成…</string>
+    <string name="ai_again">再生成一張</string>
+    <string name="ai_running">正在生成高畫質圖</string>
+    <string name="ai_running_hint">通常 1 分鐘左右。可以離開這一頁，完成後會通知你</string>
+    <string name="ai_status_done">已生成，這張卡已經換成新圖</string>
+    <string name="ai_status_done_px">已生成 %1$s，這張卡已經換成新圖</string>
+    <string name="ai_status_existing">這張卡目前用的是「%1$s」圖</string>
+    <string name="ai_status_switch_hint">已有一張「%1$s」圖，選另一種風格再生成一張</string>
+    <string name="ai_status_reverted">已換回原圖，AI 圖還留著，隨時可以切換回來</string>
+    <string name="ai_quota_free">還能免費生成 %1$d 張</string>
+    <string name="ai_quota_credits">還能生成 %1$d 張（已購買）</string>
+    <string name="ai_quota_both">還能生成 %1$d 張（免費 %2$d + 已購 %3$d）</string>
+    <string name="ai_quota_none">免費額度已用完，購買後可繼續生成</string>
+    <string name="ai_no_quota">額度已用完，先買幾張再生成</string>
+    <string name="ai_buy_entry">購買張數</string>
+    <string name="ai_buy_title">購買 AI 圖片張數</string>
+    <string name="ai_buy_sub">目前還能生成 %1$d 張（含免費 %2$d 張）。買的張數高畫質修復和卡通化都能用。</string>
+    <string name="ai_buy_debug_note">偵錯期：按確認直接加張數，不發起付款也不扣款</string>
+    <string name="ai_buy_confirm">確認購買（模擬）</string>
+    <string name="ai_buy_done">已增加 %1$d 張</string>
+    <string name="ai_tier_count_fmt">%1$d 張</string>
+    <string name="ai_tier_hint_10">約 0.5 元/張 · 先試幾個詞</string>
+    <string name="ai_tier_hint_50">約 0.4 元/張 · 一個學期的量</string>
+    <string name="ai_tier_hint_100">約 0.3 元/張 · 一學年夠用</string>
+    <string name="ai_tier_hint_1000">多台裝置一起用</string>
+    <string name="ai_save_to_gallery">存到相簿</string>
+    <string name="ai_view_full">看大圖</string>
+    <string name="ai_use_original">換回原圖</string>
+    <string name="ai_disclaimer">AI 圖只是替換卡片上的照片，原圖隨時可以切換回來看</string>
+    <string name="ai_err_network">網路不通，檢查一下再試</string>
+    <string name="ai_err_timeout">生成逾時，稍後重試（這次不扣次數）</string>
+    <string name="ai_err_auth">服務未授權，請聯絡客服</string>
+    <string name="ai_err_rate">目前排隊的人多，稍等一下再試</string>
+    <string name="ai_err_content">這張圖沒通過內容審核，換一張試試</string>
+    <string name="ai_err_server">生成失敗，稍後重試（這次不扣次數）</string>
+    <string name="ai_err_no_source">拿不到這張卡的原圖，先連網打開一次再試</string>
+    <string name="detail_view_original">檢視原圖</string>
+    <string name="detail_ai_entry">AI 美化這張圖</string>
+    <string name="detail_ai_entry_done">AI 圖已生效 · 想換一張</string>
+    <string name="profile_quota_remaining">剩 %1$d 張</string>
+
+    <!-- ==================== v2.3.0：批量修复 / 不限额设备 ====================
+         三语必须逐键对齐（values / values-en / values-zh-rTW），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="cards_select">選擇</string>
+    <string name="cards_select_done">完成</string>
+    <string name="cards_selected_fmt">已選 %1$d 張</string>
+    <string name="cards_select_all">全選</string>
+    <string name="cards_select_none">取消全選</string>
+    <string name="cards_batch_cartoon">卡通化</string>
+    <string name="cards_batch_hint">長按任一張也能進入選擇</string>
+    <string name="ai_quota_unlimited">本機不限次數（示範裝置）</string>
+    <string name="ai_quota_unlimited_short">不限</string>
+    <string name="ai_quota_left_short">剩 %1$d 張</string>
+    <string name="batch_title">批次修復</string>
+    <string name="batch_sub_hd">高畫質修復 · 共 %1$d 張</string>
+    <string name="batch_sub_cartoon">卡通化 · 共 %1$d 張</string>
+    <string name="batch_counter_fmt">%1$d / %2$d</string>
+    <string name="batch_now_fmt">正在處理：%1$s</string>
+    <string name="batch_stats_fmt">成功 %1$d · 跳過 %2$d · 失敗 %3$d</string>
+    <string name="batch_confirm_title">開始批次修復</string>
+    <string name="batch_confirm_msg">將處理 %1$d 張，每張約 1 分鐘，中途可以停。
+%2$s</string>
+    <string name="batch_confirm_cost_fmt">會消耗 %1$d 張額度，目前還剩 %2$d 張。</string>
+    <string name="batch_confirm_unlimited">本機不限額度，不消耗張數。</string>
+    <string name="batch_start">開始</string>
+    <string name="batch_stop_confirm_title">停止修復？</string>
+    <string name="batch_stop_confirm_msg">已經產生好的會保留，還沒開始的不會消耗額度。</string>
+    <string name="batch_done_title">批次修復完成</string>
+    <string name="batch_done_msg">成功 %1$d 張，跳過 %2$d 張，失敗 %3$d 張。</string>
+    <string name="batch_skipped_hint">「跳過」是之前已經產生過的圖，想換一張可以進詳情頁單獨重新產生。</string>
+    <string name="batch_nothing_to_do">選中的圖都已經修復過了</string>
+    <string name="batch_stop_btn">停止</string>
+    <string name="batch_finish">完成</string>
+
+    <!-- ===== v2.4 後台生成（前景服務 + 斷點續跑） ===== -->
+    <string name="batch_bg_hint">可以離開這一頁。App 會在後台繼續生成，完成後通知你。</string>
+    <string name="batch_stopping_hint">正在跑完當前這張，隨後停止。</string>
+    <string name="batch_to_background">放入後台</string>
+    <string name="batch_bg_toast">已轉入後台，完成後會通知你</string>
+    <string name="batch_stopping_toast">正在停止，這一張跑完就收工</string>
+    <string name="batch_confirm_bg">開始後可以離開這一頁，App 會在後台繼續處理，完成後通知你。</string>
+    <string name="batch_quota_paused">額度不足，已暫停（已完成 %1$d 張）。買完張數可以繼續。</string>
+    <string name="batch_preparing">正在準備第一張…</string>
+    <string name="batch_start_failed">啟動失敗，請再試一次</string>
+    <string name="ai_busy">有別的生成任務在跑，等它完成再試</string>
+    <string name="ai_err_generic">這次沒生成成功，稍後重試（不扣次數）</string>
+    <string name="ai_err_interrupted">生成被系統中斷了，點「開始生成」再來一次</string>
+    <string name="ai_resuming">接著上次的進度繼續生成…</string>
+
+    <string name="ai_notif_channel">AI 圖片生成</string>
+    <string name="ai_notif_channel_desc">後台生成的進度與完成提醒</string>
+    <string name="ai_notif_progress_title">正在生成 AI 圖 %1$d/%2$d</string>
+    <string name="ai_notif_progress_text">目前：%1$s</string>
+    <string name="ai_notif_progress_idle">可以離開 App，完成後會通知你</string>
+    <string name="ai_notif_preparing">正在準備…</string>
+    <string name="ai_notif_stopping">正在停止（這張跑完就停）</string>
+    <string name="ai_notif_cancel">停止</string>
+    <string name="ai_notif_done_title">AI 圖已生成</string>
+    <string name="ai_notif_done">完成了 %1$d 張，點開看看</string>
+    <string name="ai_notif_done_mixed">完成 %1$d 張 · 跳過 %2$d 張 · 失敗 %3$d 張</string>
+    <string name="ai_notif_done_quota">完成了 %1$d 張。額度不足，買完張數可以繼續</string>
+    <string name="ai_notif_done_cancel">已停止，完成了 %1$d 張</string>
+
+    <string name="ai_resume_title">上次的修復還沒做完</string>
+    <string name="ai_resume_msg">還有 %1$d 張卡片沒修復完成。繼續的話接著做，已經做好的不會重複扣次數。</string>
+    <string name="ai_resume_continue">繼續修復</string>
+    <string name="ai_resume_later">稍後再說</string>
+    <string name="ai_resume_discard">放棄剩餘</string>
+    <string name="ai_resume_discarded">已放棄剩餘任務</string>
+    <!-- ============ 從相冊找回已生成的 AI 圖（僅 AI 版） ============ -->
+    <string name="profile_restore_gallery">從相冊找回高畫質圖</string>
+    <string name="restore_free_hint">不消耗張數</string>
+    <string name="restore_scanning">正在掃描相冊…</string>
+    <string name="restore_none_empty">相冊「單字卡相機」裡還沒有圖片。在預覽頁點「存到相冊」之後，就能在這裡找回。</string>
+    <string name="restore_none_found_fmt">掃到 %1$d 張，暫無可恢復的（%2$s）。</string>
+    <string name="restore_done_title_fmt">找回 %1$d 張高畫質圖</string>
+    <string name="restore_done_guessed_fmt">其中 %1$d 張是依英文名比對的（舊版存的圖沒有標識），建議進卡片核對一下。</string>
+    <string name="restore_done_skip_fmt">另有 %1$d 張略過：%2$s。</string>
+    <string name="restore_reason_local">已在本機 %1$d</string>
+    <string name="restore_reason_unknown">找不到卡片 %1$d</string>
+    <string name="restore_reason_dup">名稱重複 %1$d</string>
+    <string name="restore_reason_small">尺寸不足 %1$d</string>
+    <string name="restore_reason_unreadable">讀不出 %1$d</string>
+    <string name="restore_progress_fmt">正在恢復 %1$d/%2$d…</string>
+    <string name="restore_failed_fmt">%1$d 張恢復失敗</string>
+    <string name="restore_need_permission">需要相冊讀取權限才能找回</string>
+    <string name="restore_error">相冊讀取失敗，請檢查權限後再試</string>
+    <string name="restore_need_sync">相冊裡有 %1$d 張圖，但本機還沒有對應的卡片記錄。請先回首頁下拉重新整理，同步完成後再來找回。</string>
+    <string name="restore_busy">正在生成圖片，等這一批結束再找回</string>
+
+    <string name="ai_tier_price_fmt">¥%1$d</string>
+    <string name="ai_buy_confirm_price_fmt">確認購買 · ¥%1$d</string>
+    <string name="ai_tier_hint_500">約 0.2 元/張 · 多台裝置或機構</string>
+    <string name="profile_device_lang">裝置語言</string>
+    <string name="device_lang_title">選擇裝置語言</string>
+    <string name="device_lang_saved_fmt">已設為 %1$s，下次連接裝置時自動下發</string>
+    <string name="device_lang_pending_fmt">%1$s（待下發）</string>
+    <string name="profile_cloud_storage">雲端儲存</string>
+    <string name="cloud_storage_default">7 天（預設）</string>
+    <string name="cloud_storage_days_fmt">保留 %1$d 天</string>
+    <string name="cloud_storage_title">雲端儲存</string>
+    <string name="cloud_storage_body">雲端預設保留 7 天，超過的照片會從雲端清理（已存到手機的不受影響）。開通雲端儲存後，可按儲存空間與時長（月/年）延長保留。</string>
+    <string name="cloud_storage_plan_btn">查看方案</string>
+    <string name="cloud_storage_soon">方案與付款即將開放</string>
+    <string name="common_close">關閉</string>
+    <string name="profile_camera_one_bound">1 台已綁定</string>
+    <string name="profile_camera_bound_fmt">%1$d 台已綁定</string>
+    <string name="profile_camera_bound_current_fmt">%1$d 台 · %2$s</string>
+    <string name="device_state_current">目前</string>
+    <string name="device_state_switch">切換</string>
+    <string name="device_switch_hint">點按某台相機即可切換，首頁和收藏都會跟著換</string>
+    <string name="device_already_current">已經在看這台了</string>
+    <string name="device_switched_fmt">已切換到 %1$s</string>
+    <string name="device_menu_set_current">設為目前裝置</string>
+    <string name="cardlist_chip_all">全部裝置</string>
+    <string name="cardlist_all_synced_fmt">%1$d 台裝置已同步，新增 %2$d 條</string>
+    <string name="cardlist_all_partial_fmt">%1$d 台成功，%2$d 台同步失敗</string>
+    <string name="detail_pos_fmt">%1$d / %2$d</string>
+    <string name="detail_swipe_first">已經是第一張了</string>
+    <string name="detail_swipe_last">已經是最後一張了</string>
+</resources>

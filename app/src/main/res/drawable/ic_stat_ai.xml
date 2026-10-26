@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    通知栏小图标（前台服务 / 完成提醒）
+    通知小图标只能是**纯白剪影 + 透明底**，系统会把它当 mask 处理：
+    任何颜色都会被涂成白色，带底色反而变成一个方块。
+    造型挑「四角星」而不是相机：24dp 的相机轮廓在状态栏糊成一团，
+    一颗星在这个尺寸下仍能认出是「AI 生成」这件事。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 主星：竖长四角 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2.2 L13.5,8.4 L19.8,9.9 L13.5,11.4 L12,17.6 L10.5,11.4 L4.2,9.9 L10.5,8.4 Z" />
+
+    <!-- 副星：右下小一点，暗示「修复/增强」而不是单纯闪光 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17.6,15.2 L18.4,18 L21.2,18.8 L18.4,19.6 L17.6,22.4 L16.8,19.6 L14,18.8 L16.8,18 Z" />
+</vector>

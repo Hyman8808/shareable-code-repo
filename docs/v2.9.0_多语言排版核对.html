@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>v2.9.0 多语言排版核对｜拇指相机</title>
+<style>
+  :root{
+    --ink:#172742; --fluoro:#D9F24F; --paper:#F4F2EC; --shell:#FFFDF7;
+    --text:#1A1917; --text3:#6E695E; --line:#E3DFD3; --warn:#8E3450; --ok:#2F6B4F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#EDEAE2;color:var(--text);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    padding:24px 16px 64px;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  h1{margin:0 0 6px;font-size:24px;letter-spacing:-.02em;}
+  .lede{color:var(--text3);font-size:14px;margin:0 0 4px;}
+  .meta{color:var(--text3);font-size:12px;margin:0 0 26px;}
+  h2{margin:32px 0 10px;font-size:16px;letter-spacing:-.01em;}
+  h2 span{color:var(--text3);font-weight:400;font-size:12px;margin-left:8px;letter-spacing:0;}
+  .grid{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;}
+  /* 360dp 标准屏，1dp = 1px */
+  .phone{width:360px;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;}
+  .pad{padding:0 20px;}
+  .card{background:var(--shell);border-radius:14px;}
+  .row{height:56dp;display:flex;align-items:center;padding:0 16px;gap:12px;}
+  .row .ico{width:20px;height:20px;border-radius:5px;background:#DCD8CB;flex:none;}
+  .row .lbl{flex:1;font-size:15px;}
+  .row .val{font-size:12px;color:var(--text3);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row .chev{width:7px;height:7px;border-right:1.5px solid #B9B3A4;border-top:1.5px solid #B9B3A4;transform:rotate(45deg);flex:none;}
+
+  .langrow{display:flex;align-items:center;padding:10px 18px;min-height:62px;gap:10px;}
+  .langrow .lt{flex:1;min-width:0;}
+  .langrow .native{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .langrow .sub{font-size:12px;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .divider{height:1px;background:var(--line);margin-left:18px;}
+  .check{width:20px;height:20px;flex:none;color:var(--ink);font-size:15px;text-align:center;line-height:20px;}
+
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 6px;}
+  .tile{background:var(--shell);border-radius:14px;overflow:hidden;}
+  .tile .img{height:116px;background:#DCD8CB;}
+  .tile .body{padding:10px 12px 14px;}
+  .tile .en{font-family:Georgia,"Times New Roman",serif;font-size:19px;letter-spacing:-.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tile .ph{font-family:Georgia,serif;font-size:14px;color:var(--text3);margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tile .cjk{font-size:15px;color:#3E3A33;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .listrow{display:flex;align-items:center;gap:14px;padding:12px 20px;}
+  .listrow .thumb{width:64px;height:64px;border-radius:10px;background:#DCD8CB;flex:none;}
+  .listrow .col{flex:1;min-width:0;}
+  .listrow .en{font-family:Georgia,serif;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .listrow .meta2{font-size:12px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .listrow .cjk{font-size:15px;color:#3E3A33;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .detail{padding:20px;text-align:center;}
+  .detail .big{font-family:Georgia,serif;font-size:34sp;font-size:34px;line-height:1.2;letter-spacing:-.02em;}
+  .detail .sub2{font-size:17px;color:#3E3A33;margin-top:12px;}
+  .detail .tag{display:inline-block;margin-top:8px;font-size:11px;color:var(--ink);
+    background:#EAE6DA;border-radius:99px;padding:4px 10px;}
+
+  .dlg{width:300px;background:var(--shell);border-radius:14px;padding:8px 0;}
+  .dlg .item{padding:12px 20px;font-size:15px;}
+
+  .note{font-size:12px;color:var(--text3);margin:8px 0 0;}
+  .bad{color:var(--warn);font-weight:600;}
+  .good{color:var(--ok);font-weight:600;}
+  .flag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;margin-left:6px;vertical-align:2px;}
+  .flag.ok{background:#DFEDE4;color:var(--ok);}
+  .flag.ov{background:#F6DEE4;color:var(--warn);}
+  table{border-collapse:collapse;width:100%;font-size:13px;background:var(--shell);border-radius:10px;overflow:hidden;}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);}
+  th{background:#EAE6DA;font-weight:600;font-size:12px;color:#4A463D;}
+  td.num{font-variant-numeric:tabular-nums;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>v2.9.0 多语言排版核对</h1>
+  <p class="lede">按真机字号与 360dp 标准屏（1dp = 1px）还原。每处文本用与 App 相同的 <code>maxLines=1 + ellipsize=end</code> 规则渲染，页脚自动实测「是否被截断」。</p>
+  <p class="meta">语言收敛后共 9 项：仅英文 / 简体中文 / 繁體中文 / 日本語 / 한국어 / Español / Français / Deutsch / Русский　·　2026-10-25</p>
+
+  <h2>① 我的 · 语言行<span>值列 maxWidth 150dp / 12sp / 单行省略 —— 本次改动点</span></h2>
+  <div class="grid">
+    <div class="phone">
+      <div class="pad" style="padding-top:14px;padding-bottom:14px;">
+        <div class="card">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" data-fit>简体中文</div><div class="chev"></div></div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" data-fit>繁體中文</div><div class="chev"></div></div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" data-fit>Español</div><div class="chev"></div></div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" data-fit>Русский</div><div class="chev"></div></div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" data-fit>English only</div><div class="chev"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone" style="background:#FFFDF7;">
+      <div class="pad" style="padding-top:14px;padding-bottom:14px;">
+        <p class="note" style="margin-top:0;">改前的写法（已废弃）：值列拼「本地名 + 中文名」，在 150dp 里必被切。</p>
+        <div class="card">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" style="color:#8E3450;">Español  西班牙语</div><div class="chev"></div></div>
+        </div>
+        <div class="card" style="margin-top:8px;">
+          <div class="row"><div class="ico"></div><div class="lbl">物品名称语言</div><div class="val" style="color:#8E3450;">繁體中文  中文（繁体）</div><div class="chev"></div></div>
+        </div>
+        <p class="note">↑ 同一份数据在新写法下全部完整显示。</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>② 语言选择页<span>9 项 / 主 15sp + 副 12sp / 行高 62dp</span></h2>
+  <div class="grid">
+    <div class="phone">
+      <div class="pad" style="padding-top:12px;padding-bottom:12px;">
+        <div class="card" style="padding:4px 0;">
+          <div class="langrow"><div class="lt"><div class="native" data-fit>English only</div><div class="sub" data-fit>无（仅英文）  ·  none</div></div><div class="check">✓</div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>简体中文</div><div class="sub" data-fit>中文（简体）  ·  zh</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>繁體中文</div><div class="sub" data-fit>zh-Hant</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>日本語</div><div class="sub" data-fit>日语  ·  ja</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>한국어</div><div class="sub" data-fit>韩语  ·  ko</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>Español</div><div class="sub" data-fit>西班牙语  ·  es</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>Français</div><div class="sub" data-fit>法语  ·  fr</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>Deutsch</div><div class="sub" data-fit>德语  ·  de</div></div><div class="check"></div></div>
+          <div class="divider"></div>
+          <div class="langrow"><div class="lt"><div class="native" data-fit>Русский</div><div class="sub" data-fit>俄语  ·  ru</div></div><div class="check"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone" style="background:#FFFDF7;">
+      <div class="pad" style="padding-top:14px;">
+        <p class="note" style="margin-top:0;">设备播报语言弹窗（首项为 English，共 9 项）：</p>
+      </div>
+      <div style="display:flex;justify-content:center;padding-bottom:16px;">
+        <div class="dlg">
+          <div class="item" data-fit>English</div>
+          <div class="item" data-fit>简体中文</div>
+          <div class="item" data-fit>繁體中文</div>
+          <div class="item" data-fit>日本語  日语</div>
+          <div class="item" data-fit>한국어  韩语</div>
+          <div class="item" data-fit>Español  西班牙语</div>
+          <div class="item" data-fit>Русский  俄语</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>③ 收藏网格卡<span>卡宽 154dp · 本地名 15sp 单行 / 英文 19sp serif</span></h2>
+  <div class="phone" style="width:360px;">
+    <div class="tiles" style="padding-top:12px;padding-bottom:12px;">
+      <div class="tile"><div class="img"></div><div class="body">
+        <div class="en" data-fit>iced cola</div><div class="ph" data-fit>/aɪst ˈkəʊlə/</div>
+        <div class="cjk" data-fit>アイスコカ・コーラ</div></div></div>
+      <div class="tile"><div class="img"></div><div class="body">
+        <div class="en" data-fit>iced cola</div><div class="ph" data-fit>/aɪst ˈkəʊlə/</div>
+        <div class="cjk" data-fit>아이스 콜라</div></div></div>
+      <div class="tile"><div class="img"></div><div class="body">
+        <div class="en" data-fit>refrigerator</div><div class="ph" data-fit>/rɪˈfrɪdʒəreɪtə/</div>
+        <div class="cjk" data-fit>Kühlschrank</div></div></div>
+      <div class="tile"><div class="img"></div><div class="body">
+        <div class="en" data-fit>ice cream</div><div class="ph" data-fit>/aɪs kriːm/</div>
+        <div class="cjk" data-fit>мороженое</div></div></div>
+    </div>
+  </div>
+</div>
+
+<h2 style="max-width:1180px;margin-left:auto;margin-right:auto;">④ 实测结果<span>脚本读取 scrollWidth / clientWidth 判定，不看肉眼</span></h2>
+<div style="max-width:1180px;margin:0 auto;">
+  <table id="report"><thead><tr><th>位置</th><th>文本</th><th class="num">需要</th><th class="num">可用</th><th>结论</th></tr></thead><tbody></tbody></table>
+  <p class="note">说明：网格卡的 <code>アイスコカ・コーラ</code> 若超宽会按设计省略号收尾——这是「网格等高」的取舍，完整名称在详情页。其余位置均已收敛到可完整显示。</p>
+</div>
+
+<script>
+(function(){
+  var rows=[];
+  document.querySelectorAll('[data-fit]').forEach(function(el){
+    var need=el.scrollWidth, avail=el.clientWidth;
+    var over=need>avail+1;
+    var where='';
+    if(el.closest('.tile')) where='网格卡';
+    else if(el.closest('.langrow')) where='语言选择页';
+    else if(el.closest('.dlg')) where='设备语言弹窗';
+    else if(el.closest('.row')) where='我的页语言行';
+    else if(el.closest('.listrow')) where='列表行';
+    else if(el.closest('.detail')) where='详情页';
+    rows.push({where:where, text:el.textContent.trim(), need:need, avail:avail, over:over});
+    el.parentNode.insertBefore(Object.assign(document.createElement('span'),{
+      className:'flag '+(over?'ov':'ok'), textContent:over?'截断':'完整'
+    }), el.nextSibling);
+  });
+  var tb=document.querySelector('#report tbody');
+  rows.forEach(function(r){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+r.where+'</td><td>'+r.text+'</td><td class="num">'+r.need+'px</td><td class="num">'+r.avail+'px</td>'+
+      '<td class="'+(r.over?'bad':'good')+'">'+(r.over?'会截断':'完整显示')+'</td>';
+    tb.appendChild(tr);
+  });
+  var bad=rows.filter(function(r){return r.over}).length;
+  var p=document.createElement('p');
+  p.className='note';
+  p.innerHTML='共测 '+rows.length+' 处，<b class="'+(bad?'bad':'good')+'">'+bad+' 处截断</b>。';
+  document.querySelector('#report').parentNode.appendChild(p);
+})();
+</script>
+</body>
+</html>

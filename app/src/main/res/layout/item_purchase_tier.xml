@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    购买档位的一行
+    ============================================================
+    「张数」是主角（15sp medium），右侧是适用场景的一句话；
+    选中态用右侧的墨色对勾表示，不做整行反色——
+    四行里反一行会显得那一档「已经买好了」，语义不对。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@drawable/bg_style_tile"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
+
+    <TextView
+        android:id="@+id/tvTierCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_h3"
+        tools:text="50 张" />
+
+    <TextView
+        android:id="@+id/tvTierHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:textColor="@color/text_tertiary"
+        android:textSize="@dimen/text_caption"
+        tools:text="一个学期够用" />
+
+    <TextView
+        android:id="@+id/tvTierPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_h3"
+        tools:text="¥20" />
+
+    <ImageView
+        android:id="@+id/ivTierCheck"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_check"
+        android:visibility="invisible"
+        app:tint="@color/brand_primary" />
+
+</LinearLayout>

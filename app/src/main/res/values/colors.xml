@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    拇指相机 · 设计 Token：颜色（V2.0 墨标 Inkmark · 亮色）
+    ============================================================
+    一句话：**墨色做骨架、荧光黄绿做标记、暖纸做底**。
+
+    结构：① 墨（品牌）② 文字 4 阶 ③ 表面 ④ 语义 ⑤ 音标 ⑥ 图片与浮层
+
+    规则（改之前先读）：
+    1. **布局里只准引用本文件的颜色名，禁止写死 #RRGGBB**。
+       深色模式靠 values-night/colors.xml **覆盖同名**实现，
+       一旦布局里写死色值，深色下就会留白块 / 黑字黑底。
+    2. `brand_accent` 是荧光笔，**只做填充，永不做细线、不做浅底文字**。
+       它在纸底上只有 1.25:1，误用即翻车；压在它上面的字必须是 `text_on_accent`。
+    3. 文字色对比度必须满足 WCAG AA（正文 4.5:1，大字 3:1）：
+       text_primary 15.69:1 / text_secondary 6.84:1 / text_tertiary 4.88:1（11–12sp 专用下限）。
+       text_disabled 仅 2.26:1，**只许用在禁用图形上，不得当 placeholder 字色**。
+    4. 音标「美/英」用墨 + 酒红，不要用橙色：
+       橙色在本 App 里是 warning 语义（前提条件提醒/风险），
+       拿它标英式音标会让人误以为那行发音有问题。
+-->
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- ============ ① 墨（品牌色阶） ============ -->
+    <color name="brand_primary">#FF172742</color>
+    <!-- 按下态：比墨更深一档，不再用「提亮」表达按下（纸上按墨只会更实） -->
+    <color name="brand_primary_hover">#FF0E1B30</color>
+    <!-- 浅底块：提示条底、选中底（其上墨字 12.42:1） -->
+    <color name="brand_primary_light">#FFE7EAF2</color>
+    <!-- ripple / 更实一档的浅底 -->
+    <color name="brand_primary_soft">#FFD9E0EE</color>
+    <!-- 荧光笔：只做填充（导航药丸 / 已收藏圆底 / 今日标记条） -->
+    <color name="brand_accent">#FFD9F24F</color>
+    <color name="accent_soft">#FFF1F8C8</color>
+    <!-- 需要 ≥3:1 的荧光图形（进度条、柱）用这支，不是 brand_accent -->
+    <color name="accent_graphics">#FF7C8F14</color>
+
+    <!-- ============ ② 文字 4 阶 ============ -->
+    <color name="text_primary">#FF1A1917</color>
+    <color name="text_secondary">#FF57534A</color>
+    <color name="text_tertiary">#FF6E695E</color>
+    <color name="text_disabled">#FFA8A29A</color>
+    <color name="text_on_brand">#FFFFFFFF</color>
+    <color name="text_on_accent">#FF172742</color>
+
+    <!-- ============ ③ 表面 ============ -->
+    <!-- 页面底＝暖纸（H42° S20% L94%），状态栏/导航栏同色 -->
+    <color name="bg_page">#FFF4F2EC</color>
+    <!-- 白卡：只给「真浮起来」的那一层用（今日卡、详情主卡） -->
+    <color name="bg_card">#FFFFFFFF</color>
+    <!-- 卡内嵌块 / 输入框 / 搜索框 / 词砖 -->
+    <color name="bg_card_alt">#FFF7F5EE</color>
+    <color name="bg_scrim">#66000000</color>
+    <color name="divider">#FFE6E2D8</color>
+    <color name="stroke_soft">#FFE4E0D6</color>
+    <color name="stroke_strong">#FFD3CDBE</color>
+
+    <!-- ============ ④ 语义色 ============ -->
+    <color name="success">#FF16794F</color>
+    <color name="success_soft">#FFE6F4EE</color>
+    <color name="warning">#FF8A5200</color>
+    <color name="warning_soft">#FFFBF0DF</color>
+    <color name="danger">#FFB4281C</color>
+    <color name="danger_soft">#FFFBEAE7</color>
+
+    <!-- ============ ⑤ 音标专用色（墨 / 酒红，冷暖成对，非语义） ============ -->
+    <color name="phonetic_us">#FF172742</color>
+    <color name="phonetic_uk">#FF8E3450</color>
+    <color name="phonetic_us_soft">#FFE7EAF2</color>
+    <color name="phonetic_uk_soft">#FFF7E8EE</color>
+
+    <!-- ============ 第三方品牌色（登录页） ============ -->
+    <color name="brand_wechat">#FF07C160</color>
+    <color name="brand_alipay">#FF1677FF</color>
+
+    <!-- ============ 图片占位（骨架/加载中） ============ -->
+    <color name="placeholder">#FFEDEAE1</color>
+    <color name="placeholder_shimmer">#FFF7F5EF</color>
+
+    <!-- ============ 图片上的浮层控件 ============ -->
+    <color name="overlay_control">#59000000</color>
+    <color name="overlay_control_active">#F2FFFFFF</color>
+    <!-- 照片压暗层：亮色不加遮罩（深色模式才需要，见 values-night） -->
+    <color name="photo_dim">#00000000</color>
+
+    <!-- ============ 原图预览页（全 App 唯一的「永远是黑底」的页面） ============
+         深色模式与浅色模式共用同一套值：看图时底色不该跟着系统主题变，
+         否则同一张照片在两种模式下色彩完全不同，用户会以为图片被改了。 -->
+    <color name="viewer_bg">#FF14130F</color>
+    <color name="viewer_icon">#FFF2EFE7</color>
+    <color name="viewer_hint">#8AF2EFE7</color>
+    <color name="viewer_progress">#FFF2EFE7</color>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    墨标 Inkmark · 应用图标前景（AI 版）
+    ────────────────────────────────────────────────────────────────
+    与主线的「单词卡相机」**同造型、反配色**，解决一个很实际的问题：
+    两台 App 的图标如果只差一点点，桌面上根本分不出哪个是哪个，
+    用户点错、装错、删错都会发生。
+
+    区分策略不是「加个角标」——48dp 下角标会糊成一团色块；
+    而是**把明暗整体翻转**：
+      主线   墨蓝底 #172742  + 暖白机身 + 荧光镜片
+      AI 版  荧光底 #D9F24F  + 墨蓝机身 + 暖白镜片
+    缩到 48dp 时一个是暗块、一个是亮块，隔着一屏也能认出来。
+
+    机身、取景器、镜片、AI 字标的几何与主线**完全一致**（逐项见主线那份注释），
+    只换填充色，所以两个图标是同一个视觉家族，不是一个新设计的图标。
+
+    AI 的「艺术字」= 6° 斜体 + 圆头笔画，斜切量已逐点算进 pathData
+    （x' = x − tan6°×(y − 54)），Android VectorDrawable 不支持 skewX。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 机身：取景器与机身合并为单一闭合路径，任何缩放下都不出现接缝 -->
+    <path
+        android:fillColor="#FF172742"
+        android:pathData="M47.5,28.5 L60.5,28.5 A1.5,1.5 0 0 1 62,30 L65,33 L74,33 A5,5 0 0 1 79,38 L79,70 A5,5 0 0 1 74,75 L34,75 A5,5 0 0 1 29,70 L29,38 A5,5 0 0 1 34,33 L43,33 L46,30 A1.5,1.5 0 0 1 47.5,28.5 Z" />
+
+    <!-- 闪光灯：墨蓝实心点，补足「这是一台相机」的最后一块语义 -->
+    <path
+        android:fillColor="#FFD9F24F"
+        android:pathData="M69.5,40.5 A2,2 0 1 0 73.5,40.5 A2,2 0 1 0 69.5,40.5 Z" />
+
+    <!-- 镜片：荧光 #D9F24F 实心圆。荧光在这里是「被标记的对象」，
+         不是装饰，与 App 内「荧光只做填充」的规则一致；
+         缩到 48dp 时它是整枚图标唯一的亮块，也是第一眼锚点。 -->
+    <path
+        android:fillColor="#FFFFFDF7"
+        android:pathData="M39,54 A15,15 0 1 0 69,54 A15,15 0 1 0 39,54 Z" />
+
+    <!-- AI：6° 斜体，墨蓝 #172742，圆头笔画 -->
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M45.59,60.3 L52.71,47.7 L57.19,60.3" />
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M49.47,54.9 L54.44,54.9" />
+    <path
+        android:strokeColor="#FF172742"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M62.41,47.7 L61.09,60.3" />
+</vector>

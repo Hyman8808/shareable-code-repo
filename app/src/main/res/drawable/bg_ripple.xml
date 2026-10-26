@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    列表行 / 普通点击区的按下反馈。
+    用**方形**（mask 只做 10dp 小圆角）：列表项是「行」不是「卡」，
+    行用大圆角涟漪会在纸底上出现一块四角内收的浅色块，反而暴露「这是个盒子」。
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/brand_primary_soft">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_card" />
+            <corners android:radius="@dimen/radius_sm" />
+        </shape>
+    </item>
+</ripple>

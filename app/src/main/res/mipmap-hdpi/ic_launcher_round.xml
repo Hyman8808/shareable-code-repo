@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    API < 26 的圆形图标回退（Android 7.1 的 launcher 会读 android:roundIcon）。
+    没有自适应图标可用的旧系统里，系统会自行叠圆形遮罩，这里只需保证资源可解析。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/ic_launcher_background" />
+    <item android:drawable="@drawable/ic_launcher_foreground" />
+</layer-list>

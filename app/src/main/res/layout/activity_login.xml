@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    登录页（当前为占位：三种登录方式都在开发中）
+    ============================================================
+    重设计要点：
+    · 返回键从「返回」文字改成矢量箭头（这是二级页顶栏，不该用文字按钮）。
+    · 标题 30sp → 28sp 真字重；顶部 44dp 留白 → 顶栏 44dp。
+    · 四个按钮统一高度 52dp / 圆角 12dp；微信绿与支付宝蓝保留品牌色，
+      但都降到 52dp + 同样的字重，避免「微信按钮比支付宝更粗」的错觉。
+    · 「开发中」提示条加圆角，和全 App 的提示条一致。
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_page"
+    android:fitsSystemWindows="true"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_marginStart="-10dp"
+        android:layout_marginTop="6dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/common_back"
+        android:padding="10dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_primary" />
+
+    <TextView
+        android:id="@+id/tvLoginTitle"
+        style="@style/Text.PageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="@string/login_title"
+        android:textSize="28sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnBack" />
+
+    <TextView
+        android:id="@+id/tvLoginSub"
+        style="@style/Text.BodySm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:lineSpacingExtra="4dp"
+        android:text="@string/login_desc"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLoginTitle" />
+
+    <!-- 开发中提示条 -->
+    <TextView
+        android:id="@+id/tvDevNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:background="@drawable/bg_hint"
+        android:lineSpacingExtra="3dp"
+        android:padding="14dp"
+        android:text="@string/login_developing"
+        android:textColor="@color/brand_primary"
+        android:textSize="@dimen/text_body_sm"
+        app:layout_constraintTop_toBottomOf="@id/tvLoginSub" />
+
+    <Button
+        android:id="@+id/btnWechat"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="26dp"
+        android:backgroundTint="@color/brand_wechat"
+        android:fontFamily="sans-serif-medium"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:letterSpacing="0"
+        android:text="@string/login_wechat"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:cornerRadius="@dimen/radius_md"
+        app:layout_constraintTop_toBottomOf="@id/tvDevNotice" />
+
+    <Button
+        android:id="@+id/btnAlipay"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/brand_alipay"
+        android:fontFamily="sans-serif-medium"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:letterSpacing="0"
+        android:text="@string/login_alipay"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:cornerRadius="@dimen/radius_md"
+        app:layout_constraintTop_toBottomOf="@id/btnWechat" />
+
+    <Button
+        android:id="@+id/btnPhone"
+        style="@style/Widget.ThumbCard.Button.Outline"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="@string/login_phone"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/btnAlipay"
+        app:strokeColor="@color/stroke_soft" />
+
+    <TextView
+        android:id="@+id/tvAgreement"
+        style="@style/Text.Micro"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="28dp"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:text="@string/login_terms"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

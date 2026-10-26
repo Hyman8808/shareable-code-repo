@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    未收藏的心形圆底。
+    ⚠️ V2.0 换了底板：列表现在是「纸底上的行」，不再压照片。
+       `overlay_control`（半透明黑圆）在暖白纸上会渲染成一块 35% 的灰斑，
+       看起来像脏点而不是按钮 —— 所以改用 `bg_card_alt`（比纸深一级的暖白），
+       读作「这里有一个可点的圆钮」。真正的可见性由 tint 保证（见 WordCardAdapter）。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/bg_card_alt" />
+</shape>

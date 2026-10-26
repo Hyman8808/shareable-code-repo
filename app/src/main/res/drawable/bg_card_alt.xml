@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    卡内嵌块 / 词砖 / 次级容器：圆角 14dp + bg_card_alt，**无描边**。
+    它是「白卡里的一个小面」，用填充差（卡 vs alt 1.09:1）表达层级就够，
+    再加描边就成了表单控件。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card_alt" />
+    <corners android:radius="@dimen/radius_md" />
+</shape>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    短语拆解里的单个「词砖」
+    ============================================================
+    词砖很窄（两列并排，实际可用宽度约 130dp），所以这里做的是「极窄版」排版：
+    · 序号圆底 18dp（原 15dp，9sp 数字在圆里几乎糊成一团）
+    · 单词 16sp 真字重（原 17sp bold 伪粗，窄列里容易糊）
+    · 音标行固定 20dp 高，标签 11sp / 音标 12sp，喇叭 26dp
+      （喇叭视觉小、但词砖整体可点开弹窗，不影响主路径）
+    · 释义 3 行封顶，超出省略——点开弹窗看全
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_phrase_tile"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:minHeight="104dp"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvWordOrder"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:background="@drawable/bg_word_index"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            tools:text="1" />
+
+        <TextView
+            android:id="@+id/tvWordText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="7dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            tools:text="tray" />
+    </LinearLayout>
+
+    <!-- 音标：美 / 英 各一行，各带小喇叭。
+         缺哪种口音就整行 GONE，**绝不拿另一种顶替**（由代码判断）。 -->
+    <LinearLayout
+        android:id="@+id/grpWordPhonetic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/rowWordUs"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:text="@string/detail_us"
+                android:textColor="@color/phonetic_us"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvWordPhoneticUs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btnWordAudioUs"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/a11y_play_us"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_speaker" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowWordUk"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:layout_marginTop="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:text="@string/detail_uk"
+                android:textColor="@color/phonetic_uk"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvWordPhoneticUk"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btnWordAudioUk"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/a11y_play_uk"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_speaker" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvWordMeaning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:ellipsize="end"
+        android:lineSpacingExtra="2dp"
+        android:maxLines="3"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        tools:text="托盘；浅盘" />
+</LinearLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ai 变体的应用名。包名 com.turing.thumbcard.ai，可与主线同时安装。
+         荧光底 + 墨色机身图标 = 桌面上一眼区分。
+-->
+<resources>
+    <string name="app_name">单词卡相机 AI</string>
+</resources>

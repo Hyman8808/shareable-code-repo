@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    单词卡 = **词典的一行**（不是一张卡）
+    ============================================================
+    首页 / 单词卡 Tab / 全部记录三处共用。
+
+    本版的三个决定性改动：
+    1. **去卡化**：不再有白底、圆角、描边、外边距 —— 纸底直接露。
+       一屏白卡总面积要 ≤ 屏高 45%（公理 A「一屏最多两种表面」），
+       列表再铺白卡就变成「模板站的卡片瀑布」。列表用「行」，行与行之间靠 divider。
+    2. **英文当主角**：英文 19sp serif（有真实粗细对比，词形剪影清晰），
+       中文 15sp sans 退到第二层级。字体对立是这套设计的辨识度来源，
+       模板生成器只会给同一字体加粗减细，做不出这个张力。
+    3. **88dp 定高行**：64dp 缩略图 + 三行文字（19/13/15sp）正好 64dp，
+       上下各 12dp 呼吸；一屏 5.5" 能看 6–7 条。
+       中文名缺失时不留空行（见 WordCardAdapter：「仅英文」模式换行显示）。
+
+    热区：收藏视觉 30dp，外层 FrameLayout 撑到 44dp（Material 最小触控标准）；
+         整行本身也是热区 —— 长按整行收藏（通勤单手点不中 30dp 的心）。
+
+    ⚠️ 五个 id 已与 Kotlin（ViewBinding）绑定，**一个都不能改名**：
+       ivCardImage / tvCardEnglish / tvCardMeta / tvCardChinese / btnFavorite
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:foreground="@drawable/bg_ripple"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_height_compact"
+    android:orientation="horizontal"
+    android:paddingStart="20dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="12dp">
+
+    <!-- 缩略图 64×64：圆角 10dp（行内图比大卡小一半，圆角也要明显小一档） -->
+    <ImageView
+        android:id="@+id/ivCardImage"
+        android:layout_width="@dimen/thumb_row"
+        android:layout_height="@dimen/thumb_row"
+        android:background="@drawable/bg_card_image"
+        android:clipToOutline="true"
+        android:contentDescription="@string/card_title"
+        android:scaleType="centerCrop" />
+
+    <!-- 文字列：英文（主角）→ meta（拼音/时间）→ 中文（第二层级） -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvCardEnglish"
+            style="@style/Text.Headword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="electric kettle" />
+
+        <TextView
+            android:id="@+id/tvCardMeta"
+            style="@style/Text.MetaRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:maxLines="1"
+            tools:text="diàn shuǐ hú  ·  10-20 14:32" />
+
+        <TextView
+            android:id="@+id/tvCardChinese"
+            style="@style/Text.HeadwordCjk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="电水壶" />
+    </LinearLayout>
+
+    <!-- 收藏 / 勾选：热区 44dp / 视觉 30dp。两者**同位置互斥**显示 ——
+         选择态下把收藏心收起来，避免「想勾却点成取消收藏」。
+         收藏态背景由 Adapter 切换（bg_heart_unfav 半透明黑圆 ↔ bg_heart_fav 荧光圆）。 -->
+    <FrameLayout
+        android:id="@+id/boxTrailing"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_marginStart="4dp">
+
+        <ImageView
+            android:id="@+id/btnFavorite"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_heart_unfav"
+            android:clickable="true"
+            android:contentDescription="@string/a11y_favorite"
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_heart_outline" />
+
+        <!-- 多选态勾选圈：28dp 与网格卡同尺寸，两处选择态的视觉才是一套 -->
+        <ImageView
+            android:id="@+id/ivPick"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_pick_off"
+            android:contentDescription="@null"
+            android:padding="5dp"
+            android:src="@drawable/ic_check"
+            android:visibility="gone" />
+    </FrameLayout>
+
+</LinearLayout>

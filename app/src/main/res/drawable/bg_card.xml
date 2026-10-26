@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    白卡底板（普通：今日卡、分区卡）
+    圆角 20dp / 白底 / 1dp 描边。
+    为什么必须留描边：白卡(#FFFFFF) 与纸底(#F4F2EC) 只有 **1.12:1**，
+    光靠明度差在低端屏/强光下看不出边界；阴影只留给「真浮起来」的那一层
+    （见 bg_card_hero.xml）。能用描边解决就不用阴影。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card" />
+    <corners android:radius="@dimen/radius_lg" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/stroke_soft" />
+</shape>

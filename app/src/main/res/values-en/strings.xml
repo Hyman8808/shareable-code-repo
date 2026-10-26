@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  English UI (values-en/). Keys MUST stay in sync with values/strings.xml.
+  Brand words (ThumbCard / turtle / 图灵) are kept as-is.
+-->
+<resources>
+    <string name="app_name">ThumbCard</string>
+
+    <!-- ============ Common ============ -->
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_syncing">Syncing…</string>
+    <string name="common_back">‹ Back</string>
+    <string name="common_copied">Copied</string>
+
+    <!-- ============ Bottom nav ============ -->
+    <string name="nav_home">Records</string>
+    <string name="nav_cards">Saved</string>
+    <string name="nav_devices">Devices</string>
+    <string name="nav_profile">Me</string>
+
+    <!-- ============ Home ============ -->
+    <string name="home_subtitle">Snap with your thumb camera to create word cards</string>
+    <string name="home_add_device">Add a device</string>
+    <string name="home_my_cards">My word cards</string>
+    <string name="home_my_devices">Manage devices</string>
+    <string name="home_no_device">No device yet\nAdd a thumb camera to start</string>
+    <string name="home_devices_btn">Devices</string>
+    <string name="home_report_title">Learning report</string>
+    <string name="home_today">Today</string>
+    <string name="home_week">This week</string>
+    <string name="home_unit_photos">photos</string>
+    <string name="home_unit_words">words</string>
+    <string name="home_report_hint">The same object counts as one word</string>
+    <string name="home_shoot_hint">Press the shutter — what you shoot becomes a word card</string>
+    <string name="home_section_all">All records</string>
+    <string name="home_section_earlier">Earlier records</string>
+    <string name="home_total_label">Total</string>
+    <string name="home_today_more_fmt">%1$d more today · See all ›</string>
+    <string name="home_all">All ›</string>
+    <string name="home_batch_entry">Batch</string>
+    <string name="home_fav_hint">Long-press any card to save it. Saved cards show up in Saved.</string>
+    <string name="home_empty">Nothing here yet.
+
+Press the shutter — whatever you shoot shows up here.
+Long-press a card to save it.</string>
+    <string name="home_empty_today">Nothing new today\n\nTap “All ›” to see earlier photos</string>
+    <string name="home_pair_hint">Hold the power button for 3 seconds\nWait for the LED to blink, then tap here to pair</string>
+    <string name="home_slogan">Snap it, know it\n\nName · English name · Audio · Collectible cards</string>
+    <string name="home_default_device">Thumb Camera</string>
+    <string name="home_total_fmt">%1$d photos · %2$d words in total</string>
+    <string name="home_count_fmt">%1$d photos</string>
+    <string name="home_multi_device_fmt">  ·  %1$d devices</string>
+
+    <!-- ============ Scan / Provisioning ============ -->
+    <string name="scan_title">Select device</string>
+    <string name="scan_hint">Searching for nearby devices…</string>
+    <string name="scan_empty">No device found\nMake sure the device is on and the Bluetooth LED is blinking</string>
+    <string name="scan_permission_denied">Bluetooth permission is required to scan</string>
+    <string name="scan_signal_fmt">%1$s · %2$d dBm · protocol v%3$d.%4$d</string>
+    <string name="wifi_title">Connect to Wi-Fi</string>
+    <string name="wifi_title_setting">Wi-Fi setup</string>
+    <string name="wifi_hint">2.4 GHz Wi-Fi only</string>
+    <string name="wifi_device_fmt">Device: %1$s  ·  2.4 GHz Wi-Fi only</string>
+    <string name="wifi_ssid">Wi-Fi name</string>
+    <string name="wifi_password">Wi-Fi password</string>
+    <string name="wifi_start">Start pairing</string>
+    <string name="wifi_connecting">Pairing, please don\'t leave…</string>
+    <string name="wifi_copy_log">Copy debug log</string>
+    <string name="wifi_log_connect_fmt">Connecting to %1$s</string>
+    <string name="wifi_log_connecting">Connecting…</string>
+    <string name="wifi_log_connected">Device connected</string>
+    <string name="wifi_ssid_empty">Please enter the Wi-Fi name</string>
+    <string name="wifi_pwd_empty">Please enter the Wi-Fi password</string>
+
+    <!-- ============ Cards / Detail ============ -->
+    <string name="cards_title">Word cards</string>
+    <string name="cards_empty_old">No cards yet\nTake a photo to create one</string>
+    <string name="cards_empty_unbound">No device bound\n\nOnce paired, photos appear on Home\nSave them with ♡ to add to Cards</string>
+    <string name="cards_empty_fav">Nothing saved yet.
+
+Long-press any card on Today to save it.
+Saved cards show up here.</string>
+    <string name="cards_go_add">Add a device</string>
+    <string name="cards_count_fmt">%1$d cards</string>
+    <string name="cards_no_result_fmt">No result for “%1$s”</string>
+    <string name="cards_search_hint">Search Chinese / English name</string>
+
+    <string name="card_title">Word cards</string>
+    <string name="card_empty">No cards yet\nTake a photo to create one</string>
+
+    <!-- All word records (opened from Home “All ›”; not the Word cards tab) -->
+    <string name="cardlist_title">All word records</string>
+    <string name="cardlist_empty">No photos yet\nTake a photo and it will show up here</string>
+    <string name="home_all_records_fmt">View all word records (%1$d) ›</string>
+    <string name="a11y_favorite">Save</string>
+    <string name="a11y_play_us">Play US pronunciation</string>
+    <string name="a11y_play_uk">Play UK pronunciation</string>
+    <string name="wifi_ssid_hint">Enter the Wi-Fi name</string>
+    <string name="wifi_pwd_hint">Enter the Wi-Fi password</string>
+    <string name="cards_search_placeholder">Search Chinese or English</string>
+    <string name="card_detail_title">Word details</string>
+    <string name="card_play_chinese">Chinese audio</string>
+    <string name="card_play_english">English audio</string>
+    <string name="detail_play_cn_origin">Original Chinese audio</string>
+    <string name="detail_pinyin">Pinyin</string>
+    <string name="detail_phonetic">Phonetic</string>
+    <string name="detail_us">US</string>
+    <string name="detail_uk">UK</string>
+    <string name="detail_meaning">Meaning</string>
+    <string name="detail_dict_en">Dictionary</string>
+    <string name="detail_dict_cn">Chinese dictionary</string>
+    <string name="detail_dict_loading">Looking up the dictionary…</string>
+    <string name="detail_cn_loading">Looking up the Chinese dictionary…</string>
+    <string name="detail_retry">Retry</string>
+    <string name="detail_examples">Examples</string>
+    <string name="detail_phrases">Collocations</string>
+    <string name="detail_compounds">Compounds</string>
+    <string name="detail_delete">Delete this card</string>
+    <string name="detail_delete_title">Delete card</string>
+    <string name="detail_delete_msg">Deleting is not supported in the cloud yet. This only removes the local card; it will come back after the next sync.\n\nContinue?</string>
+    <string name="detail_time_fmt">Taken at  %1$s</string>
+    <string name="detail_cn_origin_fmt">Original   %1$s</string>
+    <string name="detail_translating_fmt">No “%1$s” name for this word yet — showing the original Chinese word. It updates on the next sync.</string>
+    <string name="detail_no_translation_fmt">No “%1$s” translation for this word yet, showing the original Chinese word.</string>
+    <string name="detail_dict_en_failed">English dictionary unavailable. You can retry.</string>
+    <string name="detail_dict_cn_failed">Chinese dictionary unavailable. You can retry.</string>
+    <string name="detail_stop">Stop</string>
+
+    <!-- Word-by-word breakdown -->
+    <string name="phrase_title">Word by word</string>
+    <string name="phrase_hint">Split into single words, so you can see how the phrase is built</string>
+    <string name="phrase_count_fmt">%1$d words</string>
+    <string name="phrase_loading">Looking up each word…</string>
+    <string name="phrase_formula_fmt">Literal　%1$s　→　%2$s</string>
+    <string name="phrase_word_missing">Not in dictionary</string>
+    <string name="a11y_play_word_fmt">Play pronunciation of “%1$s”</string>
+    <string name="a11y_play_word_us_fmt">Play the American pronunciation of “%1$s”</string>
+    <string name="a11y_play_word_uk_fmt">Play the British pronunciation of “%1$s”</string>
+
+    <string name="pos_en_word">English word</string>
+    <string name="pos_en_phrase">English phrase</string>
+    <string name="pos_en">English</string>
+    <string name="pos_cn_word">Chinese word</string>
+    <string name="pos_cn_char">Character</string>
+    <string name="pos_cn_idiom">Idiom</string>
+    <string name="pos_pinyin">Pinyin</string>
+    <string name="dict_synonym">Synonyms</string>
+    <string name="dict_antonym">Antonyms</string>
+    <string name="dict_radical_fmt">Radical %1$s    </string>
+    <string name="dict_structure_fmt">Structure %1$s    </string>
+    <string name="dict_strokes_fmt">%1$s strokes</string>
+
+    <!-- ============ Devices ============ -->
+    <string name="device_count_fmt">%1$d devices</string>
+    <string name="device_long_press">Long-press a device to rename or unbind</string>
+    <string name="device_empty">No device bound yet</string>
+    <string name="device_add">Add a device</string>
+    <string name="device_connect">Connect</string>
+    <string name="device_default_name">Thumb Camera</string>
+    <string name="device_menu_cards">View cards</string>
+    <string name="device_menu_rename">Rename</string>
+    <string name="device_menu_unbind">Unbind device</string>
+    <string name="device_rename_title">Rename</string>
+    <string name="device_rename_hint">Device name</string>
+    <string name="device_unbind_title">Unbind device</string>
+    <string name="device_unbind_title_alt">Unbind</string>
+    <string name="device_unbind_msg">Unbinding clears the device and word-card cache on this phone.\n\nHold the device button to reset it before pairing again.</string>
+    <string name="device_unbind_msg_alt">Unbinding clears the device and word-card cache on this phone.\n\nThe device must be paired again to be used.</string>
+    <string name="device_unbind_ok">Unbind</string>
+    <string name="device_sync_at_fmt"> · synced %1$s</string>
+    <string name="device_not_synced"> · not synced</string>
+    <string name="device_unbound">Unbound</string>
+    <string name="device_renamed">Renamed</string>
+
+    <string name="device_connected_toast">Paired successfully</string>
+    <string name="provision_temp_mode_toast">Storage restricted — showing in temporary mode</string>
+
+    <!-- ============ Me ============ -->
+    <string name="profile_login">Sign in</string>
+    <string name="profile_account_meta">WeChat / Alipay / Phone (coming soon)</string>
+    <string name="profile_group_lang">Language</string>
+    <string name="profile_group_other">More</string>
+    <string name="profile_camera">My camera</string>
+    <string name="profile_group_device">Device</string>
+    <string name="profile_camera_unbound">Not paired</string>
+    <string name="cards_count_unit_fmt">%1$d</string>
+    <string name="profile_name_lang">Item name language</string>
+    <string name="profile_ui_lang">App language</string>
+    <string name="profile_quota">Beautify / Cartoon credits</string>
+    <string name="profile_developing">Coming soon</string>
+    <string name="profile_diag">Diagnostics</string>
+    <string name="profile_privacy">Privacy policy &amp; terms</string>
+    <string name="profile_about">About</string>
+    <string name="profile_version_fmt">ThumbCard v%1$s</string>
+    <string name="profile_quota_toast">Credits and top-ups are coming soon</string>
+    <string name="profile_privacy_toast">Privacy policy will be added before release</string>
+    <string name="profile_about_toast">Thumb Camera · Know the world by snapping</string>
+
+    <!-- ============ Language settings ============ -->
+    <string name="lang_title">Item name language</string>
+    <string name="lang_current">Current</string>
+    <string name="lang_desc">After the camera recognises an object, the name shown in the app uses the selected language.\nThe English name always stays as the second line.</string>
+    <string name="lang_note">Chinese is the raw recognition result and is never translated. Traditional Chinese is converted on the device, without the server. Japanese, Korean, Spanish, French, German and Russian are delivered by the server in the selected language and take effect on the next sync.</string>
+
+    <string name="ui_lang_title">App language</string>
+    <string name="ui_lang_desc">Changes app text only. It does not affect “Item name language”.</string>
+    <string name="ui_lang_row_zh_sub">Default · Simplified Chinese</string>
+    <string name="ui_lang_row_tw_sub">Traditional Chinese interface</string>
+    <string name="ui_lang_row_en_sub">English interface</string>
+    <string name="ui_lang_zh">中文</string>
+    <string name="ui_lang_en">English</string>
+    <string name="ui_lang_changed_fmt">App language switched to %1$s</string>
+
+    <!-- ============ Sign in ============ -->
+    <string name="login_title">Sign in / Sign up</string>
+    <string name="login_desc">Sign in to sync your word cards\nKeep them when you change phones</string>
+    <string name="login_developing">Coming soon\nAccounts depend on the server API, which is not ready yet</string>
+    <string name="login_wechat">Continue with WeChat</string>
+    <string name="login_alipay">Continue with Alipay</string>
+    <string name="login_phone">Continue with phone number</string>
+    <string name="login_terms">By signing in you agree to the Terms of Service and Privacy Policy\nMinors must use the app under adult supervision</string>
+    <string name="login_not_ready_fmt">%1$s sign-in is coming soon\nThe server API is not ready yet</string>
+
+    <!-- ============ Diagnostics / Global ============ -->
+    <string name="login_channel_wechat">WeChat</string>
+    <string name="login_channel_alipay">Alipay</string>
+    <string name="login_channel_phone">Phone</string>
+    <string name="diag_title">Diagnostics</string>
+    <string name="diag_sub">For troubleshooting crashes and compatibility issues. Copy and share with support.</string>
+    <string name="diag_back">Back</string>
+    <string name="diag_clear">Clear</string>
+    <string name="diag_copy">Copy</string>
+    <string name="diag_checking">Checking…</string>
+    <string name="diag_cloud_check">Cloud connectivity self-test</string>
+    <string name="detail_card_missing">Card not found</string>
+    <string name="diag_ok">✅ Cloud API and apikey are healthy.</string>
+    <string name="diag_ok_detail">If this device shows 0 records, it has not uploaded successfully yet.</string>
+    <string name="diag_ref_zero">⚠️ The reference device also shows 0 — the apikey may be wrong or server data was cleared.</string>
+    <string name="diag_unreachable">❌ Cloud unreachable. Check your network.</string>
+    <string name="detail_missing_card_info">Missing card info</string>
+    <string name="detail_no_audio">No audio for this card</string>
+    <string name="detail_play_failed">Playback failed. Check your network.</string>
+    <string name="detail_deleted">Local card deleted</string>
+    <string name="cardlist_missing_device">Missing device info</string>
+    <string name="cardlist_temp_mode">Temporary mode: nothing is saved, re-enter after restart</string>
+    <string name="diag_cleared">Diagnostics cleared</string>
+    <string name="diag_copied_toast">Report copied — paste it to support</string>
+    <string name="diag_clip_label">Diagnostics report</string>
+    <string name="wifi_log_clip_label">Provisioning debug log</string>
+    <string name="main_compat_title">Compatibility notice</string>
+    <string name="main_crash_prefix">Last run crashed:</string>
+    <string name="main_startup_prefix">Startup issues:</string>
+    <string name="main_compat_msg">%1$s\n\nThe app has degraded gracefully to stay usable. Tap “View diagnostics” for details.</string>
+    <string name="main_view_diag">View diagnostics</string>
+    <string name="main_got_it">Got it</string>
+
+    <string name="common_sync_failed_fmt">Sync failed: %1$s</string>
+    <string name="home_fav_added">Saved — added to your cards</string>
+    <string name="home_fav_removed">Removed from saved</string>
+    <string name="cards_fav_removed">Removed from your cards</string>
+    <string name="card_meta_pending_fmt">%1$s · translation pending</string>
+    <string name="lang_pending_toast">After switching, cards show names in the new language on the next sync. Words with no name in that language fall back to the original Chinese.</string>
+    <string name="lang_ready_toast">Translation is live. Names will follow the selected language.</string>
+            <string name="lang_switched_src">Switched to Chinese (raw recognition result)</string>
+    <string name="lang_switched_hant">Switched to Traditional Chinese (converted on device)</string>
+    <string name="lang_switched_pending_fmt">Switched to %1$s — translation not live yet, showing the original Chinese word</string>
+    <string name="lang_switched_fmt">Switched to %1$s</string>
+    <string name="login_privacy_toast">Privacy policy and terms will be added before release</string>
+    <string name="cards_synced_fmt">%1$d new (%2$d already local, not re-downloaded)</string>
+    <string name="cards_up_to_date_fmt">Up to date, %1$d photos locally</string>
+    <string name="cardlist_empty_reason_fmt">No records for this device in the cloud.\n\ndeviceId used:\n%1$s\n\nPossible reasons:\n① The device failed to upload (needs Wi-Fi and background running)\n② Upload delay — pull to retry</string>
+    <string name="cardlist_count_fmt">%1$d photos</string>
+
+    <!-- ==================== v2.2.0：原图预览 / 存相册 / AI 美化 ====================
+         三语必须逐键对齐（values / values-en / values-zh-rTW），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="preview_title">View photo</string>
+    <string name="preview_save">Save to Photos</string>
+    <string name="preview_saved">Saved to Photos: %1$s</string>
+    <string name="preview_save_failed">Could not save, please retry</string>
+    <string name="preview_save_wait">Image is still preparing, one moment</string>
+    <string name="preview_need_permission">Storage permission is needed to save</string>
+    <string name="preview_no_image">This record has no photo</string>
+    <string name="preview_hint">Pinch to zoom · Double-tap to enlarge · Save at top right</string>
+    <string name="preview_hint_swipe">Swipe to switch · Pinch to zoom · Double-tap to enlarge · Save at top right</string>
+    <string name="preview_prev">Previous</string>
+    <string name="preview_next">Next</string>
+    <string name="preview_zoom_locked">Zoomed in · Double-tap to fit, then swipe</string>
+    <string name="preview_a11y_pos_fmt">Image %1$d of %2$d, %3$s</string>
+    <string name="preview_load_failed">Could not load this image. Tap to retry.</string>
+    <string name="preview_a11y_pos_fail_fmt">Image %1$d of %2$d, %3$s, failed to load</string>
+    <string name="preview_style_original">Original</string>
+    <string name="preview_beautify">Beautify this photo</string>
+    <string name="preview_beautify_switch">Try another style</string>
+    <string name="ai_title">AI Enhance</string>
+    <string name="ai_vip_debug">VIP build</string>
+    <string name="ai_choose_style">Choose an effect</string>
+    <string name="ai_style_hd">HD restore</string>
+    <string name="ai_style_hd_desc">Keeps what the camera saw, redraws the low-res shot as 2K</string>
+    <string name="ai_style_cartoon">Cartoon art</string>
+    <string name="ai_style_cartoon_desc">Subject becomes a clean cartoon figure, simplified background</string>
+    <string name="ai_badge_hd">HD</string>
+    <string name="ai_badge_cartoon">Cartoon</string>
+    <string name="ai_badge_exists">Done</string>
+    <string name="ai_generate">Generate</string>
+    <string name="ai_generating_button">Generating…</string>
+    <string name="ai_again">Generate another</string>
+    <string name="ai_running">Generating HD image</string>
+    <string name="ai_running_hint">Takes about a minute. You can leave this page — we\'ll notify you when it\'s done</string>
+    <string name="ai_status_done">Done. This card now shows the new image</string>
+    <string name="ai_status_done_px">Done at %1$s. This card now shows the new image</string>
+    <string name="ai_status_existing">This card currently shows the "%1$s" image</string>
+    <string name="ai_status_switch_hint">This card already has a "%1$s" image. Pick the other style to generate a new one</string>
+    <string name="ai_status_reverted">Back to the original. The AI image is kept and can be switched back</string>
+    <string name="ai_quota_free">%1$d free generations left</string>
+    <string name="ai_quota_credits">%1$d generations left (purchased)</string>
+    <string name="ai_quota_both">%1$d generations left (free %2$d + bought %3$d)</string>
+    <string name="ai_quota_none">Free quota used up. Buy more to keep generating</string>
+    <string name="ai_no_quota">Quota used up. Buy some before generating</string>
+    <string name="ai_buy_entry">Buy more</string>
+    <string name="ai_buy_title">Buy AI image credits</string>
+    <string name="ai_buy_sub">%1$d generations left (including %2$d free). Credits work for both HD restore and cartoon.</string>
+    <string name="ai_buy_debug_note">Debug build: confirming only adds credits, no payment is made</string>
+    <string name="ai_buy_confirm">Confirm (simulated)</string>
+    <string name="ai_buy_done">%1$d credits added</string>
+    <string name="ai_tier_count_fmt">%1$d images</string>
+    <string name="ai_tier_hint_10">~¥0.50 each · Try a few words</string>
+    <string name="ai_tier_hint_50">~¥0.40 each · One semester</string>
+    <string name="ai_tier_hint_100">~¥0.30 each · One school year</string>
+    <string name="ai_tier_hint_1000">Shares across devices</string>
+    <string name="ai_save_to_gallery">Save to Photos</string>
+    <string name="ai_view_full">View full size</string>
+    <string name="ai_use_original">Use original</string>
+    <string name="ai_disclaimer">The AI image only replaces the photo on the card. You can switch back to the original anytime</string>
+    <string name="ai_err_network">No network connection, please check and retry</string>
+    <string name="ai_err_timeout">Generation timed out, retry later (no credit used)</string>
+    <string name="ai_err_auth">Service not authorized, please contact support</string>
+    <string name="ai_err_rate">Too many requests now, try again in a moment</string>
+    <string name="ai_err_content">This photo failed content review, try another</string>
+    <string name="ai_err_server">Generation failed, retry later (no credit used)</string>
+    <string name="ai_err_no_source">Cannot get the original photo, open it once online and retry</string>
+    <string name="detail_view_original">View photo</string>
+    <string name="detail_ai_entry">Enhance this photo with AI</string>
+    <string name="detail_ai_entry_done">AI image active · try another</string>
+    <string name="profile_quota_remaining">%1$d left</string>
+
+    <!-- ==================== v2.3.0：批量修复 / 不限额设备 ====================
+         三语必须逐键对齐（values / values-en / values-zh-rTW），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="cards_select">Select</string>
+    <string name="cards_select_done">Done</string>
+    <string name="cards_selected_fmt">%1$d selected</string>
+    <string name="cards_select_all">Select all</string>
+    <string name="cards_select_none">Clear</string>
+    <string name="cards_batch_cartoon">Cartoon</string>
+    <string name="cards_batch_hint">Long-press any card to start selecting</string>
+    <string name="ai_quota_unlimited">Unlimited on this device (demo unit)</string>
+    <string name="ai_quota_unlimited_short">Unlimited</string>
+    <string name="ai_quota_left_short">%1$d left</string>
+    <string name="batch_title">Batch restore</string>
+    <string name="batch_sub_hd">HD restore · %1$d images</string>
+    <string name="batch_sub_cartoon">Cartoon · %1$d images</string>
+    <string name="batch_counter_fmt">%1$d / %2$d</string>
+    <string name="batch_now_fmt">Working on: %1$s</string>
+    <string name="batch_stats_fmt">%1$d done · %2$d skipped · %3$d failed</string>
+    <string name="batch_confirm_title">Start batch restore</string>
+    <string name="batch_confirm_msg">About to process %1$d images, roughly 1 minute each. You can stop anytime.
+%2$s</string>
+    <string name="batch_confirm_cost_fmt">This uses %1$d credits, %2$d left.</string>
+    <string name="batch_confirm_unlimited">This device has no limit, no credits are used.</string>
+    <string name="batch_start">Start</string>
+    <string name="batch_stop_confirm_title">Stop restoring?</string>
+    <string name="batch_stop_confirm_msg">Finished images are kept; the rest will not use any credits.</string>
+    <string name="batch_done_title">Batch restore finished</string>
+    <string name="batch_done_msg">%1$d done, %2$d skipped, %3$d failed.</string>
+    <string name="batch_skipped_hint">Skipped means the image was already generated. Open the card to make a new one.</string>
+    <string name="batch_nothing_to_do">Everything selected has already been restored</string>
+    <string name="batch_stop_btn">Stop</string>
+    <string name="batch_finish">Done</string>
+
+    <!-- ===== v2.4 background generation ===== -->
+    <string name="batch_bg_hint">You can leave this page. Generation keeps running in the background and we\'ll notify you when it\'s done.</string>
+    <string name="batch_stopping_hint">Finishing the current image, then stopping.</string>
+    <string name="batch_to_background">Run in background</string>
+    <string name="batch_bg_toast">Moved to background, we\'ll notify you when it\'s done</string>
+    <string name="batch_stopping_toast">Stopping — this one image will still finish</string>
+    <string name="batch_confirm_bg">You can leave this page after starting. Processing continues in the background and we\'ll notify you when it\'s done.</string>
+    <string name="batch_quota_paused">Out of credits, paused (%1$d done). Buy more to continue.</string>
+    <string name="batch_preparing">Preparing the first one…</string>
+    <string name="batch_start_failed">Couldn\'t start, please try again</string>
+    <string name="ai_busy">Another generation is running. Try again when it finishes</string>
+    <string name="ai_err_generic">Generation failed, please retry later (no credit used)</string>
+    <string name="ai_err_interrupted">Generation was interrupted by the system. Tap "Generate" to retry</string>
+    <string name="ai_resuming">Resuming where it left off…</string>
+
+    <string name="ai_notif_channel">AI image generation</string>
+    <string name="ai_notif_channel_desc">Background progress and completion alerts</string>
+    <string name="ai_notif_progress_title">Generating AI images %1$d/%2$d</string>
+    <string name="ai_notif_progress_text">Now: %1$s</string>
+    <string name="ai_notif_progress_idle">You can leave the app, we\'ll notify you when it\'s done</string>
+    <string name="ai_notif_preparing">Getting ready…</string>
+    <string name="ai_notif_stopping">Stopping (this one will finish)</string>
+    <string name="ai_notif_cancel">Stop</string>
+    <string name="ai_notif_done_title">AI image ready</string>
+    <string name="ai_notif_done">%1$d done. Tap to take a look</string>
+    <string name="ai_notif_done_mixed">%1$d done · %2$d skipped · %3$d failed</string>
+    <string name="ai_notif_done_quota">%1$d done. Out of credits — buy more to continue</string>
+    <string name="ai_notif_done_cancel">Stopped, %1$d done</string>
+
+    <string name="ai_resume_title">Last run didn\'t finish</string>
+    <string name="ai_resume_msg">%1$d cards are still not processed. Continue and we\'ll pick up where it stopped — finished ones won\'t be charged again.</string>
+    <string name="ai_resume_continue">Continue</string>
+    <string name="ai_resume_later">Later</string>
+    <string name="ai_resume_discard">Discard rest</string>
+    <string name="ai_resume_discarded">Remaining tasks discarded</string>
+    <!-- ============ Restore generated AI images from gallery (AI edition) ============ -->
+    <string name="profile_restore_gallery">Restore from gallery</string>
+    <string name="restore_free_hint">Free</string>
+    <string name="restore_scanning">Scanning gallery…</string>
+    <string name="restore_none_empty">No images in the “ThumbCard Camera” album yet. After you save an image to the gallery from the preview screen, you can restore it here.</string>
+    <string name="restore_none_found_fmt">Scanned %1$d image(s), nothing to restore (%2$s).</string>
+    <string name="restore_done_title_fmt">Restored %1$d image(s)</string>
+    <string name="restore_done_guessed_fmt">%1$d matched by English name only (older images carry no tag). Worth a quick check on those cards.</string>
+    <string name="restore_done_skip_fmt">%1$d skipped: %2$s.</string>
+    <string name="restore_reason_local">already local %1$d</string>
+    <string name="restore_reason_unknown">no matching card %1$d</string>
+    <string name="restore_reason_dup">duplicate name %1$d</string>
+    <string name="restore_reason_small">too small %1$d</string>
+    <string name="restore_reason_unreadable">unreadable %1$d</string>
+    <string name="restore_progress_fmt">Restoring %1$d/%2$d…</string>
+    <string name="restore_failed_fmt">%1$d failed</string>
+    <string name="restore_need_permission">Gallery read permission is required</string>
+    <string name="restore_error">Could not read the gallery. Check the permission and try again.</string>
+    <string name="restore_need_sync">Found %1$d image(s), but no matching cards locally yet. Pull to refresh on the Home tab first, then try again.</string>
+    <string name="restore_busy">Images are being generated, try again when the batch finishes</string>
+
+    <string name="ai_tier_price_fmt">¥%1$d</string>
+    <string name="ai_buy_confirm_price_fmt">Buy · ¥%1$d</string>
+    <string name="ai_tier_hint_500">~¥0.20 each · Schools or multiple devices</string>
+    <string name="profile_device_lang">Device language</string>
+    <string name="device_lang_title">Device language</string>
+    <string name="device_lang_saved_fmt">Set to %1$s; sent to the device on next connection</string>
+    <string name="device_lang_pending_fmt">%1$s (pending)</string>
+    <string name="profile_cloud_storage">Cloud storage</string>
+    <string name="cloud_storage_default">7 days (default)</string>
+    <string name="cloud_storage_days_fmt">%1$d days</string>
+    <string name="cloud_storage_title">Cloud storage</string>
+    <string name="cloud_storage_body">Photos are kept in the cloud for 7 days by default; older ones are cleaned up (copies saved on your phone are unaffected). Upgrade to extend retention by space and duration, monthly or yearly.</string>
+    <string name="cloud_storage_plan_btn">View plans</string>
+    <string name="cloud_storage_soon">Plans and payment coming soon</string>
+    <string name="common_close">Close</string>
+    <string name="profile_camera_one_bound">1 device bound</string>
+    <string name="profile_camera_bound_fmt">%1$d devices bound</string>
+    <string name="profile_camera_bound_current_fmt">%1$d · %2$s</string>
+    <string name="device_state_current">Current</string>
+    <string name="device_state_switch">Switch</string>
+    <string name="device_switch_hint">Tap a camera to switch; Home and Saved both follow</string>
+    <string name="device_already_current">You are already viewing this one</string>
+    <string name="device_switched_fmt">Switched to %1$s</string>
+    <string name="device_menu_set_current">Set as current</string>
+    <string name="cardlist_chip_all">All devices</string>
+    <string name="cardlist_all_synced_fmt">%1$d devices synced, %2$d new</string>
+    <string name="cardlist_all_partial_fmt">%1$d succeeded, %2$d failed</string>
+    <string name="detail_pos_fmt">%1$d / %2$d</string>
+    <string name="detail_swipe_first">This is the first card</string>
+    <string name="detail_swipe_last">This is the last card</string>
+</resources>

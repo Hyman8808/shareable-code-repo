@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    空状态的**虚线环**（本体系的第二个「签章」）。
+    为什么不是实心浅圆：实心浅圆看起来像「加载失败的占位块」；
+    虚线环表达的是「这里等着被填满」，语义完全不同。
+    规格：88dp oval，1dp stroke_strong，dash 4dp / gap 5dp。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@android:color/transparent" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/stroke_strong"
+        android:dashWidth="4dp"
+        android:dashGap="5dp" />
+    <size
+        android:width="88dp"
+        android:height="88dp" />
+</shape>

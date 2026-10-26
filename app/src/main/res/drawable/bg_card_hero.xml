@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    「浮起来」的白卡（详情页主卡）：圆角 20dp + 白底，**无描边**。
+    配 android:elevation="@dimen/card_elevation"(2dp) 使用 ——
+    阴影是比描边更强的边界，同时表达「这一层浮在内容之上」；
+    描边 + 阴影同时上会显得脏（描边是硬的，阴影是软的）。
+    ⚠️ 只给大面积主卡用；outlineAmbientShadowColor 要 API 28+，
+       minSdk 23 上阴影是系统黑，小控件上会糊成一圈灰边。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card" />
+    <corners android:radius="@dimen/radius_lg" />
+</shape>

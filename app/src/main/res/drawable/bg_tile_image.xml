@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    网格卡顶部图片的底：**只有上面两个角是圆的**（14dp），下面平切接文字区。
+    ============================================================
+    它同时是图片未加载时的占位色。外层卡面已经 clipToOutline，理论上会裁掉溢出的
+    直角；这层是双保险 —— 部分 ROM 上 RippleDrawable 的 outline 不参与 clip，
+    那时图片四角就会在卡左上/右上戳出两个白尖。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card_alt" />
+    <corners
+        android:topLeftRadius="@dimen/radius_md"
+        android:topRightRadius="@dimen/radius_md" />
+</shape>

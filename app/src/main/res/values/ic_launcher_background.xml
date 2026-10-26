@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        墨标 Inkmark 底色 = brand_primary #172742。
+        刻意不做夜间变体：桌面图标不随 App 主题切换，单一墨色在浅色/深色壁纸上都成立。
+    -->
+    <color name="ic_launcher_background">#FF172742</color>
+</resources>

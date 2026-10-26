@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    大图页的悬浮提示条（切到头 / 放大态被拦）。
+    不用 Toast：系统 Toast 是浅底深字的方块，压在黑底满屏照片上非常刺眼，
+    而且位置由系统决定，会挡住底部胶囊。
+    底色取 70% 黑，与 bg_viewer_scrim 的起点同值 —— 两者叠在一起不会出现色差断层。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#B3000000" />
+    <corners android:radius="100dp" />
+</shape>

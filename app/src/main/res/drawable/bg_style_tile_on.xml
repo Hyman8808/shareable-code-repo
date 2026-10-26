@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 风格选项卡（选中）：墨色 2dp 描边，底色仍是白卡（不做填充，避免和「主按钮」抢注意力） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/bg_card" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/brand_primary" />
+    <corners android:radius="@dimen/radius_md" />
+</shape>

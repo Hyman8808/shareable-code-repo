@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    收藏页网格卡的卡面：14dp 圆角 + bg_card 填充 + 自带涟漪。
+    ============================================================
+    为什么不用 bg_card_hero（20dp）：卡片宽只有 154dp，20dp 圆角等于 13% 圆角率，
+    会读成 iOS 那种「大圆角应用图标」；14dp 是 9%，同样是卡，但更克制。
+    涟漪直接写在 background 里（不用 foreground）：foreground 的方形 mask 会在
+    圆角处露出直角，压在这张 14dp 卡上就是一圈「四角发白」。
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/brand_primary_soft">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_card" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+</ripple>

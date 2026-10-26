@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    设备切换胶囊（选中）
+    墨实心 + 反白字：纸底页面上「选中」只能用墨，荧光只做填充且仅 4 处合法。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/brand_primary" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

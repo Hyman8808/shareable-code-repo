@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    图片占位（加载中 / 加载失败 / 无图）
+    原实现是「浅蓝底 + 主色实心圆」，在 centerCrop 下会被拉伸成一块蓝饼，
+    看起来像渲染错误。现在统一为「中性浅灰底 + 居中弱化相机图标」。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/placeholder" />
+        </shape>
+    </item>
+    <item
+        android:width="34dp"
+        android:height="34dp"
+        android:drawable="@drawable/ic_camera_muted"
+        android:gravity="center" />
+</layer-list>

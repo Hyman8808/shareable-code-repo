@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    收藏页的**网格卡**（2 列）
+    ============================================================
+    与首页的「词典行」（item_word_card）是两种东西，刻意不共用：
+      · 首页 = 效率场景（刚拍完扫一眼，越多越好）→ 行，一屏 3 行多；
+      · 收藏 = 挑选场景（回头看自己挑了哪些）→ 卡，图要大、信息要够。
+
+    1. 图 4:3 贴顶：相机是 4:3 出片，用 1:1 会裁掉左右、用 16:9 会裁掉上下，
+       4:3 是唯一不裁原图的比。高度由宽度算（ConstraintLayout 比例），
+       所以 2 列在任何屏宽下都不变形。
+    2. 三行文字，比旧版多一行**音标**：这是「词典卡」与「照片墙」的分界线。
+       音标查本地缓存（不联网），查不到退到拼音，都没有就 INVISIBLE 占位 ——
+       必须占位，否则同一行有音标的卡会比没音标的高，网格参差。
+    3. 卡面 14dp 圆角 + 2dp 阴影、**无描边**：154dp 宽的卡用 20dp 圆角会像应用图标。
+    4. 收藏心浮在图片右上角（荧光圆底 = brand_accent 的合法场合之一）。
+       44dp 热区、28dp 视觉，热区用透明 FrameLayout 撑开，不吃图片面积。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="6dp"
+    android:layout_marginEnd="6dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card_tile"
+    android:clipToOutline="true"
+    android:elevation="@dimen/card_elevation">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 图片区：高度由宽度 × 3/4 得出，不写死 dp -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/ivCardImage"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/bg_tile_image"
+                android:contentDescription="@string/card_title"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="4:3"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- 文字区：词头 19sp serif → 音标 14sp serif → 释义 15sp -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:id="@+id/tvCardEnglish"
+                style="@style/Text.Headword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="electric kettle" />
+
+            <TextView
+                android:id="@+id/tvCardPhonetic"
+                style="@style/Text.Phonetic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_tertiary"
+                tools:text="/ɪˈlektrɪk ˈketl/" />
+
+            <TextView
+                android:id="@+id/tvCardChinese"
+                style="@style/Text.HeadwordCjk"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                tools:text="电水壶" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 收藏心：热区 44dp（透明），视觉 28dp 居中 -->
+    <FrameLayout
+        android:id="@+id/boxFavorite"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp">
+
+        <ImageView
+            android:id="@+id/btnFavorite"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_heart_unfav"
+            android:clickable="true"
+            android:contentDescription="@string/a11y_favorite"
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_heart_outline" />
+    </FrameLayout>
+
+    <!--
+        多选圆点：与收藏心**同位置同尺寸**（44dp 热区 / 28dp 视觉），
+        进选择态时两者互换而不是并排 —— 并排会多出一个角标，
+        在 154dp 宽的卡上会挤掉图片右上角的内容，也会让「心」和「勾」看起来都变小。
+    -->
+    <FrameLayout
+        android:id="@+id/boxPick"
+        android:layout_width="@dimen/touch_min"
+        android:layout_height="@dimen/touch_min"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivPick"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_pick_off"
+            android:contentDescription="@null"
+            android:padding="5dp"
+            android:src="@drawable/ic_check" />
+    </FrameLayout>
+
+</FrameLayout>

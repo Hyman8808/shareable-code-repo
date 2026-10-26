@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 提示条（前提条件提醒）：warning_soft 底 + 左侧 3dp warning 竖条。字色用 warning。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/warning_soft" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+    <item
+        android:width="3dp"
+        android:gravity="start">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/warning" />
+            <corners
+                android:topLeftRadius="@dimen/radius_md"
+                android:bottomLeftRadius="@dimen/radius_md" />
+        </shape>
+    </item>
+</layer-list>

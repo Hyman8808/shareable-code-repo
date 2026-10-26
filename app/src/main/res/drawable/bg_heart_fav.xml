@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    已收藏的心形圆底：**荧光黄绿**（不再变蓝/变红）。
+    这是 brand_accent 的合法场合之一（另外两处：导航药丸、今日标记条）。
+    ⚠️ 压在它上面的图标必须是 text_on_accent（墨），不能是白色。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/brand_accent" />
+</shape>
