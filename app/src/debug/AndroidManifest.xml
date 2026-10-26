@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    【仅 debug 构建】模拟设备广播器
+    ============================================================
+    用途：没有真机样机时，用平板/手机自己扮演一台拇指相机，
+          验证「扫描识别（ORG-ID 主通道 + AIPicCamera 名字兜底）」
+          和「连上后不回数据 → 6s 亮出手动输入兜底」两条逻辑。
+
+    触发命令写在 MockBleReceiver.kt 的类注释里（XML 注释不能出现连续两个减号）。
+    release 构建不含此文件，也不含对应代码。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
+    <application>
+        <receiver
+            android:name=".debug.MockBleReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.turing.thumbcard.DEBUG_MOCK_BLE" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WM_W800 BleWiFi 配网协议 V1.2 · 交互总时序图（三图全流程）</title>
+<style>
+  :root{
+    --paper:#F4F2EC; --card:#FFFDF7; --ink:#172742; --text:#1A1917;
+    --muted:#6E695E; --line:#E3DFD3; --accent:#D9F24F;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 20px 64px; background:var(--paper); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header{margin-bottom:28px}
+  .kicker{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  h1{font-size:24px;line-height:1.35;margin:0 0 10px;color:var(--ink);font-weight:600}
+  .sub{font-size:13px;line-height:1.8;color:var(--muted);margin:0}
+  .chain{
+    margin:20px 0 32px;padding:14px 16px;background:var(--ink);color:#F4F2EC;border-radius:10px;
+    font-family:"JetBrains Mono","Cascadia Mono",Consolas,monospace;font-size:12px;line-height:2;overflow-x:auto;
+  }
+  .chain b{color:var(--accent);font-weight:600}
+  table.sum{width:100%;border-collapse:collapse;font-size:12.5px;margin:0 0 34px}
+  table.sum th,table.sum td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left}
+  table.sum th{font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:500;text-transform:uppercase}
+  table.sum td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 22px 10px;margin-bottom:26px}
+  section h2{font-size:16px;margin:0 0 4px;color:var(--ink);font-weight:600}
+  .meta{font-size:11.5px;color:var(--muted);letter-spacing:.02em;margin:0 0 18px}
+  .meta code{background:#EFECE1;border-radius:4px;padding:1px 5px;font-size:11px}
+  .canvas{overflow-x:auto;padding-bottom:12px}
+  .canvas svg{max-width:100%;height:auto}
+  .err{background:#FBEAEA;border:1px solid #E8B9B9;color:#8E3450;border-radius:8px;padding:12px 14px;font-size:12px;white-space:pre-wrap}
+  footer{margin-top:34px;font-size:12px;color:var(--muted);line-height:1.9;border-top:1px solid var(--line);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">WM_W800 BleWiFi 蓝牙配网协议 · V1.2</div>
+    <h1>交互总时序图（V1.2 全流程 · 三图版）</h1>
+    <p class="sub">原单张图过长，在部分 Markdown 渲染器里会被截断。现按「发现扫描 → 配网联网 → 绑定配置」拆成三张，顺序连读即为完整链路。</p>
+  </header>
+
+  <div class="chain">
+    <b>①</b> 广播 AIPicCameraXXXX → <b>②</b> 0x0F/0x8F 协商 → <b>③</b> 0x0D/0x8D 读凭据 → <b>④</b> 0x0E/0x8E 扫 WiFi<br>
+    → <b>⑤</b> 用户点选 + 输密码 → <b>⑥</b> 0x0A/0x8A 配网 → <b>⑦</b> 0x11/0x91 绑定回执 → <b>⑧</b> 0x12/0x92 配置 → <b>⑨</b> 首页
+  </div>
+
+  <table class="sum">
+    <thead><tr><th>图</th><th>阶段</th><th>覆盖命令码</th></tr></thead>
+    <tbody>
+      <tr><td>图 A</td><td>① 发现设备 → ② 连接协商 → ③ 扫描 WiFi</td><td>广播 / 0x0F·0x8F / 0x0D·0x8D / 0x0E·0x8E</td></tr>
+      <tr><td>图 B</td><td>④ 用户选热点 → ⑤ 下发配网 → ⑥ 设备联网</td><td>0x0A·0x8A</td></tr>
+      <tr><td>图 C</td><td>⑦ 绑定回传 → ⑧ 设备配置 → ⑨ 进入首页</td><td>0x11·0x91 / 0x12·0x92</td></tr>
+    </tbody>
+  </table>
+
+  <section>
+    <h2>图 A｜发现设备 → 密钥协商 → 扫描 WiFi（V1.2 核心）</h2>
+    <p class="meta">广播 · <code>0x0F/0x8F</code> · <code>0x0D/0x8D</code> · <code>0x0E/0x8E</code></p>
+    <div class="canvas" id="figA"></div>
+  </section>
+
+  <section>
+    <h2>图 B｜用户选热点 → 下发配网 → 设备联网</h2>
+    <p class="meta"><code>0x0A/0x8A</code> · 三条结果分支</p>
+    <div class="canvas" id="figB"></div>
+  </section>
+
+  <section>
+    <h2>图 C｜绑定回传 → 设备配置 → 进入首页</h2>
+    <p class="meta"><code>0x11/0x91</code> · <code>0x12/0x92</code></p>
+    <div class="canvas" id="figC"></div>
+  </section>
+
+  <footer>
+    图中省略了逐帧的分片（固定 14 字节）与 Ack（<code>0x10</code>/<code>0x90</code>）细节，只画逻辑一次请求-响应，详见协议正文 3.2 / 4.7 节。
+  </footer>
+</div>
+
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "base",
+  securityLevel: "loose",
+  fontFamily: '-apple-system,"Microsoft YaHei","PingFang SC",sans-serif',
+  themeVariables: {
+    background: "#FFFDF7",
+    primaryColor: "#F4F2EC",
+    primaryTextColor: "#1A1917",
+    primaryBorderColor: "#172742",
+    lineColor: "#6E695E",
+    secondaryColor: "#EFECE1",
+    tertiaryColor: "#FFFDF7",
+    noteBkgColor: "#F7F4E6",
+    noteTextColor: "#1A1917",
+    noteBorderColor: "#C9C2AC",
+    actorBkg: "#172742",
+    actorTextColor: "#FFFDF7",
+    actorBorder: "#172742",
+    signalColor: "#172742",
+    signalTextColor: "#1A1917",
+    labelBoxBkgColor: "#EFECE1",
+    labelBoxBorderColor: "#C9C2AC",
+    labelTextColor: "#1A1917",
+    loopTextColor: "#1A1917",
+    sequenceNumberColor: "#172742",
+    fontSize: "13px"
+  },
+  sequence: { useMaxWidth: true, wrap: true, mirrorActors: false, showSequenceNumbers: true }
+});
+
+const diagrams = {
+  figA: `sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant A as App
+    participant W as W800 固件
+
+    Note over W: 未配网，持续广播<br/>设备名 AIPicCamera3F2A
+    W-->>A: 广播包 ADV，ORG-ID 为 0C 07，Version 为 0x12
+    A->>A: 按 ORG-ID 过滤，从 Others 前 4 字节取编号
+    A->>U: 设备列表显示 AIPicCamera3F2A
+    U->>A: 点击该设备
+    A->>W: GATT 连接，订阅 Notify
+    A->>W: 0x0F 密钥协商，下发 RSA 公钥 128 字节，共 10 片
+    W-->>A: 0x8F 返回 AES-128 密钥，ECB 模式
+    Note over A,W: 加密通道建立，此后 PAYLOAD 全部加密
+    A->>W: 0x0D 查询设备信息
+    W-->>A: 0x8D 返回 apikey、deviceId、固件版本等 TLV
+    A->>W: 0x0E 请求扫描 WiFi
+    W->>W: 扫描 2.4G，最多 10 条，RSSI 降序，同名 SSID 合并
+    W-->>A: 0x8E 内含 0x88 第 1 条，字段为 序号 RSSI AUTH SSID
+    W-->>A: 0x8E 内含 0x88 第 2 条
+    W-->>A: 0x8E 内含 0x88 第 N 条，N 不超过 10
+    W-->>A: 0x8E 内含 0x89 列表结束，带 total 与 done 标志
+    A->>U: 渲染列表，带信号强度条与加密锁图标
+    Note over A,W: 用户点刷新时 App 重发 0x0E，两次间隔须大于等于 3 秒
+    A->>W: 0x0E 重发扫描请求
+    W-->>A: 0x8E 内含 0x81 为 0x08 表示扫描进行中，不重开线程
+    Note over A,W: 附近无 2.4G 时回 0x81 为 0x09，App 引导手动输入`,
+  figB: `sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant A as App
+    participant W as W800 固件
+    participant R as 路由器
+
+    A->>U: 展示图 A 收到的热点列表
+    U->>A: 点选某 2.4G 热点并输入密码
+    A->>W: 0x0A 配网，TLV 0x01 传 SSID，0x02 传密码，0x03 可选传 BSSID
+    W->>R: 发起关联，随后走 DHCP 取地址
+    alt 关联成功且拿到 IP
+        W-->>A: 0x8A 结果包，0x81 为 0x00，0x82 为 IP，0x83 为 MAC
+        A->>U: 提示配网成功并展示 IP
+    else 密码错误
+        W-->>A: 0x8A 结果包，0x81 为 0x02
+        A->>U: 提示密码错误，回到列表页可重输
+    else 关联超时或取 IP 失败
+        W-->>A: 0x8A 结果包，0x81 为 0x03
+        A->>U: 提示信号弱或路由器异常，建议换热点重试
+    end
+    Note over A,W: 配网整个过程应控制在 15 秒内给出结果`,
+  figC: `sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant A as App
+    participant W as W800 固件
+
+    A->>A: 用 0x8D 拿到的 apikey 与 deviceId 完成本地绑定并校验
+    alt 绑定成功
+        A->>W: 0x11 绑定结果，TLV 0x0F 为 0x00
+        W-->>A: 0x91 回执，0x81 为 0x00，设备点亮已绑定指示并播提示音
+    else 凭据无效
+        A->>W: 0x11 绑定结果，TLV 0x0F 为 0x01
+        W-->>A: 0x91 回执，0x81 为 0x00
+    else 云端不可达
+        A->>W: 0x11 绑定结果，TLV 0x0F 为 0x02
+        W-->>A: 0x91 回执，0x81 为 0x00
+    end
+    Note over W: 固件未实现 4.8 节时，收到 0x11 回 0x91 且 0x81 为 0x07，App 静默降级
+    A->>W: 0x12 设备配置，TLV 0x10 传物品语言，0x11 传界面语言，0x12 传云端存储天数
+    W-->>A: 0x92 回执
+    A->>U: 配网绑定完成，进入首页，开始拉取该设备记录
+    Note over W: 绑定失败不影响配网结果，0x8A 已成功即视为联网完成`
+};
+
+let n = 0;
+for (const [id, text] of Object.entries(diagrams)) {
+  const el = document.getElementById(id);
+  try {
+    const { svg } = await mermaid.render(`mmd-${++n}`, text);
+    el.innerHTML = svg;
+  } catch (e) {
+    el.innerHTML = `<div class="err">渲染失败：${String(e && e.message || e)}</div>`;
+  }
+}
+</script>
+</body>
+</html>

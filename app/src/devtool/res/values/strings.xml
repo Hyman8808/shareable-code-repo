@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">拍学机联调工具</string>
+
+    <string name="dev_title">拍学机联调工具</string>
+    <string name="dev_sub">配网 · 报文 · 记录</string>
+
+    <string name="tab_net">配网</string>
+    <string name="tab_log">报文</string>
+    <string name="tab_card">记录</string>
+
+    <string name="dev_scan">扫描设备</string>
+    <string name="dev_scanning">扫描中…</string>
+    <string name="dev_stop_scan">停止</string>
+    <string name="dev_no_device">未发现设备。请确认相机已开机且处于未配网广播状态。</string>
+    <string name="dev_connect">连接</string>
+    <string name="dev_disconnect">断开</string>
+    <string name="dev_wifi_list">设备扫到的 WiFi</string>
+    <string name="dev_rescan_wifi">重新扫描</string>
+    <string name="dev_send_wifi">下发配网</string>
+    <string name="dev_pwd_hint">WiFi 密码</string>
+    <string name="dev_ok">确定</string>
+    <string name="dev_cancel">取消</string>
+    <string name="dev_clear">清空</string>
+    <string name="dev_copy">复制</string>
+    <string name="dev_copied">已复制</string>
+    <string name="dev_apikey">apikey</string>
+    <string name="dev_deviceid">deviceId</string>
+    <string name="dev_baseurl">云端地址</string>
+    <string name="dev_lang">语言</string>
+    <string name="dev_pull">拉取记录</string>
+    <string name="dev_no_card">没有记录。设备拍一张再拉。</string>
+    <string name="dev_log_empty">还没有报文。连上设备后这里会实时显示每一帧。</string>
+    <string name="dev_filter">只看关键帧</string>
+</resources>

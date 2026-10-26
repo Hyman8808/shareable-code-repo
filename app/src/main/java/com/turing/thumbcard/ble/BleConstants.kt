@@ -21,6 +21,14 @@ object BleConstants {
     /** 联盛德公司 ORG-ID，出现在广播包 0xFF 制造商数据中 */
     const val ORG_ID_WINNERMICRO = 0x070C
 
+    /**
+     * 设备名统一前缀（协议 V1.2 §3.1）。
+     *
+     * 完整格式：`AIPicCamera` + 4 位大写 hex 编号（MAC 低 2 字节），如 `AIPicCamera3F2A`。
+     * 扫描时作为 ORG-ID 之外的兜底识别通道（固件广播字段还没改好时仍能连上）。
+     */
+    const val NAME_PREFIX = "AIPicCamera"
+
     // ==================== 帧标志位 ====================
     const val PACKET_FLAG_ENCRYPT_MASK = 0x80
     const val PACKET_FLAG_ACK_MASK = 0x40
@@ -105,6 +113,22 @@ object BleConstants {
     const val TLV_RESP_TYPE_WIFI_SCAN_RESULT = 0x86
     const val TLV_RESP_TYPE_PUB_ENC_KEY = 0x87
 
+    /**
+     * V1.2 新增：WiFi 列表条目，UTF-8 文本一行：
+     * `序号|RSSI|AUTH|SSID`
+     *
+     * SSID 刻意放在**最后**，因此允许含逗号、竖线、中文等任何字符
+     * （802.11 允许 SSID 含可打印字符），解析时只需从左侧数两个 `|`。
+     */
+    const val TLV_RESP_TYPE_WIFI_LIST_V2 = 0x88
+
+    /**
+     * V1.2 新增：列表元信息，2 字节 `total(1B) + done(1B)`。
+     *
+     * `done=1` 表示本次列表发送完毕；App 用 `total` 校验是否收齐。
+     */
+    const val TLV_RESP_TYPE_WIFI_LIST_META = 0x89
+
     /** ★ 新增：APIKEY（32 字节 ASCII 十六进制） */
     const val TLV_RESP_TYPE_APIKEY = 0x0A
     /** ★ 新增：DEVICEID（≤18 字节 ASCII） */
@@ -155,6 +179,29 @@ object BleConstants {
     const val TIMEOUT_CONNECT = 10
     const val TIMEOUT_NEGOTIATE = 10
     const val TIMEOUT_CONFIG_STA = 50
+
+    /**
+     * WiFi 列表收集超时（秒）。
+     *
+     * 设备扫一次 2.4G（遍历 13 信道）实测 2~4s，加上 10 条列表分片传输约 1s，
+     * 15s 留足余量；超时后上层允许用户手动点「刷新」重试。
+     */
+    const val TIMEOUT_WIFI_SCAN = 15
+
+    /**
+     * `0x8E` 扫描响应里的 `0x81` 错误码（**设备侧错误 id，与 App 内部码不同命名空间**）。
+     *
+     * ⚠️ 不要用 `messageOf()` 解析这两个值 —— 那里 8/9 是「蓝牙未打开 / 定位未打开」。
+     */
+    const val WIFI_SCAN_OK = 0x00
+    const val WIFI_SCAN_FAILED = 0x04
+
+    /** V1.2 新增：扫描正在进行。**不是错误**，静默等待即可（见配网协议 V1.2 §4.9.1） */
+    const val WIFI_SCAN_BUSY = 0x08
+
+    /** V1.2 新增：扫描成功但附近没有可用的 2.4G 热点（见 §4.9.3） */
+    const val WIFI_SCAN_NO_AP = 0x09
+
     /**
      * 查询设备信息（0x0D）超时。
      *

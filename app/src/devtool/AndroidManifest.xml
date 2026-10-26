@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  联调工具版（devtool）清单覆盖。
+
+  做法：把产品主入口整段移除，只留一个联调入口。
+  注意：XML 注释里不能出现两个连续的减号，AAPT 会直接报解析失败。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+
+        <!-- 产品主界面在联调包里没有入口，整个节点移除 -->
+        <activity
+            android:name=".ui.MainActivity"
+            tools:node="remove" />
+
+        <!-- 联调工具唯一入口 -->
+        <activity
+            android:name=".devtool.DevToolActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.ThumbCard"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

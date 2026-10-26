@@ -75,6 +75,26 @@ Long-press a card to save it.</string>
     <string name="wifi_ssid_empty">Please enter the Wi-Fi name</string>
     <string name="wifi_pwd_empty">Please enter the Wi-Fi password</string>
 
+    <string name="wifi_ap_title">Available networks</string>
+    <string name="wifi_scan_loading">Getting the Wi-Fi list from the device…</string>
+    <string name="wifi_scan_empty">No 2.4G Wi-Fi found.\nMake sure your router has 2.4G enabled, then tap refresh at the top right.</string>
+    <string name="wifi_scan_failed">The device could not scan. Tap refresh at the top right to retry.</string>
+    <string name="wifi_scan_slow">Still waiting for the network list from the device…\nYou can keep waiting or enter it manually.</string>
+    <string name="wifi_manual_entry">Enter Wi-Fi manually</string>
+    <string name="wifi_manual_title">Enter Wi-Fi manually</string>
+    <string name="wifi_manual_ssid_label">Network name (SSID, case-sensitive)</string>
+    <string name="wifi_manual_5g_warn">Your phone is on 5G (%2$dMHz): %1$s. The camera supports 2.4G only — change it if this is a 5G-only network name</string>
+    <string name="wifi_manual_pwd_label">Password (leave blank if open)</string>
+    <string name="wifi_scan_wait">The device is scanning, please wait</string>
+    <string name="wifi_refresh">Refresh network list</string>
+    <string name="wifi_refresh_wait">Please wait 3 seconds before refreshing</string>
+    <string name="wifi_pwd_dialog_title">Enter the password for “%1$s”</string>
+    <string name="wifi_connect">Connect</string>
+    <string name="wifi_configuring">Connecting to Wi-Fi…</string>
+    <string name="wifi_binding">Setting up the link…</string>
+    <string name="wifi_encrypted_cd">Secured</string>
+    <string name="wifi_pick_cd">Select this network</string>
+
     <!-- ============ Cards / Detail ============ -->
     <string name="cards_title">Word cards</string>
     <string name="cards_empty_old">No cards yet\nTake a photo to create one</string>
@@ -430,6 +450,11 @@ Saved cards show up here.</string>
     <string name="restore_reason_dup">duplicate name %1$d</string>
     <string name="restore_reason_small">too small %1$d</string>
     <string name="restore_reason_unreadable">unreadable %1$d</string>
+    <string name="restore_reason_local_short">already local</string>
+    <string name="restore_reason_unknown_short">card not in local library</string>
+    <string name="restore_reason_dup_short">english name matches several cards</string>
+    <string name="restore_reason_small_short">too small (thumbnail or card-sized image)</string>
+    <string name="restore_reason_unreadable_short">unreadable</string>
     <string name="restore_progress_fmt">Restoring %1$d/%2$d…</string>
     <string name="restore_failed_fmt">%1$d failed</string>
     <string name="restore_need_permission">Gallery read permission is required</string>

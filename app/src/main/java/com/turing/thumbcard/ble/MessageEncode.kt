@@ -107,6 +107,28 @@ class MessageEncode {
 
     fun getMessagePacketList(): List<MessagePacket> = messagePacketList
 
+    /**
+     * 直接以**裸 PAYLOAD** 组装单帧，不走 TLV。
+     *
+     * 仅用于 `0x10` Ack —— 按协议它的 PAYLOAD 是「1 个字节的 Sequence」，
+     * 不是 TLV（不是 `Type+Length+Value`）。用 [encode] 会多塞 2 个字节，
+     * 设备侧解析出的 Seq 就错了。
+     */
+    fun encodeRaw(cmd: Byte, payload: ByteArray, encrypt: Boolean, aesKey: ByteArray?) {
+        var data = payload
+        if (encrypt) {
+            data = AesUtils.encrypt(data, aesKey) ?: return
+        }
+        val packet = MessagePacket()
+        packet.cmd = cmd
+        packet.seq = 0
+        packet.no = 0
+        packet.flag = if (encrypt) BleConstants.PACKET_FLAG_ENCRYPT_MASK.toByte() else 0
+        packet.payload = data
+        messagePacketList.add(packet)
+    }
+
+
     // ==================== 解码 ====================
 
     /**

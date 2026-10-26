@@ -93,7 +93,20 @@ object GalleryRestore {
         val match: Match
     )
 
-    data class Skip(val displayName: String, val reason: Reason)
+    /**
+     * 一张没被恢复的图，以及具体为什么。
+     *
+     * [detail] 是给人看的补充信息（实际尺寸、识别到的 cardId 等）。
+     * 加这个字段的直接原因：用户反馈「相册里明明有那张图，恢复却说没有」，
+     * 而原来的报告只给「跳过 1 张 · 尺寸不足」这种汇总，
+     * 无法区分是**尺寸不足**、**库里没有这张卡**、还是**本地已有**。
+     * 现场排障时这三种的处理方式完全不同，必须一眼能分开。
+     */
+    data class Skip(
+        val displayName: String,
+        val reason: Reason,
+        val detail: String? = null
+    )
 
     data class Report(
         /** 相册里扫到多少张属于本应用的图 */
@@ -158,7 +171,14 @@ object GalleryRestore {
                 if (idMeta != null) {
                     val c = byId[idMeta.cardId]
                     if (c == null) {
-                        skipped += Skip(row.displayName, Reason.UNKNOWN_CARD)
+                        // 最常见的一种失败：图是好的、标识也对，但本地库里没有这个 id 的卡片
+                        // （记录还没同步到 / 换了一台相机 / 换了 apikey）。
+                        // 把 id 打出来，用户一看就知道差在哪一步。
+                        skipped += Skip(
+                            row.displayName,
+                            Reason.UNKNOWN_CARD,
+                            "图上是卡片 id=${idMeta.cardId}，本地库里没有这张卡"
+                        )
                         continue
                     }
                     target = c
@@ -182,7 +202,13 @@ object GalleryRestore {
                 }
 
                 val key = "${target.id}|${style.code}"
-                if (!taken.add(key)) continue
+                // 🔴 占位必须等所有校验都通过之后再落。
+                // 早期实现把 taken.add 放在这里（校验之前），结果是：相册里同一张卡、
+                // 同一种风格存在多份时，**先被扫到的那份**（可能是截图、可能是转过一手的
+                // 压缩图，尺寸不够被 TOO_SMALL 挡掉）已经把 key 占了，
+                // 后面那份真正的全尺寸原图会被当成「重复」直接丢弃。
+                // 表现就是用户相册里明明有那张图、恢复结果却说没有。
+                if (key in taken) continue
 
                 // ---- 4. 已是本地的就跳过（不覆盖可能更好的那份） ----
                 if (ImageStore.ai(ctx, target.id, style) != null) {
@@ -199,10 +225,15 @@ object GalleryRestore {
                 val (w, h) = size
                 if (w < MIN_WIDTH || w.toLong() * h < MIN_PIXELS) {
                     Log.d(TAG, "too small ${row.displayName} ${w}x$h")
-                    skipped += Skip(row.displayName, Reason.TOO_SMALL)
+                    skipped += Skip(
+                        row.displayName,
+                        Reason.TOO_SMALL,
+                        "${w}x$h"
+                    )
                     continue
                 }
 
+                taken.add(key)
                 Log.d(TAG, "found ${row.displayName} ${w}x$h -> card=${target.id} style=${style.code} by=$match")
                 ready += Candidate(target.id, style, row.uri, row.displayName, match)
             }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    信号强度条的单个柱子。
+    颜色用墨标主文字色，adapter 通过 alpha 区分「有效格」与「无效格」，
+    避免为 4 档强度各做一个 drawable。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/text_primary" />
+    <corners android:radius="1dp" />
+</shape>

@@ -15,7 +15,16 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
+        android:maxSdkVersion="32" />
+
+    <!--
+        读「手机当前连着的 WiFi 名称」，给配网输入框预填用。
+        ACCESS_WIFI_STATE 是普通权限，不申请也拿不到 connectionInfo；
+        NEARBY_WIFI_DEVICES 是 API 33 起读 SSID 的必需要求（定位权限在 33 起不够）。
+    -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+        tools:targetApi="tiramisu" />
 
     <!-- 网络 -->
     <uses-permission android:name="android.permission.INTERNET" />

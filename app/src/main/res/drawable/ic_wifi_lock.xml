@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 加密网络标记：小锁。只在非开放网络显示。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="14dp"
+    android:viewportWidth="12"
+    android:viewportHeight="14">
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M6,0C3.79,0 2,1.79 2,4v2H1.5C0.67,6 0,6.67 0,7.5v5C0,13.33 0.67,14 1.5,14h9c0.83,0 1.5,-0.67 1.5,-1.5v-5C12,6.67 11.33,6 10.5,6H10V4C10,1.79 8.21,0 6,0zM6,1.5c1.38,0 2.5,1.12 2.5,2.5v2h-5V4C3.5,2.62 4.62,1.5 6,1.5zM6,8.5c0.83,0 1.5,0.67 1.5,1.5c0,0.55 -0.3,1.03 -0.75,1.29V12.5c0,0.41 -0.34,0.75 -0.75,0.75S5.25,12.91 5.25,12.5v-1.21C4.8,11.03 4.5,10.55 4.5,10C4.5,9.17 5.17,8.5 6,8.5z" />
+</vector>

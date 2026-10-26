@@ -21,6 +21,8 @@ import android.util.Log
 import com.turing.thumbcard.ble.model.ConfigStaResult
 import com.turing.thumbcard.ble.model.DeviceInfoResult
 import com.turing.thumbcard.ble.model.ScannedDevice
+import com.turing.thumbcard.ble.model.WifiAp
+import com.turing.thumbcard.ble.model.WifiScanResult
 import com.turing.thumbcard.crypto.RsaUtils
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -89,6 +91,14 @@ class BleWiFiClient(private val context: Context) {
         fun onWifiConfigured(result: ConfigStaResult)
         fun onError(code: Int, message: String)
         fun onDisconnected()
+
+        /**
+         * 设备回报「扫描进行中」（`0x8E{0x81:0x08}`）。
+         *
+         * **这不是错误**：用户在设备上一轮扫描没结束时又点了刷新就会走到这里。
+         * 上层应静默等待，不要弹错误提示 —— 弹了就是「一闪而过的报错」体验事故。
+         */
+        fun onWifiScanBusy() {}
         /** 原始收发报文（十六进制），用于问题诊断 */
         fun onTraffic(direction: String, hex: String) {}
     }
@@ -200,9 +210,21 @@ class BleWiFiClient(private val context: Context) {
      * 解析广播包，提取 ORG-ID / Type / Version。
      *
      * 广播结构：0xFF | ORG-ID(2B 小端) | Type(1B) | Version(1B) | Others | 0x09 | Name
+     *
+     * 两条识别通道（V1.2 起）：
+     *  1. **ORG-ID = 0x070C**（主通道，联盛德官方格式，能拿到 Type/Version）
+     *  2. **设备名以 `AIPicCamera` 开头**（兜底，用于固件还没改 ORG-ID 字段、
+     *     或产线试产板沿用原厂 demo 广播的场景）。
+     *
+     * 为什么必须有第 2 条：现场样机的广播包未必已经按 V1.2 填好，若只认 ORG-ID，
+     * 一次广播字段不对就整台设备扫不到，联调无从下手。名字通道至少能连上，
+     * 后续靠 `0x8D` 查设备信息再补全凭据。
      */
     private fun parseAdvertisement(result: ScanResult): ScannedDevice? {
         val record = result.scanRecord?.bytes ?: return null
+        val devName = runCatching { result.device.name }.getOrNull()
+            ?: result.scanRecord?.deviceName
+        var fallback: ScannedDevice? = null
         var pos = 0
         try {
             while (pos + 1 < record.size) {
@@ -219,8 +241,7 @@ class BleWiFiClient(private val context: Context) {
                     if (orgId == BleConstants.ORG_ID_WINNERMICRO) {
                         return ScannedDevice(
                             mac = result.device.address,
-                            name = runCatching { result.device.name }.getOrNull()
-                                ?: result.scanRecord?.deviceName,
+                            name = devName,
                             orgId = orgId,
                             type = record[dataStart + 2].toInt() and 0xFF,
                             version = record[dataStart + 3].toInt() and 0xFF,
@@ -233,7 +254,19 @@ class BleWiFiClient(private val context: Context) {
         } catch (e: Exception) {
             Log.w(TAG, "parse advertisement failed", e)
         }
-        return null
+
+        // 兜底：名字通道。orgId 填 0 表示「未从广播包识别」，不参与协议版本判断
+        if (devName?.startsWith(BleConstants.NAME_PREFIX, ignoreCase = true) == true) {
+            fallback = ScannedDevice(
+                mac = result.device.address,
+                name = devName,
+                orgId = 0,
+                type = 0,
+                version = 0,
+                rssi = result.rssi
+            )
+        }
+        return fallback
     }
 
     // ==================== 连接 ====================
@@ -466,6 +499,202 @@ class BleWiFiClient(private val context: Context) {
         }
     }
 
+    // ==================== 扫描 WiFi（V1.2） ====================
+
+    /** 扫描结果回调 */
+    private var wifiScanCallback: ((WifiScanResult) -> Unit)? = null
+
+    /** 已收集到的 AP，按 SSID 去重（同 SSID 保留最强 RSSI） */
+    private val scanAps = LinkedHashMap<String, WifiAp>()
+
+    /** 设备声明的条数（0x89 的 total），-1 表示还没收到 */
+    private var scanTotal = -1
+
+    /** 老固件（无 AUTH 字段）标记：列表一律要求输密码 */
+    private var scanAuthUnknown = false
+
+    /** 列表收集超时 */
+    private var scanTimeoutRunnable: Runnable? = null
+
+    /**
+     * 请求设备扫描 WiFi 并收集列表（配网协议 V1.2 §4.5）。
+     *
+     * 交互模型是 **pull**：App 发 `0x0E`，设备扫 2.4G 后把结果按
+     * `0x88`（`序号|RSSI|AUTH|SSID`）逐条推上来，最后用 `0x89`（total/done）收尾。
+     *
+     * 与 `0x0D`/`0x0E` 一样，PAYLOAD 为空 —— 必须放零长占位 TLV，
+     * 否则官方 `serialize800()` 不产生任何分片，指令根本发不出去。
+     *
+     * @param callback 扫完（或超时）时回调一次，列表已按 RSSI 降序
+     * @return false 表示指令未能发出（连接已断等），此时不会回调
+     */
+    fun startWifiScan(
+        timeoutMs: Long = BleConstants.TIMEOUT_WIFI_SCAN * 1000L,
+        callback: (WifiScanResult) -> Unit
+    ): Boolean {
+        // 重扫必须清空上一轮，否则「刷新」会把旧热点和新热点混在一起
+        scanAps.clear()
+        scanTotal = -1
+        scanAuthUnknown = false
+        cancelScanTimeout()
+        wifiScanCallback = callback
+
+        val encode = MessageEncode()
+        encode.putBytesValue(BleConstants.TLV_TYPE_PLACEHOLDER, ByteArray(0))
+        encode.encode(
+            BleConstants.PACKET_CMD_WIFI_SCAN.toByte(),
+            encryptEnabled,
+            aesKey
+        )
+
+        writeExecutor.execute {
+            val sent = writePacketsBlocking(encode)
+            if (!sent) {
+                post {
+                    finishScan(
+                        error = BleConstants.STATUS_GATT_WRITE,
+                        message = "扫描指令发送失败（分片写超时）"
+                    )
+                }
+                return@execute
+            }
+            startScanTimeout(timeoutMs)
+        }
+        return true
+    }
+
+    /**
+     * 取消等待中的扫描（页面退出时调用，避免回调打到已销毁的界面）。
+     */
+    fun cancelWifiScan() {
+        cancelScanTimeout()
+        wifiScanCallback = null
+        scanAps.clear()
+        scanTotal = -1
+    }
+
+    private fun startScanTimeout(timeoutMs: Long) {
+        val r = Runnable {
+            // 超时也把已收到的部分结果交出去：用户至少能看到半张列表
+            finishScan(error = BleConstants.STATUS_TIMEOUT, message = "获取 WiFi 列表超时")
+        }
+        scanTimeoutRunnable = r
+        mainHandler.postDelayed(r, timeoutMs)
+    }
+
+    private fun cancelScanTimeout() {
+        scanTimeoutRunnable?.let { mainHandler.removeCallbacks(it) }
+        scanTimeoutRunnable = null
+    }
+
+    /**
+     * 收尾：排序 + 回调，且**只回调一次**。
+     *
+     * @param error 0 表示正常；非 0 时列表可能为空或不全
+     */
+    private fun finishScan(error: Int, message: String?) {
+        cancelScanTimeout()
+        val cb = wifiScanCallback ?: return
+        wifiScanCallback = null
+
+        if (error != 0 && error != BleConstants.STATUS_TIMEOUT) {
+            post { provisionListener?.onError(error, message ?: "扫描失败") }
+            return
+        }
+        val list = scanAps.values.sortedByDescending { it.rssi }
+        post { cb(WifiScanResult(list, authUnknown = scanAuthUnknown)) }
+    }
+
+    private fun onWifiScan(tlvs: Map<Int, ByteArray>) {
+        // ① 错误/状态分支
+        val err = tlvs[BleConstants.TLV_RESP_TYPE_ERROR_ID]
+            ?.firstOrNull()?.toInt()?.and(0xFF)
+        if (err != null) {
+            when (err) {
+                BleConstants.WIFI_SCAN_OK -> Unit // 只是确认，继续等列表
+                BleConstants.WIFI_SCAN_BUSY -> {
+                    // 不是错误：设备正在扫，等它这一轮结束即可（协议 §4.9.1）
+                    post { provisionListener?.onWifiScanBusy() }
+                    return
+                }
+                BleConstants.WIFI_SCAN_FAILED -> {
+                    finishScan(BleConstants.STATUS_WIFI_SCAN, "WiFi 扫描失败")
+                    return
+                }
+                BleConstants.WIFI_SCAN_NO_AP -> {
+                    // 扫描成功但没有 2.4G 热点 —— 与「扫描失败」必须区分
+                    cancelScanTimeout()
+                    val cb = wifiScanCallback
+                    wifiScanCallback = null
+                    post { cb?.invoke(WifiScanResult(emptyList())) }
+                    return
+                }
+                else -> {
+                    finishScan(BleConstants.STATUS_WIFI_SCAN, "扫描失败（设备错误码 $err）")
+                    return
+                }
+            }
+        }
+
+        // ② 新格式（V1.2）
+        tlvs[BleConstants.TLV_RESP_TYPE_WIFI_LIST_V2]?.let { parseApLine(it)?.let(::mergeAp) }
+
+        // ③ 旧格式（V1.0 的 `SSID,RSSI`），老固件会走这里；没有加密类型
+        tlvs[BleConstants.TLV_RESP_TYPE_WIFI_SCAN_RESULT]?.let(::parseLegacyLines)
+
+        // ④ 结束标志
+        val meta = tlvs[BleConstants.TLV_RESP_TYPE_WIFI_LIST_META] ?: return
+        if (meta.size < 2) return
+        scanTotal = meta[0].toInt() and 0xFF
+        val done = (meta[1].toInt() and 0xFF) == 1
+        if (done) finishScan(0, null)
+    }
+
+    /**
+     * 解析一行 `序号|RSSI|AUTH|SSID`。
+     *
+     * SSID 在最后一段，因此它含逗号、竖线都不会切错 —— 这是协议刻意的排布。
+     */
+    private fun parseApLine(raw: ByteArray): WifiAp? {
+        val line = raw.toString(Charsets.UTF_8).trim()
+        if (line.isEmpty()) return null
+        val p1 = line.indexOf('|')
+        if (p1 <= 0) return null
+        val p2 = line.indexOf('|', p1 + 1)
+        if (p2 < 0) return null
+        val p3 = line.indexOf('|', p2 + 1)
+        if (p3 < 0) return null
+
+        val rssi = line.substring(p1 + 1, p2).trim().toIntOrNull() ?: return null
+        val auth = line.substring(p2 + 1, p3).trim().toIntOrNull() ?: WifiAp.Auth.UNKNOWN
+        val ssid = line.substring(p3 + 1)
+        if (ssid.isBlank()) return null
+        return WifiAp(ssid, rssi, auth)
+    }
+
+    /** 旧格式：`SSID,RSSI\r\n` 多行。SSID 可能含逗号，因此从**最后一个逗号**右切。 */
+    private fun parseLegacyLines(raw: ByteArray) {
+        scanAuthUnknown = true
+        raw.toString(Charsets.UTF_8)
+            .split("\r\n", "\n")
+            .forEach { line ->
+                val s = line.trim()
+                if (s.isEmpty()) return@forEach
+                val i = s.lastIndexOf(',')
+                if (i <= 0) return@forEach
+                val rssi = s.substring(i + 1).trim().toIntOrNull() ?: return@forEach
+                val ssid = s.substring(0, i)
+                if (ssid.isBlank()) return@forEach
+                mergeAp(WifiAp(ssid, rssi, WifiAp.Auth.UNKNOWN))
+            }
+    }
+
+    /** 同 SSID 合并：保留 RSSI 更强的那条（Mesh / 多频同名场景） */
+    private fun mergeAp(ap: WifiAp) {
+        val old = scanAps[ap.ssid]
+        if (old == null || ap.rssi > old.rssi) scanAps[ap.ssid] = ap
+    }
+
     // ==================== 配置 WiFi ====================
 
     fun configureSta(
@@ -688,6 +917,13 @@ class BleWiFiClient(private val context: Context) {
             return
         }
 
+        // 设备要求 Ack 时回一帧 0x10（PAYLOAD = 收到的 Sequence）。
+        // 老版本 App 从不回，导致多分片响应（如 0x8D、0x8E 列表）只能靠设备超时重发；
+        // V1.2 起列表帧数变多，这条必须补上。
+        if ((packet.flag.toInt() and BleConstants.PACKET_FLAG_ACK_MASK) != 0) {
+            sendAck(packet.seq.toInt() and 0xFF)
+        }
+
         if (recvBuffer == null) recvBuffer = MessageEncode()
         recvBuffer!!.addMessagePacket(packet)
 
@@ -705,7 +941,26 @@ class BleWiFiClient(private val context: Context) {
             BleConstants.PACKET_RESP_CMD_KEY_EXCHANGE -> onKeyExchange(tlvs)
             BleConstants.PACKET_RESP_CMD_QUERY_CONFIG -> onDeviceInfo(tlvs)
             BleConstants.PACKET_RESP_CMD_CONFIG_STA -> onConfigSta(tlvs)
+            BleConstants.PACKET_RESP_CMD_WIFI_SCAN -> onWifiScan(tlvs)
         }
+    }
+
+    /**
+     * 回复 Ack（`0x10`）。
+     *
+     * 按协议：`Flag` 与 `NO` 固定 `0x00`，PAYLOAD 为 1 字节「收到的 Sequence」，
+     * 且是**裸字节不是 TLV** —— 所以走 [MessageEncode.encodeRaw]。
+     */
+    private fun sendAck(seq: Int) {
+        if (gatt == null || writeChar == null) return
+        val encode = MessageEncode()
+        encode.encodeRaw(
+            BleConstants.PACKET_CMD_ACK.toByte(),
+            byteArrayOf((seq and 0xFF).toByte()),
+            false,
+            null
+        )
+        writeExecutor.execute { writePacketsBlocking(encode) }
     }
 
     private fun onKeyExchange(tlvs: Map<Int, ByteArray>) {

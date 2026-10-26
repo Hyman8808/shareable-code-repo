@@ -25,8 +25,8 @@ android {
         applicationId "com.turing.thumbcard"
         minSdk 23
         targetSdk 35
-        versionCode 44
-        versionName "2.10.0"
+        versionCode 47
+        versionName "2.11.2"
 
         // 测试环境凭据（生产环境应改为运行时从设备读取，不硬编码）
         buildConfigField "String", "DEFAULT_API_KEY", "\"${prop('DEFAULT_API_KEY')}\""
@@ -94,6 +94,21 @@ android {
             applicationIdSuffix ".ai"
             versionNameSuffix "-ai"
             buildConfigField "boolean", "IS_AI_EDITION", "true"
+        }
+        /**
+         * 联调工具（给客户/固件工程师用），与产品版**可同时安装**。
+         *
+         * 与 standard/ai 的区别：
+         *  - 入口只有一个 DevToolActivity，主界面（首页/收藏/我的）整段移除，不带任何产品逻辑
+         *  - 不写 Room、不做绑定、不扣 AI 额度，纯「扫设备 → 配网 → 看记录」
+         *  - apikey / deviceId / 云端地址全部可手填（客户设备烧的是自己的凭据）
+         *  - 带原始报文面板：BLE 收发的每一帧十六进制都能看到，联调就靠这个
+         */
+        devtool {
+            dimension "edition"
+            applicationIdSuffix ".devtool"
+            versionNameSuffix "-devtool"
+            buildConfigField "boolean", "IS_AI_EDITION", "false"
         }
     }
 

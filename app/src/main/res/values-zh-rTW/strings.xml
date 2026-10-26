@@ -77,6 +77,26 @@
     <string name="wifi_ssid_empty">請填寫 WiFi 名稱</string>
     <string name="wifi_pwd_empty">請填寫 WiFi 密碼</string>
 
+    <string name="wifi_ap_title">可用 WiFi</string>
+    <string name="wifi_scan_loading">正在取得裝置掃描到的 Wi-Fi…</string>
+    <string name="wifi_scan_empty">沒有掃描到可用的 2.4G WiFi\n請確認路由器已開啟 2.4G，然後點右上角重新整理</string>
+    <string name="wifi_scan_failed">裝置掃描失敗，請點右上角重新整理再試</string>
+    <string name="wifi_scan_slow">還沒收到裝置回傳的熱點清單…\n可以繼續等，也可以手動輸入</string>
+    <string name="wifi_manual_entry">手動輸入 WiFi</string>
+    <string name="wifi_manual_title">手動輸入 WiFi</string>
+    <string name="wifi_manual_ssid_label">WiFi 名稱（SSID，區分大小寫）</string>
+    <string name="wifi_manual_5g_warn">目前手機連的是 5G（%2$dMHz）：%1$s。相機只支援 2.4G，若這是 5G 專用名稱請改掉</string>
+    <string name="wifi_manual_pwd_label">WiFi 密碼（開放網路留空）</string>
+    <string name="wifi_scan_wait">裝置正在掃描，請稍候</string>
+    <string name="wifi_refresh">重新整理 WiFi 清單</string>
+    <string name="wifi_refresh_wait">請 3 秒後再重新整理</string>
+    <string name="wifi_pwd_dialog_title">輸入「%1$s」的密碼</string>
+    <string name="wifi_connect">連線</string>
+    <string name="wifi_configuring">正在連線 WiFi…</string>
+    <string name="wifi_binding">正在建立綁定…</string>
+    <string name="wifi_encrypted_cd">已加密</string>
+    <string name="wifi_pick_cd">選擇此網路</string>
+
     <!-- ============ 單字卡 / 詳情 ============ -->
     <string name="cards_title">單字卡</string>
     <string name="cards_empty_old">還沒有單字卡\n用相機拍一拍，就能產生卡片囉</string>
@@ -434,6 +454,11 @@
     <string name="restore_reason_dup">名稱重複 %1$d</string>
     <string name="restore_reason_small">尺寸不足 %1$d</string>
     <string name="restore_reason_unreadable">讀不出 %1$d</string>
+    <string name="restore_reason_local_short">本機已有</string>
+    <string name="restore_reason_unknown_short">資料庫裡沒有這張卡</string>
+    <string name="restore_reason_dup_short">英文名撞了多張卡</string>
+    <string name="restore_reason_small_short">尺寸不足（存的是縮圖或卡片小圖）</string>
+    <string name="restore_reason_unreadable_short">讀不出來</string>
     <string name="restore_progress_fmt">正在恢復 %1$d/%2$d…</string>
     <string name="restore_failed_fmt">%1$d 張恢復失敗</string>
     <string name="restore_need_permission">需要相冊讀取權限才能找回</string>

@@ -6,34 +6,55 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.turing.thumbcard.BuildConfig
 import com.turing.thumbcard.R
 import com.turing.thumbcard.ble.BleConstants
 import com.turing.thumbcard.ble.BleWiFiClient
 import com.turing.thumbcard.ble.model.ConfigStaResult
 import com.turing.thumbcard.ble.model.DeviceInfoResult
+import com.turing.thumbcard.ble.model.WifiAp
+import com.turing.thumbcard.ble.model.WifiScanResult
 import com.turing.thumbcard.data.device.DeviceLangStore
 import com.turing.thumbcard.data.repo.BindRepository
 import com.turing.thumbcard.data.repo.BindResult
 import com.turing.thumbcard.databinding.ActivityWifiConfigBinding
+import com.turing.thumbcard.databinding.DialogWifiManualBinding
+import com.turing.thumbcard.databinding.DialogWifiPasswordBinding
 import com.turing.thumbcard.ui.MainActivity
 import com.turing.thumbcard.ui.card.CardListActivity
+import com.turing.thumbcard.util.CurrentWifi
 import kotlinx.coroutines.launch
 
 /**
- * WiFi 配网 + 绑定页。
+ * WiFi 配网 + 绑定页（配网协议 V1.2 · 列表式）。
  *
- * 流程：
- *  连接设备 → 密钥协商 → 查询设备信息（读取 apikey/deviceId）
- *  → 下发 WiFi → 确认配网成功 → 建立本地绑定 → 进入单词卡
+ * 流程（与 V1.1 及以前最大的区别：**用户不再手输 SSID**）：
+ * ```
+ * 进页 → 连接设备 → 密钥协商 → 查询设备信息（读 apikey/deviceId）
+ *      → 请求设备扫描 WiFi（0x0E）→ 收 0x88 列表 + 0x89 结束
+ *      → 用户点选热点（开放网络直接下发，加密网络弹密码框）
+ *      → 下发 0x0A → 0x8A 成功 → 本地绑定 → 下发设备配置（0x12）→ 首页
+ * ```
+ *
+ * 三点设计取舍：
+ *  1. **进页即连**，不再等用户填表。列表是从设备来的，不连就拿不到，
+ *     所以"先填再连"在新模型下没有意义。
+ *  2. **刷新有 3s 节流**。图灵线上曾出现"刷新连点导致设备扫描线程踩踏"（#2349），
+ *     这里主动挡一层，避免把问题带给固件。
+ *  3. **超时也展示已收到的部分列表**。设备扫 10 个热点时若中途超时，
+ *     用户看到 6 个也比看到空页面强。
  */
 class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener {
 
     private lateinit var binding: ActivityWifiConfigBinding
     private lateinit var bleClient: BleWiFiClient
     private lateinit var bindRepo: BindRepository
+    private lateinit var apAdapter: WifiApAdapter
 
     private var deviceMac: String = ""
     private var deviceName: String = ""
@@ -45,11 +66,43 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
     private var configHandled = false
     private var plaintextFallbackTried = false
 
+    /** 是否正在等设备回列表 */
+    private var scanning = false
+
+    /** 正在下发 0x0A / 等 0x8A，期间禁止再点列表 */
+    private var configBusy = false
+
+    /** 上次发起扫描的时间，用于 3s 节流 */
+    private var lastScanAt = 0L
+
+    private var pendingSsid: String = ""
+    private var pendingPwd: String = ""
+    private var pendingBssid: String? = null
+
+    /** 读 WiFi 名称的权限只主动要一次，避免「点一下弹一次」 */
+    private var ssidPermAsked = false
+
+    /**
+     * 读 SSID 的权限回调。
+     *
+     * 给不给都继续弹输入框：给了就预填当前网络，没给就留空手打。
+     * 这里不做「拒绝就报错」——那等于把一个本来还能用的兜底入口关掉。
+     */
+    private val ssidPermLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { showManualDialog() }
+
     private val log = StringBuilder()
 
     /** 原始报文记录（用于无 adb 环境下定位问题） */
     private val traffic = StringBuilder()
     private var trafficPending = 0
+
+    private var pwdDialog: AlertDialog? = null
+    private var manualDialog: AlertDialog? = null
+
+    /** 慢扫描提示/手动入口的延时任务 */
+    private var slowScanHint: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,35 +120,30 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
         binding.tvWifiTitle.setText(R.string.wifi_title)
         binding.tvWifiHint.text = getString(R.string.wifi_device_fmt, deviceName)
-        binding.btnStart.setOnClickListener { startProvision() }
+
+        apAdapter = WifiApAdapter { onApPicked(it) }
+        binding.rvAp.layoutManager = LinearLayoutManager(this)
+        binding.rvAp.adapter = apAdapter
+
+        binding.btnRefresh.setOnClickListener { requestScan(manual = true) }
+        binding.btnManualSsid.setOnClickListener { showManualDialog() }
         binding.btnCopyLog.setOnClickListener { copyLogToClipboard() }
-    }
 
-    override fun onDestroy() {
-        bleClient.disconnect()
-        super.onDestroy()
-    }
-
-    // ==================== 流程编排 ====================
-
-    private fun startProvision() {
-        val ssid = binding.etSsid.text.toString().trim()
-        val pwd = binding.etPassword.text.toString()
-        if (ssid.isEmpty()) {
-            toast(getString(R.string.wifi_ssid_empty))
-            return
-        }
-        setUiBusy(true)
+        showListState(getString(R.string.wifi_scan_loading))
         appendLog("开始连接设备 $deviceMac")
-        // 保存待下发的 WiFi 信息，连接成功后在 onServiceFound 中继续
-        pendingSsid = ssid
-        pendingPwd = pwd
         bleClient.connect(deviceMac, this)
     }
 
-    private var pendingSsid: String = ""
-    private var pendingPwd: String = ""
-    private var pendingBssid: String? = null
+    override fun onDestroy() {
+        cancelSlowScanHint()
+        pwdDialog?.dismiss()
+        pwdDialog = null
+        manualDialog?.dismiss()
+        manualDialog = null
+        bleClient.cancelWifiScan()
+        bleClient.disconnect()
+        super.onDestroy()
+    }
 
     // ==================== 回调 ====================
 
@@ -109,9 +157,9 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
     override fun onServiceFound() {
         if (plaintextFallbackTried) {
-            // 明文降级重连：Sequence 已归零，跳过密钥协商，直接明文配网
+            // 明文降级重连：Sequence 已归零，跳过密钥协商
             appendLog("服务发现完成，明文模式（跳过密钥协商）")
-            proceedToConfig()
+            proceedToScan()
         } else {
             appendLog("服务发现完成，开始密钥协商")
             bleClient.negotiateSecretKey()
@@ -120,41 +168,37 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
     override fun onKeyNegotiated() {
         appendLog("密钥协商成功（加密通道已建立）")
-        // ⚠️ 实测结论（v1.0.4 真机日志）：
-        // 固件未实现 0x0D（查询设备信息）的响应分支，发出后设备静默丢弃 → 必然超时。
-        // 因此默认**不再等待设备回凭据**，直接用预置凭据 + MAC 推导 deviceId 走配网；
-        // 若设备确实支持（固件已升级），查询会在 3 秒内返回，届时用设备值覆盖。
+        // 固件未实现 0x0D 响应分支时会静默丢弃 → 3s 后按预期超时继续
         appendLog("尝试读取设备凭据（3s 内无响应则用预置凭据）…")
         bleClient.queryDeviceInfo { }
     }
 
+    override fun onDeviceInfo(info: DeviceInfoResult) {
+        infoResult = info
+        appendLog("收到设备信息响应")
+        proceedToScan()
+    }
+
     /**
-     * 统一进入配网步骤。
+     * 凭据就绪后进入扫描阶段。
      *
      * 凭据来源优先级：
      *  1. 设备返回值（固件实现 TLV 0x0A/0x0B 时）
      *  2. 预置 apikey + MAC 推导 deviceId（当前阶段的实际路径）
      */
-    private fun proceedToConfig() {
+    private fun proceedToScan() {
         if (infoHandled) return
         infoHandled = true
 
         val deviceInfo = infoResult
-        val finalInfo = if (deviceInfo != null && deviceInfo.hasCredential) {
+        infoResult = if (deviceInfo != null && deviceInfo.hasCredential) {
             appendLog("✓ 设备返回凭据（固件已支持扩展）")
             appendLog("  deviceId = ${deviceInfo.deviceId}")
             appendLog("  apikey   = ${maskApiKey(deviceInfo.apikey)}")
             appendLog("  固件版本 = ${deviceInfo.firmwareVersionText}")
             deviceInfo
         } else {
-            // ---- 当前阶段的实际路径 ----
-            // 固件尚未实现 TLV 0x0A/0x0B，改用预置测试凭据：
-            //  - apikey：内置测试密钥（整批设备公用，出厂烧录）
-            //  - deviceId：由设备 MAC 推导（实测确认 = MAC 去冒号小写）
             appendLog("设备未返回凭据 → 使用预置凭据")
-            // ⚠️ 实测：BLE 广播 MAC 与设备真实 MAC 可能相差 1（广播常做 +1 偏移），
-            //    因此这里优先取人工修正值，其次才用广播 MAC 推导。
-            //    详见 DeviceIdResolver 注释。
             val derived = deviceMac.replace(":", "").lowercase()
             val resolved = com.turing.thumbcard.data.repo.DeviceOverrideStore
                 .resolve(this, deviceMac, null)
@@ -171,31 +215,126 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
             fb
         }
 
-        infoResult = finalInfo
-        appendLog("下发 WiFi：$pendingSsid")
-
-        val ok = bleClient.configureSta(pendingSsid, pendingPwd, pendingBssid) { }
-        if (!ok) setUiBusy(false)
-    }
-
-    override fun onDeviceInfo(info: DeviceInfoResult) {
-        // 设备真的回了凭据：记录下来，进入配网
-        infoResult = info
-        appendLog("收到设备信息响应")
-        proceedToConfig()
+        // 凭据拿到后马上要列表：设备扫一次约 2~4s，越早发越省用户等待
+        requestScan(manual = false)
     }
 
     /**
-     * 查询超时（设备不支持 0x0D）。
-     *
-     * 这是**预期行为**，不应当作错误中断流程 —— 直接用预置凭据继续配网。
+     * 查询超时（设备不支持 0x0D）—— **预期行为**，不是错误。
      */
     private fun onQueryInfoTimeout() {
         if (infoHandled) return
         appendLog("设备未响应查询指令（固件未实现 0x0D 扩展，属预期）")
-        appendLog("→ 跳过凭据读取，使用预置凭据继续配网")
+        appendLog("→ 跳过凭据读取，使用预置凭据继续")
         infoResult = null
-        proceedToConfig()
+        proceedToScan()
+    }
+
+    // ==================== 扫描 ====================
+
+    /**
+     * 请求设备扫描 WiFi。
+     *
+     * @param manual 用户主动点刷新。此时要做 3s 节流并清空旧列表；
+     *               自动触发（刚连上设备）不受节流限制。
+     */
+    private fun requestScan(manual: Boolean) {
+        if (configBusy) return
+        if (scanning) {
+            // 上一轮还没回来：不重复下发，避免把设备的扫描线程打乱
+            if (manual) toast(getString(R.string.wifi_scan_wait))
+            return
+        }
+        if (manual) {
+            val now = System.currentTimeMillis()
+            if (now - lastScanAt < SCAN_THROTTLE_MS) {
+                toast(getString(R.string.wifi_refresh_wait))
+                return
+            }
+            apAdapter.submit(emptyList())
+        }
+
+        scanning = true
+        lastScanAt = System.currentTimeMillis()
+        showListState(getString(R.string.wifi_scan_loading))
+        armSlowScanHint()
+        appendLog(if (manual) "刷新：请求设备重新扫描 WiFi" else "请求设备扫描 WiFi")
+
+        bleClient.startWifiScan { result -> onScanResult(result) }
+    }
+
+    private fun onScanResult(result: WifiScanResult) {
+        scanning = false
+        cancelSlowScanHint()
+        if (result.isEmpty) {
+            appendLog("设备未扫描到可用的 2.4G WiFi")
+            showListState(getString(R.string.wifi_scan_empty), allowManual = true)
+            return
+        }
+        appendLog("收到 ${result.aps.size} 个热点（已按信号排序）")
+        hideListState()
+        apAdapter.submit(result.aps)
+        if (result.authUnknown) {
+            appendLog("⚠ 设备固件为旧版本（无加密类型），选中后一律需要输密码")
+        }
+    }
+
+    override fun onWifiScanBusy() {
+        // 设备正在扫：静默等待，不弹错（协议 §4.9.1）
+        appendLog("设备回复「扫描进行中」，等这一轮结束")
+    }
+
+    // ==================== 选网 + 配网 ====================
+
+    private fun onApPicked(ap: WifiAp) {
+        if (configBusy) return
+        if (ap.isOpen) {
+            appendLog("选择开放网络：${ap.ssid}")
+            startProvision(ap.ssid, "")
+        } else {
+            showPasswordDialog(ap)
+        }
+    }
+
+    private fun showPasswordDialog(ap: WifiAp) {
+        val db = DialogWifiPasswordBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.wifi_pwd_dialog_title, ap.ssid))
+            .setView(db.root)
+            .setNegativeButton(R.string.common_cancel, null)
+            .setPositiveButton(R.string.wifi_connect, null)
+            .create()
+
+        // 密码为空时不让关窗：默认 positive 会无条件 dismiss，这里手动接管
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val pwd = db.etPwd.text.toString()
+                if (pwd.isEmpty()) {
+                    db.tvPwdError.visibility = View.VISIBLE
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                startProvision(ap.ssid, pwd)
+            }
+        }
+        dialog.setOnDismissListener { if (pwdDialog === dialog) pwdDialog = null }
+        pwdDialog = dialog
+        dialog.show()
+        db.etPwd.requestFocus()
+    }
+
+    private fun startProvision(ssid: String, pwd: String) {
+        configBusy = true
+        cancelSlowScanHint()
+        pendingSsid = ssid
+        pendingPwd = pwd
+        appendLog("下发 WiFi：$ssid")
+        showListState(getString(R.string.wifi_configuring))
+        val ok = bleClient.configureSta(ssid, pwd, pendingBssid) { }
+        if (!ok) {
+            configBusy = false
+            hideListState()
+        }
     }
 
     override fun onWifiConfigured(result: ConfigStaResult) {
@@ -203,9 +342,10 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         configHandled = true
 
         if (!result.isSuccess) {
+            configBusy = false
             appendLog("✗ 配网失败：${BleConstants.messageOf(result.errorId)}")
             toast(getString(R.string.common_sync_failed_fmt, BleConstants.messageOf(result.errorId)))
-            setUiBusy(false)
+            hideListState()
             return
         }
 
@@ -213,9 +353,7 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         appendLog("设备上报 MAC：${result.mac ?: "（无）"}")
 
         // ---- 用设备自报 MAC 校正 deviceId ----
-        // 官方小程序同款逻辑：0x8A 响应里的 MAC TLV 是设备**真实 MAC**，
-        // 而 BLE 扫描到的地址是广播偏移地址（常 +1）。以设备自报为准。
-        // 见 DeviceIdResolver 注释与《激活清单核对与deviceId问题定位.md》。
+        // 广播 MAC 末位常 +1，0x8A 里的 MAC 才是设备真实 MAC
         if (!result.mac.isNullOrBlank()) {
             val reportedId = com.turing.thumbcard.data.repo.DeviceIdResolver
                 .normalizeMac(result.mac)
@@ -227,58 +365,40 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         }
 
         appendLog("建立绑定关系…")
+        showListState(getString(R.string.wifi_binding))
 
-        // 条件 1、2 已满足（凭据读取成功 + 格式校验），条件 3（联网成功）刚确认
         lifecycleScope.launch {
             val info = infoResult
             if (info == null) {
-                setUiBusy(false)
+                configBusy = false
+                hideListState()
                 return@launch
             }
             when (val r = bindRepo.bind(info, deviceName)) {
                 is BindResult.Success -> {
                     appendLog("✓ 绑定完成：${r.deviceId}")
-                    // 可选：通知设备绑定结果（需固件支持 0x11）
                     bleClient.sendBindResult(BleConstants.BIND_STATUS_SUCCESS)
-
-                    // 下发设备配置：物品语言 + 界面语言 + 云端保留天数（需固件支持 0x12）。
-                    // 这是「一块通用硬件适配全球市场」的关键一步：固件不区分国家，
-                    // 语言与存储策略由 App 在配网时写入。固件未实现时设备不回 0x92，
-                    // 但帧已写出即视为完成 —— 不能让"设备还没升级固件"影响配网成功。
                     applyDeviceConfig()
                     toast(getString(R.string.device_connected_toast))
-                    binding.root.postDelayed({
-                        // ⚠️ 配网成功后回**首页**，不是单词卡列表：
-                        //    首页才有学习报告和「今天拍的」，是新用户配完网最该看到的东西。
-                        //    CLEAR_TOP + SINGLE_TOP：MainActivity 已在栈里就复用它（onNewIntent 切 Tab），
-                        //    避免再堆一个新首页出来。
-                        startActivity(
-                            android.content.Intent(this@WifiConfigActivity, MainActivity::class.java)
-                                .addFlags(
-                                    android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                        android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
-                                )
-                                .putExtra(MainActivity.EXTRA_SELECT_TAB, MainActivity.TAB_HOME)
-                        )
-                        finish()
-                    }, 800)
+                    binding.root.postDelayed({ goHome() }, 800)
                 }
                 BindResult.NoCredential -> {
+                    configBusy = false
                     appendLog("✗ 设备无凭据")
-                    setUiBusy(false)
+                    hideListState()
                 }
                 is BindResult.InvalidDeviceId -> {
+                    configBusy = false
                     appendLog("✗ deviceId 格式非法：${r.deviceId}")
-                    setUiBusy(false)
+                    hideListState()
                 }
                 BindResult.InvalidApiKey -> {
+                    configBusy = false
                     appendLog("✗ apikey 格式非法")
-                    setUiBusy(false)
+                    hideListState()
                 }
                 is BindResult.StorageUnavailable -> {
                     // 容器环境（如卓易通）本地库不可用：凭据已读到，先以临时模式进入列表
-                    // ⚠️ 这里仍进 CardListActivity：没有持久化绑定记录，首页会判成「未绑定」
-                    //    又让用户配一次网，反而更像失败。临时模式本来就是异常兜底。
                     appendLog("⚠ 本地存储受限，无法持久化绑定：${r.detail}")
                     appendLog("以临时模式进入单词卡列表…")
                     bleClient.sendBindResult(BleConstants.BIND_STATUS_SUCCESS)
@@ -297,12 +417,24 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         }
     }
 
+    private fun goHome() {
+        // 配网成功后回**首页**：首页才有学习报告和「今天拍的」
+        startActivity(
+            android.content.Intent(this, MainActivity::class.java)
+                .addFlags(
+                    android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+                )
+                .putExtra(MainActivity.EXTRA_SELECT_TAB, MainActivity.TAB_HOME)
+        )
+        finish()
+    }
+
     /**
-     * 把 App 侧选定的语言与存储策略写进设备。
+     * 把 App 侧选定的语言与存储策略写进设备（0x12）。
      *
-     * 失败不阻断流程：帧写出成功即标记 applied（固件未实现 0x12 时不回执，
-     * 我们无法也无需区分"设备已接受"与"设备未实现"）；只有写入失败才保留
-     * `pending`，等下一次连上设备自动重发。
+     * 失败不阻断流程：帧写出成功即标记 applied（固件未实现时不回执，
+     * 无法也无需区分"已接受"与"未实现"）。
      */
     private fun applyDeviceConfig() {
         val dl = DeviceLangStore.current(this)
@@ -321,7 +453,6 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
     override fun onError(code: Int, message: String) {
         // ---- 分支 1：查询设备信息超时 —— 预期行为，不是错误 ----
-        // 实测固件未实现 0x0D 扩展，设备不响应。直接用预置凭据继续配网。
         if (code == BleConstants.STATUS_QUERY_INFO_UNSUPPORTED) {
             onQueryInfoTimeout()
             return
@@ -329,9 +460,17 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
         appendLog("✗ $message")
 
-        // ---- 分支 2：明文降级 ----
+        // ---- 分支 2：扫描失败 ----
+        if (code == BleConstants.STATUS_WIFI_SCAN) {
+            scanning = false
+            cancelSlowScanHint()
+            appendLog("→ 可点右上角刷新重试，或手动输入 WiFi")
+            showListState(getString(R.string.wifi_scan_failed), allowManual = true)
+            return
+        }
+
+        // ---- 分支 3：明文降级 ----
         // 密钥协商失败/超时时，断开重连后跳过加密直接完成配网。
-        // 协议允许明文传输（3.2 节）。必须重连以复位 Sequence 状态。
         if (!infoHandled && message.contains("密钥") && !plaintextFallbackTried) {
             plaintextFallbackTried = true
             appendLog("→ 切换明文模式，重新连接设备…")
@@ -341,28 +480,28 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
             return
         }
 
+        scanning = false
+        configBusy = false
         toast(message)
-        setUiBusy(false)
+        hideListState()
         bleClient.disconnect()
     }
 
     override fun onDisconnected() {
         appendLog("设备连接已断开")
-        if (!infoHandled || !configHandled) setUiBusy(false)
+        scanning = false
+        if (!configHandled) configBusy = false
     }
 
     /**
      * 原始报文回调。
      *
-     * 由于设备端（手机）可能无法使用 adb，这里把每一帧的十六进制
-     * 记录下来，供用户一键复制回传，作为定位配网问题的直接证据。
-     *
-     * 为避免刷屏，日志面板只展示帧的**摘要行**，完整报文进 [traffic]。
+     * 设备端通常无法 adb，这里把每一帧十六进制记录下来，
+     * 供用户一键复制回传作为定位证据。日志面板只展示摘要行，完整报文进 [traffic]。
      */
     override fun onTraffic(direction: String, hex: String) {
         traffic.append(direction).append(' ').append(hex).append('\n')
         trafficPending++
-        // 每 4 帧在 UI 日志里提示一次，避免刷屏
         if (trafficPending % 4 == 1) {
             val brief = if (hex.length > 24) hex.take(24) + "…" else hex
             appendLog("  $direction $brief")
@@ -375,7 +514,7 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
             appendLine("═══ 单词卡相机 · 配网调试日志 ═══")
             appendLine("设备 MAC: $deviceMac")
             appendLine("设备名称: $deviceName")
-            appendLine("待配 SSID: $pendingSsid")
+            appendLine("已选 SSID: $pendingSsid")
             appendLine()
             appendLine("─── 流程日志 ───")
             appendLine(log.toString().trimEnd())
@@ -389,18 +528,109 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         }
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(
-                ClipData.newPlainText(getString(R.string.wifi_log_clip_label), report)
-            )
+            ClipData.newPlainText(getString(R.string.wifi_log_clip_label), report)
+        )
         toast(getString(R.string.common_copied))
     }
 
     // ==================== UI ====================
 
-    private fun setUiBusy(busy: Boolean) {
-        binding.btnStart.isEnabled = !busy
-        binding.btnStart.text = if (busy) getString(com.turing.thumbcard.R.string.wifi_connecting)
-        else getString(com.turing.thumbcard.R.string.wifi_start)
-        binding.svLog.visibility = if (busy || log.isNotEmpty()) View.VISIBLE else View.GONE
+    private fun showListState(text: String, allowManual: Boolean = false) {
+        binding.rvAp.visibility = View.GONE
+        binding.tvListState.text = text
+        binding.tvListState.visibility = View.VISIBLE
+        // 手动入口只在「列表拿不到」时才给，避免盖住正常点选流程
+        binding.btnManualSsid.visibility = if (allowManual) View.VISIBLE else View.GONE
+    }
+
+    private fun hideListState() {
+        binding.tvListState.visibility = View.GONE
+        binding.rvAp.visibility = View.VISIBLE
+        binding.btnManualSsid.visibility = View.GONE
+    }
+
+    /**
+     * 起一个「还没回列表」的兜底计时器。
+     *
+     * 为什么需要：未升级的样机固件只实现 V1.0 基线，收到 0x0E 扫描指令既不回列表
+     * 也不报错，App 侧只能等超时。若这 8~10s 里页面只有一句「正在扫描」，
+     * 用户会以为卡死。到点后把手动输入入口亮出来，配网不至于被固件版本锁死。
+     */
+    private fun armSlowScanHint() {
+        slowScanHint?.let { binding.root.removeCallbacks(it) }
+        val r = Runnable {
+            if (scanning && !configBusy) {
+                appendLog("等待列表超过 ${SLOW_SCAN_HINT_MS / 1000}s，亮出手动输入兜底")
+                showListState(getString(R.string.wifi_scan_slow), allowManual = true)
+            }
+        }
+        slowScanHint = r
+        binding.root.postDelayed(r, SLOW_SCAN_HINT_MS)
+    }
+
+    private fun cancelSlowScanHint() {
+        slowScanHint?.let { binding.root.removeCallbacks(it) }
+        slowScanHint = null
+    }
+
+    /**
+     * 手动输入 SSID + 密码（V1.1 的旧通道，作为兜底保留）。
+     * 密码留空即按开放网络下发，交给固件去试。
+     */
+    private fun showManualDialog() {
+        if (configBusy) return
+
+        // 读「手机当前连着的 WiFi」需要附近设备/定位权限。缺就补要一次；
+        // 只要没拿到就照常弹窗、输入框留空 —— 不让「读不到默认值」把兜底入口堵死。
+        val perm = CurrentWifi.requiredPermission()
+        if (perm != null && !CurrentWifi.hasPermission(this) && !ssidPermAsked) {
+            ssidPermAsked = true
+            ssidPermLauncher.launch(perm)
+            return
+        }
+
+        val db = DialogWifiManualBinding.inflate(layoutInflater)
+        // 优先填上一次填过的（重试场景，用户可能改过名）；没填过就填手机当前连的 WiFi。
+        val link = CurrentWifi.link(this)
+        val preset = pendingSsid.takeIf { it.isNotBlank() } ?: link?.ssid
+        db.etSsid.setText(preset)
+        if (!preset.isNullOrBlank()) {
+            // 提示「这不是我想要的网络」时该改哪里，否则用户会以为字段是只读的
+            appendLog("已预填当前 WiFi：$preset（可修改）")
+        }
+        // 手机连的是 5G 时，预填值很可能是「一定配不上」的那个：相机只支持 2.4G。
+        // 用错误行显红提示，否则用户照填、等 50 秒超时，最后被误导成「密码错了」。
+        if (link != null && link.is5G && !preset.isNullOrBlank()) {
+            db.tvManualError.text =
+                getString(R.string.wifi_manual_5g_warn, preset, link.freqMhz)
+            db.tvManualError.visibility = View.VISIBLE
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.wifi_manual_title)
+            .setView(db.root)
+            .setNegativeButton(R.string.common_cancel, null)
+            .setPositiveButton(R.string.wifi_connect, null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val ssid = db.etSsid.text.toString().trim()
+                if (ssid.isEmpty()) {
+                    db.tvManualError.setText(R.string.wifi_ssid_empty)
+                    db.tvManualError.visibility = View.VISIBLE
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                appendLog("手动输入 SSID：$ssid")
+                pendingBssid = null
+                startProvision(ssid, db.etPwd.text.toString())
+            }
+        }
+        dialog.setOnDismissListener { if (manualDialog === dialog) manualDialog = null }
+        manualDialog = dialog
+        dialog.show()
+        db.etSsid.requestFocus()
     }
 
     private fun appendLog(line: String) {
@@ -417,5 +647,18 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         if (key == null) return "(空)"
         if (key.length <= 8) return "****"
         return "${key.take(4)}****${key.takeLast(4)}"
+    }
+
+    private companion object {
+        /** 刷新节流：与协议 V1.2 §4.9.1 的「最小重启间隔 3s」对齐 */
+        const val SCAN_THROTTLE_MS = 3000L
+
+        /**
+         * 多久没收到列表就亮出手动输入。
+         *
+         * 取 6s：新固件扫 10 个热点约 2~4s，留一倍余量；
+         * 老固件（不实现 0x88）此时已经确定回不来，不用再干等 10s 超时。
+         */
+        const val SLOW_SCAN_HINT_MS = 6000L
     }
 }

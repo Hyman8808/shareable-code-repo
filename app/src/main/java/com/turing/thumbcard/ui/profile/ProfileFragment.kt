@@ -441,11 +441,15 @@ class ProfileFragment : Fragment() {
         //  ③ 认得出但都不合格 → 如实列原因。
         val unknownAll = report.scanned > 0 &&
             report.skipCount(GalleryRestore.Reason.UNKNOWN_CARD) == report.scanned
-        val body = when {
+        var body = when {
             report.scanned == 0 -> getString(R.string.restore_none_empty)
             unknownAll -> getString(R.string.restore_need_sync, report.scanned)
             else -> getString(R.string.restore_none_found_fmt, report.scanned, reasonSummary(report))
         }
+        // 附上逐张原因：只说「跳过 1 张 · 尺寸不足」帮不到现场，
+        // 要能看出是哪张图、卡在哪一关，才知道该去同步记录还是该重新存图。
+        val detail = skipDetail(report)
+        if (detail.isNotEmpty()) body = body + "\n\n" + detail
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.profile_restore_gallery)
             .setMessage(body)
@@ -465,12 +469,41 @@ class ProfileFragment : Fragment() {
             parts += getString(
                 R.string.restore_done_skip_fmt, report.skipped.size, reasonSummary(report)
             )
+            val detail = skipDetail(report)
+            if (detail.isNotEmpty()) parts += detail
         }
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.restore_done_title_fmt, restored))
             .setMessage(parts.joinToString("\n\n"))
             .setPositiveButton(R.string.common_ok, null)
             .show()
+    }
+
+    /**
+     * 逐张列出「为什么没恢复」，最多 8 条。
+     *
+     * 汇总（[reasonSummary]）回答「几类、各几张」，这里回答「具体是哪张、卡在哪」。
+     * 排障时这两件事缺一不可：只知道「尺寸不足 1 张」，没法判断是用户存错了图，
+     * 还是我们把卡片用图当成全尺寸挡了；只知道文件名、不知道分类，又看不出规律。
+     */
+    private fun skipDetail(report: GalleryRestore.Report, limit: Int = 8): String {
+        if (report.skipped.isEmpty()) return ""
+        val reasonText = mapOf(
+            GalleryRestore.Reason.ALREADY_LOCAL to getString(R.string.restore_reason_local_short),
+            GalleryRestore.Reason.UNKNOWN_CARD to getString(R.string.restore_reason_unknown_short),
+            GalleryRestore.Reason.DUPLICATE_NAME to getString(R.string.restore_reason_dup_short),
+            GalleryRestore.Reason.TOO_SMALL to getString(R.string.restore_reason_small_short),
+            GalleryRestore.Reason.UNREADABLE to getString(R.string.restore_reason_unreadable_short)
+        )
+        val lines = report.skipped.take(limit).map { s ->
+            val r = reasonText[s.reason] ?: s.reason.name
+            val d = s.detail?.let { "（$it）" }.orEmpty()
+            "· ${s.displayName}\n  $r$d"
+        }.toMutableList()
+        if (report.skipped.size > limit) {
+            lines += "· …"
+        }
+        return lines.joinToString("\n")
     }
 
     /** 把「跳过原因」拼成一句人话，例如「已在本地 3, 找不到卡片 1」 */

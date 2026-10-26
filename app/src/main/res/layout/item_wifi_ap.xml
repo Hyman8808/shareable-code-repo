@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WiFi 列表中的一行（配网 V1.2：设备扫、用户选）。
+    ============================================================
+    信息层级：SSID 是唯一主语，独占剩余宽度并被 ellipsize 截断；
+    右侧依次是「加密锁 → 信号强度条 → 进入箭头」，从「要不要密码」
+    到「信号够不够」再到「可点」，符合用户决策顺序。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="12dp">
+
+    <TextView
+        android:id="@+id/tvSsid"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_body" />
+
+    <ImageView
+        android:id="@+id/ivLock"
+        android:layout_width="12dp"
+        android:layout_height="14dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@string/wifi_encrypted_cd"
+        android:src="@drawable/ic_wifi_lock" />
+
+    <LinearLayout
+        android:id="@+id/llBars"
+        android:layout_width="wrap_content"
+        android:layout_height="16dp"
+        android:layout_marginStart="10dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/bar1"
+            android:layout_width="3dp"
+            android:layout_height="5dp"
+            android:background="@drawable/bg_signal_bar" />
+
+        <View
+            android:id="@+id/bar2"
+            android:layout_width="3dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/bg_signal_bar" />
+
+        <View
+            android:id="@+id/bar3"
+            android:layout_width="3dp"
+            android:layout_height="11dp"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/bg_signal_bar" />
+
+        <View
+            android:id="@+id/bar4"
+            android:layout_width="3dp"
+            android:layout_height="14dp"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/bg_signal_bar" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@string/wifi_pick_cd"
+        android:src="@drawable/ic_chevron_right_16"
+        android:tint="@color/text_disabled" />
+
+</LinearLayout>

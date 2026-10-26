@@ -1,15 +1,25 @@
 # 拇指相机 · 单词卡 App（Android）
 
 > 智能拇指相机配套 App。拍照 → 云端识别 → 生成单词卡 → 双语朗读。
-> **当前版本 v2.10.0（versionCode 44）**
+> **当前版本 v2.11.2（versionCode 47）**
 
 | 项 | 值 |
 |---|---|
-| 包名 | `com.turing.thumbcard`（标准版）／`com.turing.thumbcard.ai`（AI 版） |
+| 包名 | `com.turing.thumbcard`（标准版）／`com.turing.thumbcard.ai`（AI 版）／`com.turing.thumbcard.devtool`（联调工具） |
 | minSdk / targetSdk | 23 / 35 |
 | 语言 | Kotlin（纯原生 View，无 Compose） |
 | 硬件 | 联盛德 W800，BLE 配网 |
-| 归档形态 | 同一套源码出两个可共存安装的 APK（product flavor：`standard` / `ai`） |
+| 归档形态 | 同一套源码出三个可共存安装的 APK（product flavor：`standard` / `ai` / `devtool`） |
+
+### 三个产物分别给谁用
+
+| flavor | applicationId | 用途 |
+|---|---|---|
+| `standard` | `com.turing.thumbcard` | 标准版。配网绑定、卡片浏览、词典、存相册。日常功能联调 |
+| `ai` | `com.turing.thumbcard.ai` | AI 版。多出图片美化/卡通化、相册找回。演示与验收 |
+| `devtool` | `com.turing.thumbcard.devtool` | 联调工具。网络与设备（扫描/连接/`0x8D` 设备信息/`0x12` 配置下发）、报文日志（收发帧逐条十六进制）、卡片核对。**不依赖业务逻辑**，用来判断问题在设备、云端还是 App |
+
+> 对外交付的成品与校验值见 §十二；工单见 [turing #2729](https://pep.uzoo.cn/tickets/2729)。
 
 ---
 
@@ -87,8 +97,8 @@ AI_UNLIMITED_DEVICES=演示机deviceId
 # 需要先在 local.properties 写 sdk.dir
 echo "sdk.dir=/your/android/sdk" > local.properties
 
-# 两个 flavor 都要出包
-./gradlew clean assembleStandardDebug assembleAiDebug
+# 三个 flavor 都要出包
+./gradlew clean assembleStandardDebug assembleAiDebug assembleDevtoolDebug
 ```
 
 产物：
@@ -96,7 +106,11 @@ echo "sdk.dir=/your/android/sdk" > local.properties
 ```
 app/build/outputs/apk/standard/debug/app-standard-debug.apk
 app/build/outputs/apk/ai/debug/app-ai-debug.apk
+app/build/outputs/apk/devtool/debug/app-devtool-debug.apk
 ```
+
+> **flavor 资源会覆盖 main 同名文件**：`devtool` 里的布局/字符串必须加 `dev_` 前缀，
+> 否则会把产品代码的同名资源顶掉，导致 `main` 侧编译失败。
 
 > **构建红线**：出包后必须校验 dex 里存在三个 Room 生成的 `_Impl` 类
 > （`AppDatabase_Impl` / `BoundDeviceDao_Impl` / `WordCardDao_Impl`），
@@ -108,9 +122,10 @@ app/build/outputs/apk/ai/debug/app-ai-debug.apk
 
 ```
 app/src/
-├── main/            公共代码与资源
+├── main/            公共代码与资源（产品代码、BLE 协议、数据库、UI）
 ├── standard/        标准版 flavor（无 AI 美化入口）
-└── ai/              AI 版 flavor（多出美化相关资源与入口）
+├── ai/              AI 版 flavor（多出美化相关资源与入口）
+└── devtool/         联调工具 flavor（独立入口 DevToolActivity，不引用业务 UI）
 ```
 
 ```
@@ -144,7 +159,7 @@ com.turing.thumbcard
 
 ---
 
-## 三、功能清单（v2.10.0）
+## 三、功能清单（v2.11.2）
 
 ### 3.1 配网与设备
 
@@ -181,6 +196,14 @@ com.turing.thumbcard
 - 后台生成（`AiTaskService` + 任务中心），单张可重做
 - **只在图片落盘成功后扣额度**；额度不足在发请求前就拦
 - 相册找回：靠 EXIF `ImageDescription` 写 `ThumbCard|v=1|id=|style=`，重装后可无损还原
+
+### 3.6 v2.11.x 增量（v2.10.0 之后）
+
+| 版本 | 变更 |
+|---|---|
+| v2.11.0 | 大图页左右滑卡（手势出口放在 `ZoomImageView` 内部，避免与 Activity 两套事件解析冲突）；切卡不用位移 |
+| v2.11.1 | 配网手输 WiFi 时**自动预填当前连接的 WiFi 名称**（`CurrentWifi.ssid()`）；5GHz 热点给出「W800 只支持 2.4GHz」提示；读不到 SSID 时退回手输 |
+| v2.11.2 | 修复**相册找回漏捞**：`taken` 占位从「校验前」挪到「尺寸校验后」，此前同一张卡被前一张失败记录占位后，后面的正确图会被误判为重复而跳过；跳过原因细化到 5 类并带卡片 id / 实际尺寸 |
 
 ---
 
@@ -366,16 +389,24 @@ apikey 是**整批设备公用**的应用级密钥，泄露即影响该应用下
 
 | 文档 | 路径 |
 |---|---|
+| **客户接入文档（对外交付）** | [`docs/图灵AI拍学机接口接入说明文档_V3.1_2025.10.26_客户版.md`](docs/图灵AI拍学机接口接入说明文档_V3.1_2025.10.26_客户版.md) ／ [PDF](release/图灵AI拍学机接口接入说明文档_V3.1_2025.10.26.pdf) |
+| 设备端对接说明（固件侧） | [`docs/拍学机_设备端对接说明_V3.1-HW.md`](docs/拍学机_设备端对接说明_V3.1-HW.md) |
 | App 技术方案（最新） | [`docs/拇指相机App技术方案_V3.0.md`](docs/拇指相机App技术方案_V3.0.md) |
-| BLE 配网协议（图灵扩展修订版） | [`docs/WM_W800_BleWiFi蓝牙配网协议_V1.1_图灵扩展修订版.md`](docs/WM_W800_BleWiFi蓝牙配网协议_V1.1_图灵扩展修订版.md) |
+| BLE 配网协议 V1.2（图灵扩展修订版） | [`docs/WM_W800_BleWiFi蓝牙配网协议_V1.2_图灵扩展修订版.md`](docs/WM_W800_BleWiFi蓝牙配网协议_V1.2_图灵扩展修订版.md) |
+| BLE 配网协议 V1.1（历史基线） | [`docs/WM_W800_BleWiFi蓝牙配网协议_V1.1_图灵扩展修订版.md`](docs/WM_W800_BleWiFi蓝牙配网协议_V1.1_图灵扩展修订版.md) |
+| 配网时序图 V1.2（可视化预览） | [`docs/preview/配网时序图_V1.2_预览.html`](docs/preview/配网时序图_V1.2_预览.html) |
 | 固件端协议扩展规格书 | [`docs/固件端协议扩展规格书_V1.0.md`](docs/固件端协议扩展规格书_V1.0.md) |
 | 新云端接口协议 V2.0 | [`docs/拇指相机_云端接口协议_V2.0.md`](docs/拇指相机_云端接口协议_V2.0.md) |
 | 设备配置接口补充 | [`docs/拇指相机_设备配置接口补充_V1.1.md`](docs/拇指相机_设备配置接口补充_V1.1.md) |
 | 拍学机接口文档 V3.1 更新需求 | [`docs/图灵AI拍学机接口接入说明文档_V3.1_更新需求.md`](docs/图灵AI拍学机接口接入说明文档_V3.1_更新需求.md) |
+| 联调工具使用说明 v1.1 | [`docs/拍学机联调工具_使用说明_v1.1.md`](docs/拍学机联调工具_使用说明_v1.1.md) |
+| 样机联调清单 v2.11.1 | [`docs/样机联调清单_v2.11.1.md`](docs/样机联调清单_v2.11.1.md) |
+| 版本演进与真机验收 | [`release/安装说明.md`](release/安装说明.md) |
 | UI 设计系统 V2.0（墨标 Inkmark） | [`docs/UI设计系统_V2.0_年轻白领.md`](docs/UI设计系统_V2.0_年轻白领.md) |
 | UI 交互系统 V2.0 | [`docs/UI交互系统_V2.0.md`](docs/UI交互系统_V2.0.md) |
-| 词典接口实测报告 | [`docs/词典接口实测报告_2026-10-20.md`](docs/词典接口实测报告_2026-10-20.md) |
 | 多语言排版核对（9 语言 × 4 界面） | [`docs/v2.9.0_多语言排版核对.html`](docs/v2.9.0_多语言排版核对.html) |
+
+> **产品与商务文档不在本仓库**（PRD、立项报告、成本测算、定价策略），见私有仓库 `thumbcard-product-docs`，访问需由项目负责人开通。
 
 ---
 
@@ -383,12 +414,14 @@ apikey 是**整批设备公用**的应用级密钥，泄露即影响该应用下
 
 | # | 项 | 说明 |
 |---|---|---|
-| 1 | **固件未实现 `0x12` DEVICE_CONFIG** | App 可以把语言下发下去，但设备不会应用，也不会回执 |
-| 2 | **新云端未接入** | 仍走老 nglearn；切新协议需重做数据层映射 |
-| 3 | 老 nglearn 无语言维度 | 真机演示实际只有中英双语 |
-| 4 | 支付为本地模拟 | 点卡购买未接真实支付通道 |
-| 5 | 密钥编在客户端 | 见 §0：必须由服务端代理，属待改造项 |
-| 6 | 图片美化依赖私人账号 | 见 §0.1，需图灵自建服务端 |
+| 1 | **多语言 TTS 未打通** | 云端未识别语言参数；`RecordItem` 只到 `tts_url_english`；播放层只有 4 个按钮且绑死中英。正解在新云端 `tts_url_localized` + 固件 `item_lang`。**阿拉伯语尚未覆盖（含 RTL 排版与阿语音色）** |
+| 2 | **固件未实现 `0x12` DEVICE_CONFIG** | App 可以把语言下发下去，但设备不会应用，也不会回执 |
+| 3 | **固件未实现 `0x0E` 热点列表** | 只回一行空列表，因此手输 SSID 是客户必需路径（v2.11.1 已做预填） |
+| 4 | **新云端未接入** | 仍走老 nglearn；切新协议需重做数据层映射（`code:0` 不是 200、`id` 为 UUID、一机一令牌、cursor 分页） |
+| 5 | 老 nglearn 无语言维度 | 真机演示实际只有中英双语 |
+| 6 | 支付为本地模拟 | 点卡购买未接真实支付通道 |
+| 7 | 密钥编在客户端 | 见 §0：必须由服务端代理，属待改造项 |
+| 8 | 图片美化依赖私人账号 | 见 §0.1，需图灵自建服务端 |
 
 ---
 
@@ -430,3 +463,19 @@ adb logcat -s BleWiFiClient:* AesUtils:* RsaUtils:* RecordRepository:*
 ## 十一、License
 
 见 [LICENSE](LICENSE)。代码仅用于项目评审与技术交流，硬件协议、商标与第三方接口归各自权利人所有。
+
+---
+
+## 十二、对外交付物（与工单 #2729 同步）
+
+| 文件 | 字节 | SHA-256 前 16 位 |
+|---|---|---|
+| 单词卡相机 v2.11.2（standard） | 10,283,930 | `a69810e839284516` |
+| 单词卡相机AI v2.11.2（ai） | 10,283,981 | `97d5fe190815b23e` |
+| 拍学机联调工具 v1.1（devtool） | 10,344,987 | `49fed88c73a6688f` |
+| 图灵AI拍学机接口接入说明文档 V3.1（PDF，25 页） | 1,447,225 | 见工单附件 |
+
+> APK 不进仓库（内含已编译的凭据占位与构建期注入值），统一由工单 #2729 附件分发。
+> 本仓库只出可复现构建：`./gradlew clean assembleStandardDebug assembleAiDebug assembleDevtoolDebug`。
+
+---

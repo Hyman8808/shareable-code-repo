@@ -1,130 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Wi-Fi 配网页（配网第 2 步）
+    Wi-Fi 配网页（配网第 2 步 · V1.2 列表式）
     ============================================================
-    重设计要点：
-    · 标题 24sp/48dp 留白 → 统一字阶 + 12dp（标题本身就是页面开头，不需要再顶一层空白）。
-    · 「请让手机连接 2.4G」从裸橙字改成浅橙提示条：这是**会阻断流程**的前提条件，
-      必须比普通说明更醒目，但不该是纯文字（纯文字容易被当成装饰划过）。
-    · SSID / 密码两个字段各给一个独立输入框底：原来是无背景 EditText，
-      用户在卡片里找不到「哪里能点、哪里是输入区」。
-    · 底部主按钮 56dp，整页只有一个主操作。
+    交互变化（相对上一版）：
+    · 原来由用户手输 SSID，现在改成「设备扫 → 列表点选」，因此
+      整页没有主按钮：进页即连设备、连上即取列表，用户唯一动作是点一个热点。
+    · 顶部「仅支持 2.4G」提示条保留，但含义从「你要自己判断」变成
+      「设备已经帮你过滤掉了 5G」，所以文案也一并改掉。
+    · 列表为空/加载中都在同一个区域内说明，不再弹 Toast，避免列表区一片空白。
 -->
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_page"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tvWifiTitle"
         style="@style/Text.PageTitle"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/page_horizontal"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="@dimen/page_horizontal"
-        android:text="@string/wifi_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="@string/wifi_title" />
 
     <TextView
         android:id="@+id/tvWifiHint"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/page_horizontal"
-        android:layout_marginEnd="@dimen/page_horizontal"
         android:layout_marginTop="12dp"
+        android:layout_marginEnd="@dimen/page_horizontal"
         android:background="@drawable/bg_hint_warning"
         android:lineSpacingExtra="3dp"
         android:padding="12dp"
         android:text="@string/wifi_hint"
         android:textColor="@color/warning"
-        android:textSize="@dimen/text_body_sm"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvWifiTitle" />
+        android:textSize="@dimen/text_body_sm" />
 
     <LinearLayout
-        android:id="@+id/boxInput"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/page_horizontal"
-        android:layout_marginEnd="@dimen/page_horizontal"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_card"
-        android:orientation="vertical"
-        android:padding="18dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvWifiHint">
-
-        <TextView
-            style="@style/Text.Micro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wifi_ssid" />
-
-        <EditText
-            android:id="@+id/etSsid"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="7dp"
-            android:background="@drawable/bg_input"
-            android:hint="@string/wifi_ssid_hint"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:maxLength="32"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:singleLine="true"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_disabled"
-            android:textSize="@dimen/text_body" />
-
-        <TextView
-            style="@style/Text.Micro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/wifi_password" />
-
-        <EditText
-            android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="7dp"
-            android:background="@drawable/bg_input"
-            android:hint="@string/wifi_pwd_hint"
-            android:importantForAutofill="no"
-            android:inputType="textPassword"
-            android:maxLength="64"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:singleLine="true"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_disabled"
-            android:textSize="@dimen/text_body" />
-    </LinearLayout>
-
-    <!-- 配网进度日志 -->
-    <ScrollView
-        android:id="@+id/svLog"
-        android:layout_width="0dp"
+        android:id="@+id/boxList"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="@dimen/page_horizontal"
-        android:layout_marginTop="12dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_card"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                style="@style/Text.Micro"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/wifi_ap_title" />
+
+            <ImageButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/wifi_refresh"
+                android:src="@drawable/ic_refresh"
+                android:tint="@color/text_secondary" />
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            android:scrollbars="vertical" />
+
+        <TextView
+            android:id="@+id/tvListState"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:padding="24dp"
+            android:text="@string/wifi_scan_loading"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_body_sm"
+            android:visibility="gone" />
+
+        <!--
+            兜底入口：列表为空或扫描超时才显示。
+            未升级的样机固件（V1.0 基线，不实现 0x88/0x89）靠它完成配网，
+            否则页面只剩「刷新」，设备永远配不上。
+        -->
+        <Button
+            android:id="@+id/btnManualSsid"
+            style="@style/Widget.ThumbCard.Button.Outline"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="14dp"
+            android:text="@string/wifi_manual_entry"
+            android:textSize="@dimen/text_body_sm"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/svLog"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/page_horizontal"
         android:background="@drawable/bg_card"
         android:padding="14dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/btnCopyLog"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/boxInput">
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/tvLog"
@@ -138,30 +139,14 @@
     <Button
         android:id="@+id/btnCopyLog"
         style="@style/Widget.ThumbCard.Button.Outline"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="44dp"
         android:layout_marginStart="@dimen/page_horizontal"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="@dimen/page_horizontal"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="16dp"
         android:text="@string/wifi_copy_log"
         android:textSize="@dimen/text_body_sm"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/btnStart"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:visibility="gone" />
 
-    <Button
-        android:id="@+id/btnStart"
-        style="@style/Widget.ThumbCard.Button.Primary"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="@dimen/page_horizontal"
-        android:layout_marginEnd="@dimen/page_horizontal"
-        android:layout_marginBottom="24dp"
-        android:text="@string/wifi_start"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

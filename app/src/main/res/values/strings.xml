@@ -81,6 +81,27 @@
     <string name="wifi_ssid_empty">请填写 WiFi 名称</string>
     <string name="wifi_pwd_empty">请填写 WiFi 密码</string>
 
+    <!-- 配网 V1.2：设备扫描 + 列表点选 -->
+    <string name="wifi_ap_title">可用 WiFi</string>
+    <string name="wifi_scan_loading">正在获取设备扫描到的 Wi-Fi…</string>
+    <string name="wifi_scan_empty">没有扫描到可用的 2.4G WiFi\n请确认路由器已开启 2.4G，然后点右上角刷新</string>
+    <string name="wifi_scan_failed">设备扫描失败，请点右上角刷新重试</string>
+    <string name="wifi_scan_slow">还没收到设备返回的热点列表…\n可以继续等，也可以手动输入</string>
+    <string name="wifi_manual_entry">手动输入 WiFi</string>
+    <string name="wifi_manual_title">手动输入 WiFi</string>
+    <string name="wifi_manual_ssid_label">WiFi 名称（SSID，区分大小写）</string>
+    <string name="wifi_manual_5g_warn">当前手机连的是 5G（%2$dMHz）：%1$s。相机只支持 2.4G，若这是 5G 专用名称请改掉</string>
+    <string name="wifi_manual_pwd_label">WiFi 密码（开放网络留空）</string>
+    <string name="wifi_scan_wait">设备正在扫描，请稍候</string>
+    <string name="wifi_refresh">刷新 WiFi 列表</string>
+    <string name="wifi_refresh_wait">请 3 秒后再刷新</string>
+    <string name="wifi_pwd_dialog_title">输入「%1$s」的密码</string>
+    <string name="wifi_connect">连接</string>
+    <string name="wifi_configuring">正在连接 WiFi…</string>
+    <string name="wifi_binding">正在建立绑定…</string>
+    <string name="wifi_encrypted_cd">已加密</string>
+    <string name="wifi_pick_cd">选择此网络</string>
+
     <!-- ============ 单词卡 / 详情 ============ -->
     <string name="cards_title">单词卡</string>
     <string name="cards_empty_old">还没有单词卡片\n用相机拍一拍，就能生成卡片啦</string>
@@ -438,6 +459,11 @@
     <string name="restore_reason_dup">名称重复 %1$d</string>
     <string name="restore_reason_small">尺寸不足 %1$d</string>
     <string name="restore_reason_unreadable">读不出 %1$d</string>
+    <string name="restore_reason_local_short">本地已有</string>
+    <string name="restore_reason_unknown_short">库里没有这张卡</string>
+    <string name="restore_reason_dup_short">英文名撞了多张卡</string>
+    <string name="restore_reason_small_short">尺寸不足（存的是缩略图或卡片小图）</string>
+    <string name="restore_reason_unreadable_short">读不出来</string>
     <string name="restore_progress_fmt">正在恢复 %1$d/%2$d…</string>
     <string name="restore_failed_fmt">%1$d 张恢复失败</string>
     <string name="restore_need_permission">需要相册读取权限才能找回</string>
