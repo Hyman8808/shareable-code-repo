@@ -6,7 +6,7 @@ plugins {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 敏感凭据不写进仓库：全部从 gradle.properties（本地，不入库）或命令行 -P 读取。
-// 需要在本地复现时，在 app 同级目录建 gradle.properties 并补上：
+// 建议放在用户级 ~/.gradle/gradle.properties，不要写进仓库目录内的 gradle.properties。
 //
 //   DEFAULT_API_KEY=<设备出厂烧录的 32 位 APIKEY>
 //   ARK_API_KEY=<火山方舟 API Key>
@@ -15,6 +15,7 @@ plugins {
 // 详细说明见仓库根目录 README.md「凭据与第三方能力」章节。
 // ─────────────────────────────────────────────────────────────────────────────
 def prop = { String key -> (project.findProperty(key) ?: "").toString() }
+
 
 android {
     namespace 'com.turing.thumbcard'
@@ -27,7 +28,7 @@ android {
         versionCode 44
         versionName "2.10.0"
 
-        // 设备 APIKEY（出厂烧录，整批公用）。生产环境应改为运行时从设备读取，不硬编码。
+        // 测试环境凭据（生产环境应改为运行时从设备读取，不硬编码）
         buildConfigField "String", "DEFAULT_API_KEY", "\"${prop('DEFAULT_API_KEY')}\""
         buildConfigField "String", "RECORD_BASE_URL",
                 "\"https://nglearn.turingapi.com/\""
@@ -40,11 +41,8 @@ android {
                 "\"ws://ws-api.turingapi.com/api/v2\""
 
         // ===== AI 图片美化（火山方舟 Doubao Seedream） =====
-        // ⚠️ 本项目开发期的图片美化，用的是**项目负责人私人方舟账号**，
-        //    密钥不入库、不进 APK 源码。图片美化能力需要**图灵自建服务端代理**
-        //    （App → 图灵服务端 → 方舟），密钥留在服务端。
-        //    在服务端代理落地之前，本仓库里的图片美化按钮会因空 Key 而不可用，
-        //    这是预期行为，详见 README.md「凭据与第三方能力」。
+        // ⚠️ 密钥直接编进 APK = 任何人反编译即可取出 → 仅限调试期。
+        //    正式发布必须改为「App 调自家服务端，服务端再调方舟」，密钥留在服务端。
         buildConfigField "String", "ARK_API_KEY", "\"${prop('ARK_API_KEY')}\""
         buildConfigField "String", "ARK_BASE_URL",
                 "\"https://ark.cn-beijing.volces.com/\""
@@ -67,8 +65,6 @@ android {
          * 用来做长周期压测与客户演示——否则演示时中途弹出「买张数」很难看。
          * ⚠️ 只认云端 deviceId（整批清单里的那串），不是 BLE 广播 MAC：
          *    广播 MAC 末位普遍 +1，拿它比对会永远匹配不上。
-         *
-         * 演示机 / 压测机的 deviceId 不入库，用 -P 或 gradle.properties 传入。
          */
         buildConfigField "String", "AI_UNLIMITED_DEVICES", "\"${prop('AI_UNLIMITED_DEVICES')}\""
     }
