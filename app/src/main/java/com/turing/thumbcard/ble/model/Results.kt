@@ -124,7 +124,23 @@ data class WifiScanResult(
     /** 热点列表，已按 RSSI 降序、同 SSID 去重 */
     val aps: List<WifiAp>,
     /** 是否需要输密码（老固件没有加密类型，一律要输） */
-    val authUnknown: Boolean = false
+    val authUnknown: Boolean = false,
+    /**
+     * 设备声明的条数（`0x89` 的 `total`）。
+     *
+     * -1 表示没收到 `0x89`（老固件或链路中断）。
+     * 🔴 **它和 [aps].size 不等是正常现象**：协议 §4.5.4 要求固件做「同名合并」，
+     * 固件没做时同一 SSID 会有多条，App 侧合并后条数自然变少。
+     * 界面必须把这个差值讲出来，否则用户只会认为「App 丢了两条」。
+     */
+    val total: Int = -1,
+    /** 因同名而被合并掉的条数（= 收到行数 - 去重后条数） */
+    val duplicates: Int = 0,
+    /** 实际收到的 `0x88` 行数（未去重） */
+    val received: Int = 0
 ) {
     val isEmpty: Boolean get() = aps.isEmpty()
+
+    /** 是否收齐（`total` 已知且收到行数不小于它） */
+    val complete: Boolean get() = total < 0 || received >= total
 }

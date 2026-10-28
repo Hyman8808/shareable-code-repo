@@ -29,12 +29,17 @@ class ScanDeviceActivity : AppCompatActivity(), BleWiFiClient.ScanListener {
     companion object {
         const val EXTRA_DEVICE_MAC = "extra_device_mac"
         const val EXTRA_DEVICE_NAME = "extra_device_name"
+
+        /** 重新扫描的最小间隔（Android 限制 30 秒内最多 5 次扫描） */
+        private const val SCAN_THROTTLE_MS = 3000L
     }
 
     private lateinit var binding: ActivityScanDeviceBinding
     private lateinit var bleClient: BleWiFiClient
     private val adapter = DeviceAdapter { device -> onDeviceClicked(device) }
     private val found = LinkedHashMap<String, ScannedDevice>()
+    private var lastScanAt = 0L
+    private var stopScanRunnable: Runnable? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -61,6 +66,7 @@ class ScanDeviceActivity : AppCompatActivity(), BleWiFiClient.ScanListener {
     }
 
     override fun onDestroy() {
+        stopScanRunnable?.let { binding.root.removeCallbacks(it) }
         bleClient.stopScan()
         super.onDestroy()
     }
@@ -83,6 +89,14 @@ class ScanDeviceActivity : AppCompatActivity(), BleWiFiClient.ScanListener {
     // ==================== 扫描 ====================
 
     private fun startScan() {
+        // 3 秒节流：Android 对「30 秒内启动扫描次数」有硬限制，
+        // 连点刷新到第 6~7 次时 startScan 会被系统直接拒绝，表现为「突然扫不到设备」。
+        val now = System.currentTimeMillis()
+        if (now - lastScanAt < SCAN_THROTTLE_MS) {
+            return
+        }
+        lastScanAt = now
+
         found.clear()
         adapter.submit(emptyList())
         binding.pbScan.visibility = android.view.View.VISIBLE
@@ -90,11 +104,14 @@ class ScanDeviceActivity : AppCompatActivity(), BleWiFiClient.ScanListener {
         bleClient.startScan(this)
 
         // 12 秒后自动停止并提示
-        binding.root.postDelayed({
+        stopScanRunnable?.let { binding.root.removeCallbacks(it) }
+        val r = Runnable {
             bleClient.stopScan()
             binding.pbScan.visibility = android.view.View.GONE
             if (found.isEmpty()) binding.tvScanEmpty.visibility = android.view.View.VISIBLE
-        }, 12_000)
+        }
+        stopScanRunnable = r
+        binding.root.postDelayed(r, 12_000)
     }
 
     override fun onDeviceFound(device: ScannedDevice) {

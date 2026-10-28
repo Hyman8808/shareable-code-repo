@@ -1,0 +1,37 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="nav">
+    <view class="tap44" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-section">{{t.diag_title}}</view>
+    <view class="nav-holder"></view>
+  </view>
+
+  <view class="t-sm sub">{{t.diag_sub}}</view>
+
+  <!-- ===== 云端自检 ===== -->
+  <view class="card cloud">
+    <view class="cloud-head">
+      <view class="t-section grow">{{t.diag_cloud_check}}</view>
+      <view class="tap-mini" bindtap="checkCloud">
+        <image class="ico-mini {{checking ? 'spin' : ''}}" src="{{icons.refresh}}" />
+      </view>
+    </view>
+    <view class="mono result">{{cloudResult || '—'}}</view>
+  </view>
+
+  <!-- ===== 报告 ===== -->
+  <view class="group-label">报告</view>
+  <view class="card report">
+    <text class="mono body" user-select="{{true}}" selectable="{{true}}">{{report}}</text>
+  </view>
+
+  <view class="acts">
+    <view class="btn-primary grow" bindtap="onCopy">{{t.diag_copy}}</view>
+    <view class="btn-ghost gap" bindtap="onClear">{{t.diag_clear}}</view>
+  </view>
+
+  <view style="height:60rpx"></view>
+</view>

@@ -225,9 +225,11 @@ class ProfileFragment : Fragment() {
      */
     private fun deviceLangOptions(): List<Pair<String, String>> {
         val list = mutableListOf("en" to "English")
+        val uiTag = UiLanguage.storedTag(requireContext())
         NameLanguage.entries.forEach { lang ->
             if (lang.code == NameLanguage.NONE.code) return@forEach
-            val label = if (lang.isChinese) lang.native else "${lang.native}  ${lang.label}"
+            // 中文界面补中文名；英文/阿语界面用英文名，否则阿语用户看到的是中文方块字
+            val label = if (lang.isChinese) lang.native else "${lang.native}  ${lang.labelFor(uiTag)}"
             list += lang.code to label
         }
         return list
@@ -545,6 +547,8 @@ class ProfileFragment : Fragment() {
             if (current == UiLanguage.TW) View.VISIBLE else View.INVISIBLE
         view.findViewById<View>(R.id.tvUiCheckEn).visibility =
             if (current == UiLanguage.EN) View.VISIBLE else View.INVISIBLE
+        view.findViewById<View>(R.id.tvUiCheckAr).visibility =
+            if (current == UiLanguage.AR) View.VISIBLE else View.INVISIBLE
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.ui_lang_title)
@@ -560,6 +564,9 @@ class ProfileFragment : Fragment() {
         }
         view.findViewById<View>(R.id.rowUiEn).setOnClickListener {
             applyUiLanguage(dialog, UiLanguage.EN)
+        }
+        view.findViewById<View>(R.id.rowUiAr).setOnClickListener {
+            applyUiLanguage(dialog, UiLanguage.AR)
         }
     }
 

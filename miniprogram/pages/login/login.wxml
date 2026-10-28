@@ -1,0 +1,104 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="nav">
+    <view class="tap44 nav-back" bindtap="onBack">
+      <image class="nav-ico" src="{{icons.back}}" />
+    </view>
+    <view class="t-label nav-title">{{t.mp_login_nav}}</view>
+    <view class="nav-back"></view>
+  </view>
+
+  <!-- ===================== 未登录 ===================== -->
+  <block wx:if="{{!logged}}">
+    <view class="hero">
+      <view class="t-page hero-title">{{t.mp_login_title}}</view>
+      <view class="t-body hero-lead">{{t.mp_login_lead}}</view>
+    </view>
+
+    <view class="act">
+      <button class="btn-primary btn-wechat" bindtap="onLogin" loading="{{busy}}" disabled="{{busy}}">
+        <image class="btn-ico" src="{{icons.wechatWhite}}" />
+        <text>{{busy ? t.mp_login_btn_doing : t.mp_login_btn}}</text>
+      </button>
+      <view class="skip tap44" bindtap="onSkip">{{t.mp_login_skip}}</view>
+    </view>
+
+    <view class="tip tip-strong" wx:if="{{kind === 'notReady'}}">
+      <view class="tip-title">{{tipTitle}}</view>
+      <view class="t-sm tip-body pre">{{tipBody}}</view>
+    </view>
+    <view class="tip tip-warn" wx:if="{{kind === 'fail'}}">
+      <view class="tip-title">{{tipTitle}}</view>
+      <view class="t-sm tip-body">{{t.mp_login_retry}}</view>
+    </view>
+  </block>
+
+  <!-- ===================== 已登录 ===================== -->
+  <block wx:else>
+    <view class="acc">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image class="avatar" wx:if="{{avatar}}" src="{{avatar}}" mode="aspectFill" />
+        <view class="avatar avatar-ph" wx:else>
+          <image class="avatar-ico" src="{{icons.me}}" />
+        </view>
+      </button>
+      <view class="acc-main">
+        <input
+          class="nickname"
+          type="nickname"
+          value="{{nick}}"
+          placeholder="{{t.mp_login_nick_ph}}"
+          placeholder-class="nick-ph"
+          bindinput="onNickInput"
+          bindblur="onNickBlur"
+        />
+        <view class="t-caption acc-id" wx:if="{{accountId}}">{{accountIdText}}</view>
+      </view>
+    </view>
+
+    <view class="group">
+      <button class="set-row" open-type="getPhoneNumber" bindgetphonenumber="onBindPhone">
+        <image class="set-ico" src="{{icons.phone}}" />
+        <view class="set-main">{{t.mp_login_phone}}</view>
+        <view class="set-val">{{phone || t.mp_login_phone_unbound}}</view>
+        <view class="link" wx:if="{{!phone}}">{{t.mp_login_phone_bind}}</view>
+      </button>
+      <view class="hairline-48"></view>
+      <view class="set-row" bindtap="onLogout">
+        <image class="set-ico" src="{{icons.logout}}" />
+        <view class="set-main danger">{{t.mp_login_logout}}</view>
+      </view>
+    </view>
+
+    <view class="tip tip-ok" wx:if="{{kind === 'ok'}}">
+      <view class="tip-title">{{tipTitle}}</view>
+    </view>
+    <view class="tip tip-strong" wx:if="{{kind === 'notReady'}}">
+      <view class="tip-title">{{tipTitle}}</view>
+      <view class="t-sm tip-body pre">{{tipBody}}</view>
+    </view>
+    <view class="tip tip-warn" wx:if="{{kind === 'fail'}}">
+      <view class="tip-title">{{tipTitle}}</view>
+    </view>
+  </block>
+
+  <!-- ===================== 说明（真实边界，不粉饰） ===================== -->
+  <view class="notes">
+    <view class="note">
+      <view class="t-label note-h">{{t.mp_login_why_title}}</view>
+      <view class="t-sm note-b">{{t.mp_login_why_body}}</view>
+    </view>
+    <view class="note">
+      <view class="t-label note-h">{{t.mp_login_scope_title}}</view>
+      <view class="t-sm note-b">{{t.mp_login_scope_body}}</view>
+    </view>
+    <view class="note">
+      <image class="note-ico" src="{{icons.shield}}" />
+      <view class="grow">
+        <view class="t-label note-h">{{t.mp_login_guest_title}}</view>
+        <view class="t-sm note-b">{{t.mp_login_guest_body}}</view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,59 @@
+/* 底部导航 58dp + 手势安全区（App: nav_bar_height 64 / 药丸 40×26） */
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  height: 116rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #f4f2ec;
+  border-top: 1rpx solid #e6e2d8;
+}
+
+.nav-item {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 荧光药丸：全 App 只有三个合法场合，这是第一个 */
+.pill {
+  width: 80rpx;
+  height: 52rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+
+.pill.on {
+  background: #d9f24f;
+}
+
+.ico {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.lbl {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  color: #6e695e;
+  letter-spacing: 0.02em;
+}
+
+/* 选中：色 = text_on_accent（深色压在荧光上 11.93:1）+ 字重 medium */
+.lbl.on {
+  color: #172742;
+  font-weight: 500;
+}

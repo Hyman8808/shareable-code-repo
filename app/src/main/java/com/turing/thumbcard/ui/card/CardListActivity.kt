@@ -26,6 +26,7 @@ import com.turing.thumbcard.data.db.WordCardEntity
 import com.turing.thumbcard.data.device.CurrentDeviceStore
 import com.turing.thumbcard.data.i18n.LanguagePrefs
 import com.turing.thumbcard.data.i18n.NameResolver
+import com.turing.thumbcard.data.i18n.UiLanguage
 import com.turing.thumbcard.data.repo.BindRepository
 import com.turing.thumbcard.data.repo.RecordRepository
 import com.turing.thumbcard.data.repo.SyncResult
@@ -547,7 +548,11 @@ class CardListActivity : AppCompatActivity() {
                         c.pinyin?.takeIf { it.isNotBlank() }?.let { add(it) }
                     }
                     else -> {
-                        add(if (name.translated) lang.label else ctx.getString(R.string.card_meta_pending_fmt, lang.label))
+                        val langName = lang.labelFor(UiLanguage.storedTag(ctx))
+                        add(
+                            if (name.translated) langName
+                            else ctx.getString(R.string.card_meta_pending_fmt, langName)
+                        )
                     }
                 }
                 c.createTime?.takeIf { it.isNotBlank() }?.let { add(it) }

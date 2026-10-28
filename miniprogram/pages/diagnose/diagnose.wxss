@@ -1,0 +1,105 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  height: 96rpx;
+}
+
+.ico-back {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.nav-holder {
+  width: 88rpx;
+  flex: none;
+}
+
+.sub {
+  color: var(--t2);
+  margin-bottom: 16rpx;
+}
+
+/* ===== 云端自检 ===== */
+.cloud {
+  margin-top: 8rpx;
+  padding: 28rpx 32rpx 32rpx;
+}
+
+.cloud-head {
+  display: flex;
+  align-items: center;
+}
+
+.tap-mini {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.ico-mini {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.result {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 40rpx;
+  color: var(--t2);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ===== 报告 ===== */
+.group-label {
+  margin: 44rpx 0 12rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
+
+.report {
+  padding: 28rpx 32rpx;
+}
+
+.body {
+  font-size: 24rpx;
+  line-height: 40rpx;
+  color: var(--t1);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ===== 按钮 ===== */
+.acts {
+  display: flex;
+  margin-top: 32rpx;
+}
+
+.gap {
+  margin-left: 16rpx;
+}

@@ -1,0 +1,405 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 32rpx calc(60rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+/* ===== 顶栏 ===== */
+.top {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+  margin-top: 12rpx;
+}
+
+.back {
+  margin-left: -20rpx;
+}
+
+.ico-back {
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
+}
+
+.title {
+  margin-left: 8rpx;
+}
+
+/* 顶栏收藏：视觉 36dp，热区 44dp */
+.heart {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 120ms ease;
+}
+
+.heart.on {
+  background: var(--accent);
+}
+
+.heart-ico {
+  width: 40rpx;
+  height: 40rpx;
+  display: block;
+}
+
+/* ===== 主卡（相纸） ===== */
+.hero {
+  margin-top: 16rpx;
+  background: var(--card);
+  border-radius: 40rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(23, 39, 66, 0.07);
+}
+
+.hero-img-box {
+  max-height: 860rpx;
+  overflow: hidden;
+  background: var(--card-alt);
+}
+
+.hero-img {
+  width: 100%;
+  display: block;
+}
+
+.hero-ph {
+  width: 100%;
+  height: 480rpx;
+  background: #eceadf;
+}
+
+.hero-body {
+  padding: 40rpx;
+}
+
+/* 34sp serif regular：不加粗（伪粗会在细笔画外描一圈边，e/a/g 内腔糊死） */
+.hero-headword {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 68rpx;
+  line-height: 82rpx;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  text-align: center;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-en {
+  margin-top: 8rpx;
+  text-align: center;
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: var(--t3);
+}
+
+/* 中文 17sp medium secondary —— 不是 15sp，那是列表行的档，会让详情页与列表撞层级 */
+.hero-cjk {
+  margin-top: 20rpx;
+  text-align: center;
+  font-size: 34rpx;
+  line-height: 48rpx;
+  font-weight: 500;
+  color: var(--t2);
+}
+
+/* ===== 播放按钮行 ===== */
+.actions {
+  display: flex;
+  margin-top: 32rpx;
+}
+
+.act {
+  flex: 1;
+  height: 104rpx;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.act + .act {
+  margin-left: 20rpx;
+}
+
+/* 一屏只允许一个实心按钮 */
+.act.primary {
+  background: var(--ink);
+}
+
+.act.primary .act-lbl {
+  color: var(--on-ink);
+}
+
+.act.ghost {
+  background: transparent;
+}
+
+.act.ghost .act-lbl {
+  color: var(--ink);
+}
+
+.act:active {
+  opacity: 0.86;
+}
+
+.act-ico {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 12rpx;
+  display: block;
+}
+
+.act-lbl {
+  font-size: 28rpx;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ===== 拓展 / 信息卡 ===== */
+.sec-card {
+  margin-top: 24rpx;
+  padding: 8rpx 40rpx;
+}
+
+.block {
+  padding: 28rpx 0;
+}
+
+.block + .block {
+  border-top: 1rpx solid var(--divider);
+}
+
+.block-label {
+  margin-bottom: 8rpx;
+}
+
+.block-text {
+  font-size: 30rpx;
+  line-height: 48rpx;
+  color: var(--t2);
+  white-space: pre-wrap;
+}
+
+.info-card {
+  margin-top: 24rpx;
+  padding: 8rpx 40rpx;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26rpx 0;
+}
+
+.info-key {
+  color: var(--t3);
+}
+
+.info-val {
+  color: var(--t2);
+  text-align: right;
+  max-width: 62%;
+}
+
+.tip {
+  margin-top: 28rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--t3);
+}
+
+/* ===== 状态 ===== */
+.state {
+  padding: 160rpx 0;
+  text-align: center;
+}
+
+.empty-ico {
+  width: 64rpx;
+  height: 64rpx;
+  display: block;
+}
+
+.empty-btn {
+  margin: 36rpx auto 0;
+  width: 50%;
+}
+
+/* 「暂无该语言译名」提示：11sp label，不抢释义 */
+.fallback {
+  margin-top: 10rpx;
+  color: var(--t3);
+}
+
+/* ===== 词典区 ===== */
+.block-card {
+  margin-top: 24rpx;
+  padding: 32rpx 40rpx 36rpx;
+}
+
+/* 音标行：一条白卡装完美/英/拼音，不用三张卡 */
+.phon-row {
+  margin-top: 24rpx;
+  background: var(--card);
+  border-radius: 28rpx;
+  padding: 24rpx 32rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.phon {
+  display: flex;
+  align-items: center;
+  margin-right: 36rpx;
+}
+
+/* 美 / 英 / 拼音：11sp label，不参与「谁更重要」的竞争 */
+.phon-k {
+  font-size: 22rpx;
+  color: var(--t3);
+  margin-right: 10rpx;
+  letter-spacing: 0.06em;
+}
+
+.phon-v {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30rpx;
+  line-height: 42rpx;
+  color: var(--t1);
+}
+
+.phon-play {
+  width: 64rpx;
+  height: 64rpx;
+  margin-left: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phon-ico {
+  width: 32rpx;
+  height: 32rpx;
+  display: block;
+  opacity: 0.72;
+}
+
+/* 释义：词性贴左，释义吃满剩余宽度 */
+.mean {
+  display: flex;
+  align-items: flex-start;
+  padding: 8rpx 0;
+}
+
+.pos {
+  flex: none;
+  min-width: 56rpx;
+  font-size: 24rpx;
+  line-height: 44rpx;
+  color: var(--t3);
+  font-style: italic;
+}
+
+.mean-t {
+  flex: 1;
+  font-size: 30rpx;
+  line-height: 44rpx;
+  color: var(--t1);
+  word-break: break-word;
+}
+
+/* 例句 / 搭配 */
+.eg {
+  padding: 14rpx 0;
+}
+
+.eg + .eg {
+  border-top: 1rpx solid var(--divider);
+}
+
+.eg-en {
+  font-size: 28rpx;
+  line-height: 42rpx;
+  color: var(--t1);
+}
+
+.eg-cn {
+  margin-top: 4rpx;
+  font-size: 26rpx;
+  line-height: 38rpx;
+  color: var(--t2);
+}
+
+/* 同义 / 反义：chip 已在 app.wxss 定义，这里只管排版 */
+.chip-line {
+  display: flex;
+  align-items: flex-start;
+}
+
+.chip-line .block-label {
+  flex: none;
+  width: 112rpx;
+  margin-bottom: 0;
+  line-height: 52rpx;
+}
+
+.chips {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chips .chip {
+  margin: 0 12rpx 12rpx 0;
+}
+
+/* 词形变化 */
+.form-row {
+  display: flex;
+  align-items: baseline;
+  padding: 10rpx 0;
+}
+
+.form-k {
+  flex: none;
+  width: 180rpx;
+  font-size: 24rpx;
+  line-height: 40rpx;
+  color: var(--t3);
+}
+
+.form-v {
+  flex: 1;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: var(--t1);
+  word-break: break-word;
+}
+
+.muted {
+  color: var(--t3);
+}
+
+.mt {
+  margin-top: 16rpx;
+}
+
+.link-sm {
+  display: inline-block;
+  font-size: 26rpx;
+  color: var(--ink);
+  padding: 8rpx 0;
+}

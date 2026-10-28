@@ -1,0 +1,14 @@
+<view class="nav">
+  <view
+    class="nav-item"
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    bindtap="onTap"
+    data-index="{{index}}"
+  >
+    <view class="pill {{selected === index ? 'on' : ''}}">
+      <image class="ico" src="{{selected === index ? item.on : item.off}}" />
+    </view>
+    <view class="lbl {{selected === index ? 'on' : ''}}">{{item.text}}</view>
+  </view>
+</view>

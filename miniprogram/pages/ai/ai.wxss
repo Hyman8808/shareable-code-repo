@@ -1,0 +1,139 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  height: 96rpx;
+}
+
+.ico-back {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.nav-holder {
+  width: 88rpx;
+  flex: none;
+}
+
+/* ===== 顶部提示：荧光竖条 + 纸底，不用红色警告条 ===== */
+.notice {
+  display: flex;
+  margin-top: 8rpx;
+  padding: 24rpx 28rpx;
+  background: #edeae1;
+  border-radius: 14rpx;
+}
+
+.notice-bar {
+  width: 6rpx;
+  border-radius: 3rpx;
+  background: var(--accent);
+  margin-right: 20rpx;
+  flex: none;
+}
+
+.notice-t {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: var(--t1);
+  font-weight: 500;
+}
+
+.notice-s {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: var(--t2);
+}
+
+/* ===== 风格卡 ===== */
+.group-label {
+  margin: 44rpx 0 12rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
+
+.style-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.style-top {
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  height: 36rpx;
+  padding: 0 14rpx;
+  border-radius: 8rpx;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 22rpx;
+  line-height: 36rpx;
+  font-weight: 500;
+  flex: none;
+  margin-right: 14rpx;
+}
+
+.style-title {
+  font-size: 32rpx;
+  line-height: 44rpx;
+  color: var(--t1);
+  font-weight: 500;
+}
+
+.style-desc {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: var(--t2);
+}
+
+.disclaimer {
+  margin-top: 8rpx;
+}
+
+/* ===== 档位 ===== */
+.tier {
+  display: flex;
+  align-items: center;
+  height: 100rpx;
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.tier:last-child {
+  border-bottom: 0;
+}
+
+.tier-n {
+  width: 160rpx;
+  font-size: 30rpx;
+  color: var(--t1);
+  font-weight: 500;
+}
+
+.tier-h {
+  font-size: 24rpx;
+  color: var(--t3);
+}
+
+.price-note {
+  margin-top: 16rpx;
+}
+
+.why {
+  margin-top: 48rpx;
+}

@@ -1,0 +1,173 @@
+<view class="wrap" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd">
+  <view style="height:{{statusBar}}px"></view>
+
+  <!-- ===== 顶栏 44dp ===== -->
+  <view class="top">
+    <view class="tap44 back" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-section grow title">{{t.card_detail_title}}</view>
+    <view class="tap44" bindtap="onToggleFav">
+      <view class="heart {{fav ? 'on' : ''}}">
+        <image class="heart-ico" src="{{fav ? icons.heartOn : icons.heartOff}}" />
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 加载 / 出错 ===== -->
+  <view class="state" wx:if="{{loading}}">
+    <view class="t-body">正在读取…</view>
+  </view>
+
+  <view class="state" wx:elif="{{err}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{icons.camera}}" />
+    </view>
+    <view class="empty-title">{{err}}</view>
+    <view class="btn-ghost empty-btn" bindtap="onRetry">重试</view>
+  </view>
+
+  <block wx:elif="{{vm}}">
+    <!-- ===== 主卡：相纸（图片出血到卡边，只裁外侧四角） ===== -->
+    <view class="hero">
+      <view class="hero-img-box" bindtap="onPreview">
+        <image wx:if="{{vm.img}}" class="hero-img" src="{{vm.img}}" mode="widthFix" />
+        <view wx:else class="hero-ph"></view>
+      </view>
+
+      <view class="hero-body">
+        <!-- 英文词头 34sp serif：主角，固定字号不降档，最多 2 行 -->
+        <view class="hero-headword">{{vm.headword}}</view>
+        <view class="hero-en" wx:if="{{vm.en}}">{{vm.en}}</view>
+        <!-- 中文 17sp medium secondary：释义，不是标题 -->
+        <view class="hero-cjk" wx:if="{{vm.cjk}}">{{vm.cjk}}</view>
+        <!-- 选了外语但云端只给了中文：必须标出来，否则用户以为坏了 -->
+        <view class="fallback t-label" wx:if="{{vm.langFallback}}">{{vm.langFallback}}</view>
+
+        <!-- 播放：一屏只允许一个实心按钮 -->
+        <view class="actions" wx:if="{{vm.audios.length}}">
+          <view
+            class="act {{index === 0 ? 'primary' : 'ghost'}}"
+            wx:for="{{vm.audios}}"
+            wx:key="key"
+            data-key="{{item.key}}"
+            data-url="{{item.url}}"
+            bindtap="onPlay"
+          >
+            <image class="act-ico" src="{{index === 0 ? icons.speakWhite : icons.speak}}" />
+            <text class="act-lbl">{{playingKey === item.key ? t.detail_stop : item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 词典：音标 / 释义 / 例句 / 搭配 / 词形 ===== -->
+    <view class="card block-card" wx:if="{{dictLoading}}">
+      <view class="t-label block-label">{{t.detail_dict_en}}</view>
+      <view class="t-sm muted">{{t.detail_dict_loading}}</view>
+    </view>
+
+    <block wx:elif="{{dv}}">
+      <!-- 音标行：美/英分开，拼音另起 -->
+      <view class="phon-row" wx:if="{{dv.phonetics.length || dv.pinyin}}">
+        <view class="phon" wx:for="{{dv.phonetics}}" wx:key="key">
+          <text class="phon-k">{{item.label}}</text>
+          <text class="phon-v">/{{item.v}}/</text>
+          <view class="phon-play tap44" wx:if="{{item.audio}}" data-url="{{item.audio}}" data-key="{{'ph' + item.key}}" bindtap="onPlay">
+            <image class="phon-ico" src="{{icons.speak}}" />
+          </view>
+        </view>
+        <view class="phon" wx:if="{{dv.pinyin}}">
+          <text class="phon-k">{{t.detail_pinyin}}</text>
+          <text class="phon-v">{{dv.pinyin}}</text>
+        </view>
+      </view>
+
+      <!-- 释义 -->
+      <view class="card block-card" wx:if="{{dv.meanings.length}}">
+        <view class="t-label block-label">{{t.detail_meaning}}</view>
+        <view class="mean" wx:for="{{dv.meanings}}" wx:key="idx">
+          <text class="pos" wx:if="{{item.pos}}">{{item.pos}}</text>
+          <text class="mean-t">{{item.meaning}}</text>
+        </view>
+      </view>
+
+      <!-- 例句 -->
+      <view class="card block-card" wx:if="{{dv.examples.length}}">
+        <view class="t-label block-label">{{t.detail_examples}}</view>
+        <view class="eg" wx:for="{{dv.examples}}" wx:key="idx">
+          <view class="eg-en" wx:if="{{item.en}}">{{item.en}}</view>
+          <view class="eg-cn" wx:if="{{item.cn}}">{{item.cn}}</view>
+        </view>
+      </view>
+
+      <!-- 常用搭配 -->
+      <view class="card block-card" wx:if="{{dv.phrases.length}}">
+        <view class="t-label block-label">{{t.detail_phrases}}</view>
+        <view class="eg" wx:for="{{dv.phrases}}" wx:key="idx">
+          <view class="eg-en" wx:if="{{item.en}}">{{item.en}}</view>
+          <view class="eg-cn" wx:if="{{item.cn}}">{{item.cn}}</view>
+        </view>
+      </view>
+
+      <!-- 同义词 / 反义词 -->
+      <view class="card block-card" wx:if="{{dv.synonyms.length || dv.antonyms.length}}">
+        <view class="chip-line" wx:if="{{dv.synonyms.length}}">
+          <view class="t-label block-label">{{t.dict_synonym}}</view>
+          <view class="chips">
+            <view class="chip" wx:for="{{dv.synonyms}}" wx:key="*this">{{item}}</view>
+          </view>
+        </view>
+        <view class="chip-line mt" wx:if="{{dv.antonyms.length}}">
+          <view class="t-label block-label">{{t.dict_antonym}}</view>
+          <view class="chips">
+            <view class="chip" wx:for="{{dv.antonyms}}" wx:key="*this">{{item}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 词形变化 -->
+      <view class="card block-card" wx:if="{{dv.forms.length}}">
+        <view class="t-label block-label">{{t.mp_word_forms}}</view>
+        <view class="form-row" wx:for="{{dv.forms}}" wx:key="idx">
+          <text class="form-k">{{item.label}}</text>
+          <text class="form-v">{{item.v}}</text>
+        </view>
+      </view>
+
+      <!-- 词典未收录时的机翻（明确标出来，不当释义） -->
+      <view class="card block-card" wx:if="{{dv.translation}}">
+        <view class="t-label block-label">{{t.mp_machine_translation}}</view>
+        <view class="block-text">{{dv.translation}}</view>
+      </view>
+    </block>
+
+    <!-- 词典查不到：不报错，给一句可重试的说明 -->
+    <view class="card block-card" wx:elif="{{dictErr}}">
+      <view class="t-sm muted">{{dictErr}}</view>
+      <view class="link-sm mt" bindtap="onRetryDict">{{t.detail_retry}}</view>
+    </view>
+
+    <!-- ===== 拓展内容（老栈暂无字段，有才渲染） ===== -->
+    <view class="card sec-card" wx:if="{{vm.blocks.length}}">
+      <view class="block" wx:for="{{vm.blocks}}" wx:key="key">
+        <view class="t-label block-label">{{item.label}}</view>
+        <view class="block-text">{{item.text}}</view>
+      </view>
+    </view>
+
+    <!-- ===== 信息卡 ===== -->
+    <view class="card info-card">
+      <view class="info-row">
+        <view class="t-caption info-val">{{vm.timeText}}</view>
+      </view>
+      <view class="hairline"></view>
+      <view class="info-row">
+        <view class="t-caption info-key">{{t.home_devices_btn}}</view>
+        <view class="t-caption info-val mono">{{vm.deviceId}}</view>
+      </view>
+    </view>
+
+    <view class="tip">{{t.preview_hint}}</view>
+  </block>
+</view>

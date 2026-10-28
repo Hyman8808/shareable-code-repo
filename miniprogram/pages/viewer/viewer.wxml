@@ -1,0 +1,61 @@
+<view class="viewer">
+  <!-- ===== 图片区：movable-view 提供双指缩放与拖动 ===== -->
+  <movable-area class="area" scale-area>
+    <movable-view
+      class="mv"
+      direction="all"
+      scale
+      scale-min="1"
+      scale-max="4"
+      out-of-bounds="{{false}}"
+      wx:if="{{img}}"
+    >
+      <image class="pic" src="{{img}}" mode="aspectFit" bindtap="onPreview" />
+    </movable-view>
+  </movable-area>
+
+  <!-- ===== 顶栏浮层 ===== -->
+  <view class="bar-top" style="padding-top:{{statusBar}}px">
+    <view class="tap44" bindtap="onBack">
+      <image class="ico-back" src="{{icons.backWhite}}" />
+    </view>
+    <view class="top-mid">
+      <view class="t-title ellipsis">{{title}}</view>
+      <view class="t-pos" wx:if="{{pos}}">{{pos}}</view>
+    </view>
+    <view class="tap44" bindtap="onSave">
+      <image class="ico-dl" src="{{icons.downloadWhite}}" />
+    </view>
+  </view>
+
+  <!-- ===== 左右切图：贴边热区，不挡图 ===== -->
+  <view class="edge left" wx:if="{{index > 0}}" bindtap="onPrev">
+    <image class="edge-ico" src="{{icons.backWhite}}" />
+  </view>
+  <view class="edge right" wx:if="{{index < total - 1}}" bindtap="onNext">
+    <image class="edge-ico mirror" src="{{icons.backWhite}}" />
+  </view>
+
+  <!-- ===== 底栏：风格条 + 存相册 ===== -->
+  <view class="bar-bottom" style="padding-bottom:calc(24rpx + env(safe-area-inset-bottom))">
+    <view class="styles">
+      <view class="style on">{{t.preview_style_original}}</view>
+      <view class="style off">{{t.ai_badge_hd}}</view>
+      <view class="style off">{{t.ai_badge_cartoon}}</view>
+    </view>
+    <view class="hint-line">{{t.preview_hint}}</view>
+    <view class="btn-save" bindtap="onSave">{{t.preview_save}}</view>
+  </view>
+
+  <!-- ===== 状态 ===== -->
+  <view class="center" wx:if="{{loading}}">
+    <view class="spinner"></view>
+  </view>
+  <view class="center" wx:elif="{{err}}">
+    <view class="err-text">{{err}}</view>
+    <view class="btn-save mt" bindtap="onRetry"> {{t.common_retry}} </view>
+  </view>
+  <view class="center" wx:elif="{{!img}}">
+    <view class="err-text">{{t.preview_no_image}}</view>
+  </view>
+</view>

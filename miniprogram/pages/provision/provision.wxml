@@ -1,0 +1,209 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="top">
+    <view class="tap44 back" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-page grow">{{t.wifi_title}}</view>
+  </view>
+
+  <!-- ===== 三步指示 ===== -->
+  <view class="steps">
+    <view class="step">
+      <view class="dot on">1</view>
+      <view class="slbl on">{{t.mp_pw_step_1}}</view>
+    </view>
+    <view class="sline {{step === 'wifi' || step === 'run' || step === 'done' ? 'on' : ''}}"></view>
+    <view class="step">
+      <view class="dot {{step === 'wifi' || step === 'run' || step === 'done' ? 'on' : ''}}">2</view>
+      <view class="slbl {{step === 'wifi' || step === 'run' || step === 'done' ? 'on' : ''}}">{{t.mp_pw_step_2}}</view>
+    </view>
+    <view class="sline {{step === 'run' || step === 'done' ? 'on' : ''}}"></view>
+    <view class="step">
+      <view class="dot {{step === 'run' || step === 'done' ? 'on' : ''}}">3</view>
+      <view class="slbl {{step === 'run' || step === 'done' ? 'on' : ''}}">{{t.mp_pw_step_3}}</view>
+    </view>
+  </view>
+
+  <!-- ① 准备 -->
+  <block wx:if="{{step === 'ready'}}">
+    <view class="card pad">
+      <view class="t-section">{{t.mp_pw_check_title}}</view>
+      <view class="check-item">
+        <view class="ck"></view>
+        <view class="t-body grow">{{t.mp_pw_check_power}}</view>
+      </view>
+      <view class="check-item">
+        <view class="ck"></view>
+        <view class="t-body grow">{{t.mp_pw_check_bt}}</view>
+      </view>
+      <view class="check-item">
+        <view class="ck"></view>
+        <view class="t-body grow">{{t.mp_pw_check_24g}}</view>
+      </view>
+    </view>
+    <view class="btn-primary action" bindtap="onStart">{{t.mp_pw_search}}</view>
+  </block>
+
+  <!-- ② 搜设备 -->
+  <block wx:elif="{{step === 'scan'}}">
+    <view class="card pad">
+      <view class="row-between">
+        <view class="t-section">{{t.scan_title}}</view>
+        <view class="link-sm" bindtap="onRescan">{{t.mp_pw_rescan}}</view>
+      </view>
+      <view class="t-sm mt12" wx:if="{{devices.length === 0}}">{{t.mp_pw_search_keep}}</view>
+      <view class="t-sm mt12" wx:else>{{foundText}}</view>
+    </view>
+
+    <view class="card dev-row" wx:for="{{devices}}" wx:key="deviceId" bindtap="onTapDevice" data-id="{{item.deviceId}}">
+      <view class="dev-ico-box">
+        <image class="dev-ico" src="{{icons.bt}}" />
+      </view>
+      <view class="grow">
+        <view class="dev-name ellipsis">{{item.name}}</view>
+        <view class="t-caption">{{item.RSSI}} dBm</view>
+      </view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+
+    <view class="state" wx:if="{{scanEmpty && devices.length === 0}}">
+      <view class="empty-ring">
+        <image class="empty-ico" src="{{icons.search}}" />
+      </view>
+      <view class="empty-title">{{t.mp_pw_none}}</view>
+      <view class="empty-sub">{{t.mp_pw_none_sub}}</view>
+      <view class="btn-ghost empty-btn" bindtap="onRescan">{{t.mp_pw_rescan}}</view>
+    </view>
+
+    <view class="logbox" wx:if="{{logs.length}}">
+      <view class="log" wx:for="{{logs}}" wx:key="*this">{{item}}</view>
+    </view>
+  </block>
+
+  <!-- ③ 连接中 -->
+  <block wx:elif="{{step === 'connect'}}">
+    <view class="card pad center">
+      <view class="spin"></view>
+      <view class="t-section mt28">{{t.mp_pw_reading}}</view>
+      <view class="t-sm mt10">{{t.mp_pw_reading_sub}}</view>
+    </view>
+  </block>
+
+  <!-- ④ 选 WiFi -->
+  <block wx:elif="{{step === 'wifi'}}">
+    <view class="card pad">
+      <view class="row-between">
+        <view class="t-section">{{t.mp_pw_connected}}</view>
+        <view class="tag-on">{{t.wifi_log_connected}}</view>
+      </view>
+      <view class="kv"><text class="kv-k">{{t.mp_pw_device_id}}</text><text class="kv-v mono">{{info.deviceId}}</text></view>
+      <view class="kv"><text class="kv-k">{{t.mp_pw_fw}}</text><text class="kv-v">{{info.fw || t.mp_pw_unknown}}</text></view>
+      <view class="kv"><text class="kv-k">{{t.mp_pw_key}}</text><text class="kv-v mono">{{infoMasked}}</text></view>
+    </view>
+
+    <view class="card pad">
+      <view class="row-between">
+        <view class="t-section">{{t.mp_pw_choose_wifi}}</view>
+        <view class="link-sm" bindtap="loadWifi" wx:if="{{!scanningWifi}}">{{t.wifi_refresh}}</view>
+        <view class="t-sm" wx:else>{{t.wifi_scan_wait}}</view>
+      </view>
+
+      <view class="t-sm mt12" wx:if="{{apMeta && apMeta.total}}">{{apText}}</view>
+      <view class="t-sm mt12 warn" wx:if="{{wifiErr}}">{{wifiErr}}</view>
+
+      <view class="ap" wx:for="{{aps}}" wx:key="seq" bindtap="onTapAp" data-index="{{index}}">
+        <view class="grow">
+          <view class="ap-name ellipsis">{{item.ssid}}</view>
+          <view class="t-caption ap-meta">{{item.authText}} · {{item.rssi}} dBm</view>
+        </view>
+        <view class="bars">
+          <view class="bar {{item.level >= 1 ? 'on' : ''}}"></view>
+          <view class="bar {{item.level >= 2 ? 'on' : ''}}"></view>
+          <view class="bar {{item.level >= 3 ? 'on' : ''}}"></view>
+          <view class="bar {{item.level >= 4 ? 'on' : ''}}"></view>
+        </view>
+      </view>
+
+      <view class="manual-toggle" bindtap="onToggleManual">
+        {{manual ? t.mp_pw_manual_hide : t.mp_pw_manual_show}}
+      </view>
+
+      <block wx:if="{{manual}}">
+        <input class="input mt16" placeholder="{{t.wifi_ssid_hint}}" placeholder-class="ph" value="{{manualSsid}}" bindinput="onManualSsid" />
+        <input class="input mt12" placeholder="{{t.wifi_manual_pwd_label}}" placeholder-class="ph" password value="{{manualPwd}}" bindinput="onManualPwd" />
+        <view class="btn-primary action-inline" bindtap="onManualSubmit">{{t.wifi_start}}</view>
+      </block>
+    </view>
+
+    <view class="logbox" wx:if="{{logs.length}}">
+      <view class="log" wx:for="{{logs}}" wx:key="*this">{{item}}</view>
+    </view>
+  </block>
+
+  <!-- ⑤ 下发中 -->
+  <block wx:elif="{{step === 'run'}}">
+    <view class="card pad center">
+      <view class="spin"></view>
+      <view class="t-section mt28">{{runText}}</view>
+      <view class="t-sm mt10">{{t.mp_pw_dont_leave}}</view>
+    </view>
+  </block>
+
+  <!-- ⑥ 成功 -->
+  <block wx:elif="{{step === 'done'}}">
+    <view class="card pad center">
+      <view class="ok-ring">
+        <view class="ok-mark"></view>
+      </view>
+      <view class="t-page mt24">{{t.mp_pw_ok}}</view>
+      <view class="t-sm mt10">{{t.mp_pw_ok_sub}}</view>
+      <view class="kv2" wx:if="{{result.ip}}">
+        <text class="kv-k">IP</text>
+        <text class="kv-v mono">{{result.ip}}</text>
+      </view>
+      <view class="btn-primary action-inline" bindtap="onDone">{{t.mp_pw_go_records}}</view>
+    </view>
+  </block>
+
+  <!-- ⑦ 失败 -->
+  <block wx:elif="{{step === 'fail'}}">
+    <view class="card pad center">
+      <view class="fail-ring">
+        <view class="fail-mark">!</view>
+      </view>
+      <view class="t-page mt24">{{t.mp_pw_fail}}</view>
+      <view class="t-sm mt10">{{failMsg}}</view>
+      <view class="hint mt20" wx:if="{{failHint}}">
+        <view class="hint-bar warn"></view>
+        <view class="hint-text">{{failHint}}</view>
+      </view>
+      <view class="btn-primary action-inline" bindtap="onRetry">{{t.mp_pw_retry}}</view>
+    </view>
+  </block>
+</view>
+
+<!-- 密码弹层 -->
+<view class="mask" wx:if="{{sheet}}" bindtap="onSheetCancel">
+  <view class="sheet" catchtap="noop">
+    <view class="t-section sheet-title ellipsis">{{sheetSsid}}</view>
+    <view class="t-sm mt8">{{t.mp_pw_pwd_prompt}}</view>
+    <input
+      class="input mt24"
+      password
+      focus="{{pwdFocus}}"
+      placeholder="{{t.wifi_password}}"
+      placeholder-class="ph"
+      value="{{sheetPwd}}"
+      bindinput="onSheetInput"
+      confirm-type="done"
+      bindconfirm="onSheetConfirm"
+    />
+    <view class="row mt32">
+      <view class="btn-secondary grow" bindtap="onSheetCancel">{{t.common_cancel}}</view>
+      <view class="gap"></view>
+      <view class="btn-primary grow" bindtap="onSheetConfirm">{{t.wifi_connect}}</view>
+    </view>
+  </view>
+</view>

@@ -54,6 +54,9 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
     private var wifiAsked = false
     private var configuring = false
 
+    /** 密钥阶段失败后是否已重建过链路（只重试一次，避免死循环） */
+    private var gattRetried = false
+
     private val ble get() = (requireActivity() as DevToolActivity).bleClient
 
     /** 设备不响应 0x0D 时的兜底：4 秒后直接进扫描，不等蓝牙栈超时 */
@@ -187,7 +190,10 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
                     sub = buildString {
                         append(d.mac)
                         append("  ·  广播版本 0x").append(Integer.toHexString(d.version).uppercase())
-                        if (!d.supportsWifiListV2) append("（老固件，列表无加密类型）")
+                        // ⚠️ 不再用广播版本推断「老固件」：现场样机的 Version 字节常是 0x00/0x10，
+                        //    与是否支持 0x88 列表并不同步，标错会误导联调。
+                        //    列表有没有加密类型，看下面扫描结果里的 authUnknown 才准。
+                        if (d.version == 0) append("（广播未标版本）")
                     },
                     trail = "${d.rssi} dBm",
                     active = connectedDevice?.mac == d.mac,
@@ -213,6 +219,7 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
         infoRequested = false
         wifiAsked = false
         configuring = false
+        gattRetried = false
         aps.clear()
         apAdapter.submit(emptyList())
         b.btnRescanWifi.visibility = View.GONE
@@ -308,6 +315,25 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
         apAdapter.submit(aps.map { ap -> toRow(ap) })
         renderWifiTitle()
         b.btnRescanWifi.visibility = View.VISIBLE
+
+        // 条数对账：联调时最先被问的就是「设备报 10 个为什么只显示 8 个」
+        DevLog.step(
+            buildString {
+                append("收到 ${result.aps.size} 个热点（去重后）")
+                if (result.total >= 0) {
+                    append("；设备声明 total=${result.total}")
+                    append("，实际收到 ${result.received} 行")
+                    if (result.duplicates > 0) {
+                        append("，同名合并 ${result.duplicates} 条")
+                        append("  ← 固件未按协议 §4.5.4 做同名合并")
+                    }
+                    if (!result.complete) append("；⚠ 未收齐")
+                } else {
+                    append("；未收到 0x89，无法对账（固件可能没发列表元信息）")
+                }
+            }
+        )
+
         if (aps.isEmpty()) {
             setStatus("没有热点列表：固件可能未实现 0x0E 扫描，可点「手输 SSID」直接下发")
             DevLog.error("扫描结果为空")
@@ -346,6 +372,14 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
     override fun onWifiScanBusy() {
         setStatus("设备正在扫描上一轮，稍等再试")
         DevLog.step("设备回报 scan_busy（0x8E 0x81=0x08），本轮跳过")
+    }
+
+    override fun onWifiScanRetry(attempt: Int, received: Int, total: Int) {
+        setStatus("没发完，自动重试第 $attempt 次…")
+        DevLog.step(
+            "自动重发 0x0E（第 $attempt 次）：已收 $received 条" +
+                (if (total >= 0) " / total=$total" else "（未收到 0x89）")
+        )
     }
 
     private fun askPassword(ap: WifiAp) {
@@ -489,6 +523,25 @@ class NetFragment : Fragment(), BleWiFiClient.ScanListener, BleWiFiClient.Provis
         }
         setStatus("错误 $code：$message")
         DevLog.error("错误 $code：$message")
+
+        // 密钥/写阶段失败：多半是 ATT 队列被上一条未收尾的操作堵住（GATT 脏状态）。
+        // 断开重建一次通常就通了 —— 免去用户反复杀进程。
+        if ((code == BleConstants.STATUS_GATT_WRITE ||
+                code == BleConstants.STATUS_NEGOTIATE_SECRET_KEY) &&
+            !gattRetried && !configuring
+        ) {
+            val dev = connectedDevice ?: return
+            gattRetried = true
+            DevLog.step("→ 断开并重建链路，重试密钥协商（第 2 次）")
+            ble.disconnect()
+            b.root.postDelayed({
+                if (isAdded) {
+                    DevLog.step("重新连接 ${dev.mac}")
+                    ble.connect(dev.mac, this)
+                    connectedDevice = dev
+                }
+            }, 600)
+        }
     }
 
     override fun onDisconnected() {

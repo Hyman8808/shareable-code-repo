@@ -1,0 +1,46 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="nav">
+    <view class="tap44" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-section">{{t.ai_title}}</view>
+    <view class="nav-holder"></view>
+  </view>
+
+  <!-- 顶部说明：这里是「不可用」，要说在最前面，不能等用户点了才发现 -->
+  <view class="notice">
+    <view class="notice-bar"></view>
+    <view class="grow">
+      <view class="notice-t">小程序暂不提供生成</view>
+      <view class="notice-s">出图要调云端大模型，密钥只能放服务端。App 版可正常使用，额度通用。</view>
+    </view>
+  </view>
+
+  <!-- ===== 风格 ===== -->
+  <view class="group-label">{{t.ai_choose_style}}</view>
+  <view class="style-card" wx:for="{{styles}}" wx:key="key">
+    <view class="style-top">
+      <view class="badge">{{item.badge}}</view>
+      <view class="style-title grow">{{item.title}}</view>
+    </view>
+    <view class="style-desc">{{item.desc}}</view>
+  </view>
+
+  <view class="t-label disclaimer">{{t.ai_disclaimer}}</view>
+
+  <!-- ===== 档位：只列张数，不列价格 ===== -->
+  <view class="group-label">{{t.ai_buy_entry}}</view>
+  <view class="group">
+    <view class="tier" wx:for="{{tiers}}" wx:key="n">
+      <view class="tier-n">{{item.n}}</view>
+      <view class="tier-h grow">{{item.hint}}</view>
+    </view>
+  </view>
+  <view class="t-label price-note">价格由云端下发，不在包内写死。当前档位与 App 一致。</view>
+
+  <view class="btn-primary why" bindtap="onWhy">为什么这里用不了</view>
+
+  <view style="height:60rpx"></view>
+</view>

@@ -226,13 +226,14 @@
     <string name="lang_title">物品名稱語言</string>
     <string name="lang_current">目前語言</string>
     <string name="lang_desc">相機拍下物品後，App 上顯示的名稱會切換成所選語言。\n英文名一律保留，作為第二行顯示。</string>
-    <string name="lang_note">中文為相機端辨識的原始結果，不做翻譯；繁體中文由本機直接轉換，不經伺服器；日語、韓語、西班牙語、法語、德語、俄語 6 種語言由伺服器按所選語言下發，切換後會在下一次同步時生效。</string>
+    <string name="lang_note">中文為相機端辨識的原始結果，不做翻譯；繁體中文由本機直接轉換，不經伺服器；日語、韓語、西班牙語、法語、德語、俄語、阿拉伯語 7 種語言由伺服器按所選語言下發，切換後會在下一次同步時生效。</string>
 
     <string name="ui_lang_title">介面語言</string>
     <string name="ui_lang_desc">只改變 App 介面文字，不影響「物品名稱語言」。</string>
     <string name="ui_lang_row_zh_sub">預設 · 簡體中文介面</string>
     <string name="ui_lang_row_tw_sub">繁體中文介面</string>
     <string name="ui_lang_row_en_sub">英文介面</string>
+    <string name="ui_lang_row_ar_sub">阿拉伯語介面（從右至左）</string>
     <string name="ui_lang_zh">中文</string>
     <string name="ui_lang_en">English</string>
     <string name="ui_lang_changed_fmt">介面語言已切換為%1$s</string>

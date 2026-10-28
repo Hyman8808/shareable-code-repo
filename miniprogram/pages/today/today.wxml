@@ -1,0 +1,95 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <!-- ===== 顶栏 44dp：设备名 + deviceId·日期 ===== -->
+  <view class="top">
+    <view class="grow">
+      <view class="t-page ellipsis">{{name || t.home_default_device}}</view>
+      <view class="t-label ellipsis sub" wx:if="{{device}}">{{subline}} · {{dateText}}</view>
+    </view>
+    <view class="tap44" bindtap="goDevices">
+      <image class="ico-l" src="{{btIcon}}" />
+    </view>
+  </view>
+
+  <!-- ===== 没有设备 ===== -->
+  <view class="empty-box" wx:if="{{!device}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title pre">{{t.home_no_device}}</view>
+    <view class="empty-sub pre">{{t.home_pair_hint}}</view>
+    <view class="btn-primary empty-btn" bindtap="goProvision">{{t.mp_start_pair}}</view>
+    <view class="link" bindtap="onUseDemo">{{t.mp_skip_demo}} →</view>
+  </view>
+
+  <block wx:else>
+    <!-- ===== 今日白卡 ===== -->
+    <view class="card today">
+      <view class="card-head">
+        <view class="head-left">
+          <view class="accent-bar"></view>
+          <view class="t-label">{{t.home_today}}</view>
+        </view>
+        <view class="t-label go" bindtap="goCards">{{allText}} ›</view>
+      </view>
+
+      <view class="metrics">
+        <block wx:for="{{metrics}}" wx:key="index">
+          <view class="sep" wx:if="{{index > 0}}"></view>
+          <view class="metric">
+            <view class="num">{{item.n}}</view>
+            <view class="unit">{{item.u}}</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="rule"></view>
+      <view class="week-line">{{weekText}}</view>
+    </view>
+
+    <!-- 演示数据说明（不挡内容） -->
+    <view class="hint demo-hint" wx:if="{{isDemo}}">
+      <view class="hint-bar"></view>
+      <view class="hint-text">{{t.mp_demo_hint}}</view>
+      <view class="hint-act" bindtap="onDropDemo">{{t.mp_stop_demo}}</view>
+    </view>
+
+    <!-- ===== 最近 ===== -->
+    <block wx:if="{{recent.length}}">
+      <view class="sec">
+        <view class="t-section">{{t.home_today}}</view>
+        <view class="t-label go" wx:if="{{more}}" bindtap="goCards">{{moreText}}</view>
+      </view>
+      <view class="list">
+        <card-row
+          wx:for="{{recent}}"
+          wx:key="id"
+          item="{{item}}"
+          fav="{{item.fav}}"
+          show-line="{{index < recent.length - 1}}"
+          bind:rowtap="onTapRow"
+          bind:rowfav="onFavRow"
+        />
+      </view>
+    </block>
+
+    <!-- 今天没拍 ≠ 空 -->
+    <view class="empty-box" wx:elif="{{!loading && !err}}">
+      <view class="empty-ring">
+        <image class="empty-ico" src="{{cameraIcon}}" />
+      </view>
+      <view class="empty-title pre">{{t.home_empty_today}}</view>
+    </view>
+
+    <!-- 出错 -->
+    <view class="empty-box" wx:elif="{{err}}">
+      <view class="empty-ring">
+        <image class="empty-ico" src="{{cameraIcon}}" />
+      </view>
+      <view class="empty-title">{{t.cardlist_empty}}</view>
+      <view class="empty-sub">{{err}}</view>
+      <view class="btn-ghost empty-btn" bindtap="onRetry">{{t.common_retry}}</view>
+    </view>
+  </block>
+</view>

@@ -73,6 +73,15 @@ class BleWiFiClient(private val context: Context) {
 
         /** 等待 onCharacteristicWrite 回调的最长时间（官方 mWriteLock.wait(1000)） */
         private const val WRITE_CALLBACK_TIMEOUT_MS = 1000L
+
+        /** 单片的写入尝试次数（含首次）。链路抖动/GATT busy 时重发比让用户重连便宜得多 */
+        private const val WRITE_MAX_ATTEMPT = 3
+
+        /** 两次写尝试之间的间隔，给 ATT 队列收尾留时间 */
+        private const val WRITE_RETRY_GAP_MS = 120L
+
+        /** 设备没发完列表时，最多自动重发几轮 `0x0E`（协议 §4.5.7 允许 2 次） */
+        private const val SCAN_MAX_RETRY = 2
     }
 
     // ==================== 回调接口 ====================
@@ -99,6 +108,13 @@ class BleWiFiClient(private val context: Context) {
          * 上层应静默等待，不要弹错误提示 —— 弹了就是「一闪而过的报错」体验事故。
          */
         fun onWifiScanBusy() {}
+        /**
+         * 设备本轮没在超时内把列表发完，App 自动重发 `0x0E`（协议 §4.5.7 允许 2 次）。
+         *
+         * 上层应把计时器重新武装、提示「正在重试」，**不要**当成失败弹错误：
+         * 实测设备扫一轮 2.4G 偶发要 7~9s，一次超时就报失败会误判为固件坏了。
+         */
+        fun onWifiScanRetry(attempt: Int, received: Int, total: Int) {}
         /** 原始收发报文（十六进制），用于问题诊断 */
         fun onTraffic(direction: String, hex: String) {}
     }
@@ -149,6 +165,24 @@ class BleWiFiClient(private val context: Context) {
     private var timeoutRunnable: Runnable? = null
     private val seenMacs = HashSet<String>()
 
+    /**
+     * 本次连接是否已经触发过「服务就绪」。
+     *
+     * 🔴 必须去重：CCCD 写回调在部分 ROM 上会丢，代码里有 1.5s 兜底；
+     * 若兜底先触发、真实回调随后又到，就会**重复发起密钥协商**，
+     * 第二次还会把收发 Sequence 归零 → 设备看到重复 seq 直接断链。
+     */
+    private var serviceDispatched = false
+
+    /**
+     * 断连触发的「写中止」标记。
+     *
+     * 用于区分「写回调真的来了」与「disconnect 把等待放行了」——
+     * 后者若被当成成功，会在已断开的链路上继续发后续分片。
+     */
+    @Volatile
+    private var writeAborted = false
+
     // ==================== 扫描 ====================
 
     @SuppressLint("MissingPermission")
@@ -174,6 +208,10 @@ class BleWiFiClient(private val context: Context) {
         // 部分 ROM 对 manufacturerData 过滤器支持不一致，因此这里不加过滤，
         // 改为在回调中按 ORG-ID 二次过滤（parseAdvertisement），行为更可靠。
         try {
+            // 🔴 先停再启：重复 startScan 会拿到 SCAN_FAILED_ALREADY_STARTED，
+            //    而且 Android 普遍有「30 秒内最多 5 次扫描」的限制，
+            //    连点刷新到第 6~7 次时 startScan 直接被系统拒绝（error 6）。
+            stopScan()
             scanner.startScan(emptyList<ScanFilter>(), settings, scanCallback)
         } catch (e: Exception) {
             Log.e(TAG, "startScan failed", e)
@@ -202,7 +240,20 @@ class BleWiFiClient(private val context: Context) {
         }
 
         override fun onScanFailed(errorCode: Int) {
-            post { scanListener?.onScanFailed("扫描失败，错误码 $errorCode") }
+            // 6 = SCAN_FAILED_SCANNING_TOO_FREQUENTLY（30 秒内启了太多次扫描）。
+            // 现场「连到第 7 次就异常」里有这一条的成分，必须给出可执行的提示，
+            // 而不是丢一句「扫描失败，错误码 6」让用户猜。
+            val hint = when (errorCode) {
+                1 -> "扫描已经启动，无需重复点击"
+                2 -> "系统未分配扫描资源，请关闭蓝牙再打开后重试"
+                3 -> "系统内部错误，请重试"
+                4 -> "本机不支持低功耗扫描"
+                5 -> "硬件资源不足，请关闭其他蓝牙应用"
+                6 -> "扫描过于频繁，请等 10 秒再试"
+                else -> "扫描失败，错误码 $errorCode"
+            }
+            Log.w(TAG, "onScanFailed code=$errorCode")
+            post { scanListener?.onScanFailed(hint) }
         }
     }
 
@@ -274,6 +325,18 @@ class BleWiFiClient(private val context: Context) {
     @SuppressLint("MissingPermission")
     fun connect(mac: String, listener: ProvisionListener) {
         provisionListener = listener
+
+        // 🔴 连之前先把上一条 GATT 关掉。
+        //    Android 的 GATT client 是有限资源，远程断连（设备自己掉线）时如果不 close，
+        //    每次重试都会留下一个僵尸 client；而 W800 只接受 1 条链路，
+        //    反复「连→配网失败→再连」到第 6~7 次就会出现「连上了但不响应／随即被踢」。
+        closeGattQuietly()
+
+        serviceDispatched = false
+        writeAborted = false
+        connected = false
+        resetSequences()
+
         adapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
         val device: BluetoothDevice? = try {
             adapter?.getRemoteDevice(mac)
@@ -292,21 +355,38 @@ class BleWiFiClient(private val context: Context) {
         }
     }
 
+    /** 断开并释放当前 GATT（幂等，异常吞掉） */
+    @SuppressLint("MissingPermission")
+    private fun closeGattQuietly() {
+        val old = gatt
+        gatt = null
+        writeChar = null
+        connected = false
+        if (old == null) return
+        try {
+            old.disconnect()
+        } catch (e: Exception) {
+            Log.w(TAG, "gatt disconnect failed", e)
+        }
+        try {
+            old.close()
+        } catch (e: Exception) {
+            Log.w(TAG, "gatt close failed", e)
+        }
+    }
+
     @SuppressLint("MissingPermission")
     fun disconnect() {
         cancelTimeout()
-        // 先放行可能正在等待写回调的发送线程，避免其一直阻塞
+        // 先置中止标记再放行等待线程：让它按「失败」返回，而不是把断连当成写成功
+        writeAborted = true
         releaseWriteWait()
-        try {
-            gatt?.disconnect()
-            gatt?.close()
-        } catch (e: Exception) {
-            Log.w(TAG, "disconnect failed", e)
-        }
-        gatt = null
-        connected = false
-        writeChar = null
+        closeGattQuietly()
         recvBuffer = null
+        scanOrder.clear()
+        scanTotal = -1
+        wifiScanCallback = null
+        cancelScanTimeout()
     }
 
     val isConnected: Boolean get() = connected
@@ -327,11 +407,39 @@ class BleWiFiClient(private val context: Context) {
                 runCatching { g.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH) }
                 post { provisionListener?.onConnected() }
                 g.discoverServices()
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            } else {
+                // 🔴 远程断连 / 连接失败都必须走这里并 close()。
+                //    只置 connected=false 不 close 会漏 GATT client：
+                //    控制器层面链路还挂着，第 7 次连接时 W800 已经没有空位或已 deinit，
+                //    表现就是「连上了、也发现服务了，之后一帧都不回，随后被踢」。
+                val wasConnected = connected
                 connected = false
+                writeAborted = true
                 cancelTimeout()
+                cancelScanTimeout()
+                // 先放行等写回调的线程（它会读到 writeAborted，按失败返回）
                 releaseWriteWait()
-                post { provisionListener?.onDisconnected() }
+                if (gatt === g) {
+                    gatt = null
+                    writeChar = null
+                    recvBuffer = null
+                }
+                try {
+                    g.close()
+                } catch (e: Exception) {
+                    Log.w(TAG, "gatt close failed", e)
+                }
+                Log.d(TAG, "gatt closed, status=$status")
+                post {
+                    provisionListener?.onDisconnected()
+                    // 正在等扫描结果时断链：立刻把已收到的部分交出去，不要让界面干等到超时
+                    if (wifiScanCallback != null) {
+                        finishScan(
+                            BleConstants.STATUS_NOT_CONNECTED,
+                            if (wasConnected) "设备连接已断开" else "连接设备失败"
+                        )
+                    }
+                }
             }
         }
 
@@ -359,28 +467,42 @@ class BleWiFiClient(private val context: Context) {
             writeChar = char
             g.setCharacteristicNotification(char, true)
 
-            // 官方 Demo 未显式写 CCCD，仅依赖 setCharacteristicNotification。
-            // 但部分 Android 版本必须写 CCCD 才会真正开启 indication，
-            // 因此这里尝试写；若设备无 CCCD 则直接视为服务就绪。
-            val desc = char.getDescriptor(CCCD_UUID)
-            if (desc == null) {
-                resetSequences()
-                post { provisionListener?.onServiceFound() }
+            if (serviceDispatched) {
+                Log.w(TAG, "services discovered twice, ignored")
                 return
             }
-            // 写 CCCD 是"锦上添花"：无论成功与否，都通过超时兜底放行服务就绪
+
+            // 官方 Demo 未显式写 CCCD，仅依赖 setCharacteristicNotification。
+            // 但部分 Android 版本必须写 CCCD 才会真正开启——
+            // 🔴 值必须按特征自身声明的属性选：只支持 NOTIFY 的特征写 ENABLE_INDICATION 会回
+            //    status=133，ATT 层进入脏状态，紧接着的第一片 write 就再也收不到回调
+            //    （现场表现：「公钥发送失败（分片写超时）」）。
+            val desc = char.getDescriptor(CCCD_UUID)
+            if (desc == null) {
+                dispatchServiceFound()
+                return
+            }
+            val props = char.properties
+            val useIndicate = (props and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0
+            val value = if (useIndicate) {
+                BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+            } else {
+                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+            }
+            Log.d(TAG, "cccd props=0x${Integer.toHexString(props)} indicate=$useIndicate")
+
+            // 写 CCCD 是"锦上添花"：回调丢了也要能继续，但不能在 ATT 操作未完成时就发数据
             cccdFallback = Runnable {
                 Log.w(TAG, "CCCD write callback timeout, continue anyway")
-                resetSequences()
-                post { provisionListener?.onServiceFound() }
-            }.also { mainHandler.postDelayed(it, 1500) }
+                dispatchServiceFound()
+            }.also { mainHandler.postDelayed(it, 2500) }
 
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    g.writeDescriptor(desc, BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
+                    g.writeDescriptor(desc, value)
                 } else {
                     @Suppress("DEPRECATION")
-                    desc.value = BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                    desc.value = value
                     @Suppress("DEPRECATION")
                     g.writeDescriptor(desc)
                 }
@@ -396,9 +518,13 @@ class BleWiFiClient(private val context: Context) {
             status: Int
         ) {
             Log.d(TAG, "onDescriptorWrite status=$status uuid=${descriptor.uuid}")
-            if (descriptor.uuid == CCCD_UUID) {
-                dispatchServiceFound()
+            if (descriptor.uuid != CCCD_UUID) return
+            // status!=SUCCESS 也要放行：设备侧通常已 setCharacteristicNotification 生效，
+            // 只是 CCCD 值不合它口味。真正的判据是后面的写回调有没有来。
+            if (status != BluetoothGatt.GATT_SUCCESS) {
+                Log.w(TAG, "cccd write status=$status, continue anyway")
             }
+            dispatchServiceFound()
         }
 
         override fun onCharacteristicWrite(
@@ -407,6 +533,7 @@ class BleWiFiClient(private val context: Context) {
             status: Int
         ) {
             Log.d(TAG, "onCharacteristicWrite status=$status")
+            lastWriteStatus = status
             // 官方：唤醒 gattWrite 的等待，让下一分片得以发送
             synchronized(writeLock) {
                 writeCallbackLatch?.countDown()
@@ -425,6 +552,10 @@ class BleWiFiClient(private val context: Context) {
     /** CCCD 写回调兜底（部分设备/ROM 不回调） */
     private var cccdFallback: Runnable? = null
 
+    /** 最后一次写回调的 status（0 = GATT_SUCCESS） */
+    @Volatile
+    private var lastWriteStatus = 0
+
     private fun resetSequences() {
         sendSequence.set(0)
         recvSequence.set(0)
@@ -433,9 +564,21 @@ class BleWiFiClient(private val context: Context) {
         aesKey = null
     }
 
+    /**
+     * 「服务就绪」只派发一次。
+     *
+     * 两个触发源：CCCD 写回调（正常）与 2.5s 兜底（回调丢失）。
+     * 若不去重，兜底先到、真实回调随后又到，会重复发起密钥协商并把 Sequence 归零，
+     * 设备侧看到同一 seq 的重复帧 → 判为异常 → 直接断链。
+     */
     private fun dispatchServiceFound() {
         cccdFallback?.let { mainHandler.removeCallbacks(it) }
         cccdFallback = null
+        if (serviceDispatched) {
+            Log.w(TAG, "service already dispatched, duplicate ignored")
+            return
+        }
+        serviceDispatched = true
         resetSequences()
         post { provisionListener?.onServiceFound() }
     }
@@ -443,11 +586,24 @@ class BleWiFiClient(private val context: Context) {
     // ==================== 密钥协商 ====================
 
     fun negotiateSecretKey() {
-        keyHolder = RsaUtils.generateKeyPair()
-        val encode = MessageEncode()
-        encode.putBytesValue(BleConstants.TLV_TYPE_PUB_KEY, keyHolder!!.publicKeyEncoded())
-        encode.encode(BleConstants.PACKET_CMD_KEY_EXCHANGE.toByte(), false, null)
+        // 🔴 密钥对在**后台线程**生成：RSA-1024 在中低端机上要 100~500ms，
+        //    放在主线程会冻界面，更要命的是它会推迟「服务就绪 → 首片发出」的时间，
+        //    设备此时若已掉线，就表现为「公钥发送失败」。
         writeExecutor.execute {
+            if (!connected) {
+                post { provisionListener?.onError(BleConstants.STATUS_NOT_CONNECTED, "设备未连接") }
+                return@execute
+            }
+            val holder = runCatching { RsaUtils.generateKeyPair() }.getOrNull()
+            if (holder == null) {
+                post { provisionListener?.onError(BleConstants.STATUS_NEGOTIATE_SECRET_KEY, "生成密钥对失败") }
+                return@execute
+            }
+            keyHolder = holder
+            val encode = MessageEncode()
+            encode.putBytesValue(BleConstants.TLV_TYPE_PUB_KEY, holder.publicKeyEncoded())
+            encode.encode(BleConstants.PACKET_CMD_KEY_EXCHANGE.toByte(), false, null)
+
             val ok = writePacketsBlocking(encode)
             if (!ok) {
                 post {
@@ -504,14 +660,26 @@ class BleWiFiClient(private val context: Context) {
     /** 扫描结果回调 */
     private var wifiScanCallback: ((WifiScanResult) -> Unit)? = null
 
-    /** 已收集到的 AP，按 SSID 去重（同 SSID 保留最强 RSSI） */
-    private val scanAps = LinkedHashMap<String, WifiAp>()
+    /**
+     * 已收到的 AP，**以 `0x88` 的「序号」为键**（1 基）。
+     *
+     * 🔴 不能用 SSID 做键：同一 SSID 可能有多个 BSSID（Mesh / 双频 / 固件未做同名合并），
+     * 用 SSID 做键会把它们吞掉 —— 现场「设备上报 10 个、App 只显示 8 个」就是这么来的。
+     * 用序号做键还有个好处：自动重试时设备重发同一序号，天然幂等覆盖。
+     */
+    private val scanOrder = LinkedHashMap<Int, WifiAp>()
+
+    /** 旧格式 0x86 的行序号（负数区间，与 0x88 的 1 基序号不冲突） */
+    private var legacySeq = 0
 
     /** 设备声明的条数（0x89 的 total），-1 表示还没收到 */
     private var scanTotal = -1
 
     /** 老固件（无 AUTH 字段）标记：列表一律要求输密码 */
     private var scanAuthUnknown = false
+
+    /** 本轮已自动重发的次数 */
+    private var scanRetries = 0
 
     /** 列表收集超时 */
     private var scanTimeoutRunnable: Runnable? = null
@@ -526,19 +694,33 @@ class BleWiFiClient(private val context: Context) {
      * 否则官方 `serialize800()` 不产生任何分片，指令根本发不出去。
      *
      * @param callback 扫完（或超时）时回调一次，列表已按 RSSI 降序
-     * @return false 表示指令未能发出（连接已断等），此时不会回调
+     * @return false 表示指令未能发出（连接已断等），此时仍会通过 onError 通知上层
      */
     fun startWifiScan(
         timeoutMs: Long = BleConstants.TIMEOUT_WIFI_SCAN * 1000L,
         callback: (WifiScanResult) -> Unit
     ): Boolean {
         // 重扫必须清空上一轮，否则「刷新」会把旧热点和新热点混在一起
-        scanAps.clear()
+        scanOrder.clear()
         scanTotal = -1
         scanAuthUnknown = false
+        scanRetries = 0
+        legacySeq = 0
         cancelScanTimeout()
         wifiScanCallback = callback
+        return sendScanRequest(timeoutMs)
+    }
 
+    /**
+     * 发一条 `0x0E`（首发与自动重试共用）。
+     *
+     * 重试**不重连、不重置 Sequence** —— 它只是让设备再扫一遍，链路一直没断。
+     */
+    private fun sendScanRequest(timeoutMs: Long = BleConstants.TIMEOUT_WIFI_SCAN * 1000L): Boolean {
+        if (!connected) {
+            post { finishScan(BleConstants.STATUS_NOT_CONNECTED, "设备未连接") }
+            return false
+        }
         val encode = MessageEncode()
         encode.putBytesValue(BleConstants.TLV_TYPE_PLACEHOLDER, ByteArray(0))
         encode.encode(
@@ -569,15 +751,13 @@ class BleWiFiClient(private val context: Context) {
     fun cancelWifiScan() {
         cancelScanTimeout()
         wifiScanCallback = null
-        scanAps.clear()
+        scanOrder.clear()
         scanTotal = -1
     }
 
     private fun startScanTimeout(timeoutMs: Long) {
-        val r = Runnable {
-            // 超时也把已收到的部分结果交出去：用户至少能看到半张列表
-            finishScan(error = BleConstants.STATUS_TIMEOUT, message = "获取 WiFi 列表超时")
-        }
+        cancelScanTimeout()
+        val r = Runnable { onScanRoundTimeout() }
         scanTimeoutRunnable = r
         mainHandler.postDelayed(r, timeoutMs)
     }
@@ -585,6 +765,28 @@ class BleWiFiClient(private val context: Context) {
     private fun cancelScanTimeout() {
         scanTimeoutRunnable?.let { mainHandler.removeCallbacks(it) }
         scanTimeoutRunnable = null
+    }
+
+    /**
+     * 一轮等待超时：没发完就**自动重发 `0x0E`**（协议 §4.5.7 允许 2 次）。
+     *
+     * 为什么不直接判失败：实测 W800 扫一轮 2.4G 偶发要 7~9s，
+     * 一次 15s 超时就弹「失败」会让用户以为固件坏了，而重发一次成功率很高。
+     */
+    private fun onScanRoundTimeout() {
+        if (wifiScanCallback == null) return
+        val received = scanOrder.size
+        if (scanRetries < SCAN_MAX_RETRY && connected) {
+            scanRetries++
+            Log.w(
+                TAG,
+                "wifi scan round timeout, retry $scanRetries (received=$received total=$scanTotal)"
+            )
+            post { provisionListener?.onWifiScanRetry(scanRetries, received, scanTotal) }
+            sendScanRequest()
+            return
+        }
+        finishScan(BleConstants.STATUS_TIMEOUT, "获取 WiFi 列表超时")
     }
 
     /**
@@ -601,14 +803,36 @@ class BleWiFiClient(private val context: Context) {
             post { provisionListener?.onError(error, message ?: "扫描失败") }
             return
         }
-        val list = scanAps.values.sortedByDescending { it.rssi }
-        post { cb(WifiScanResult(list, authUnknown = scanAuthUnknown)) }
+        val all = scanOrder.values.toList()
+        // 展示层按 SSID 合并（保留最强信号），并把「合并掉几条」如实报给界面。
+        // 协议 §4.5.4 要求固件做同名合并；固件没做时，这里是唯一的安全网。
+        val dedup = LinkedHashMap<String, WifiAp>()
+        all.forEach { ap ->
+            val old = dedup[ap.ssid]
+            if (old == null || ap.rssi > old.rssi) dedup[ap.ssid] = ap
+        }
+        val list = dedup.values.sortedByDescending { it.rssi }
+        val result = WifiScanResult(
+            aps = list,
+            authUnknown = scanAuthUnknown,
+            total = scanTotal,
+            duplicates = (all.size - list.size).coerceAtLeast(0),
+            received = all.size
+        )
+        Log.d(TAG, "wifi scan done: received=${all.size} unique=${list.size} total=$scanTotal")
+        post { cb(result) }
     }
 
-    private fun onWifiScan(tlvs: Map<Int, ByteArray>) {
-        // ① 错误/状态分支
-        val err = tlvs[BleConstants.TLV_RESP_TYPE_ERROR_ID]
-            ?.firstOrNull()?.toInt()?.and(0xFF)
+    /**
+     * 处理 `0x8E`。
+     *
+     * 🔴 入参是**列表**不是 Map：固件会把多条 `0x88` 塞进同一条消息，
+     * 用 Map 收只会剩最后一条（这是「少两个热点」的第二个成因）。
+     */
+    private fun onWifiScan(tlvs: List<MessageEncode.Tlv>) {
+        // ① 错误/状态分支（0x81 只可能有一条）
+        val err = tlvs.firstOrNull { it.type == BleConstants.TLV_RESP_TYPE_ERROR_ID }
+            ?.value?.firstOrNull()?.toInt()?.and(0xFF)
         if (err != null) {
             when (err) {
                 BleConstants.WIFI_SCAN_OK -> Unit // 只是确认，继续等列表
@@ -626,7 +850,7 @@ class BleWiFiClient(private val context: Context) {
                     cancelScanTimeout()
                     val cb = wifiScanCallback
                     wifiScanCallback = null
-                    post { cb?.invoke(WifiScanResult(emptyList())) }
+                    post { cb?.invoke(WifiScanResult(emptyList(), total = 0)) }
                     return
                 }
                 else -> {
@@ -636,26 +860,47 @@ class BleWiFiClient(private val context: Context) {
             }
         }
 
-        // ② 新格式（V1.2）
-        tlvs[BleConstants.TLV_RESP_TYPE_WIFI_LIST_V2]?.let { parseApLine(it)?.let(::mergeAp) }
-
-        // ③ 旧格式（V1.0 的 `SSID,RSSI`），老固件会走这里；没有加密类型
-        tlvs[BleConstants.TLV_RESP_TYPE_WIFI_SCAN_RESULT]?.let(::parseLegacyLines)
+        // ② 新格式（V1.2）+ ③ 旧格式（V1.0）逐条处理
+        tlvs.forEach { tlv ->
+            when (tlv.type) {
+                BleConstants.TLV_RESP_TYPE_WIFI_LIST_V2 -> {
+                    parseApLine(tlv.value)?.let { (seq, ap) ->
+                        // 序号缺失/非法时给一个不会撞车的负键
+                        val key = if (seq > 0) seq else -(1000 + scanOrder.size)
+                        scanOrder[key] = ap
+                    }
+                }
+                BleConstants.TLV_RESP_TYPE_WIFI_SCAN_RESULT -> parseLegacyLines(tlv.value)
+            }
+        }
 
         // ④ 结束标志
-        val meta = tlvs[BleConstants.TLV_RESP_TYPE_WIFI_LIST_META] ?: return
+        val meta = tlvs.firstOrNull { it.type == BleConstants.TLV_RESP_TYPE_WIFI_LIST_META }
+            ?.value ?: return
         if (meta.size < 2) return
         scanTotal = meta[0].toInt() and 0xFF
         val done = (meta[1].toInt() and 0xFF) == 1
-        if (done) finishScan(0, null)
+        if (!done) return
+
+        // 收齐 = 收到的行数 >= total。少发了就再要一轮，别拿半张列表糊弄用户
+        if (scanOrder.size < scanTotal && scanRetries < SCAN_MAX_RETRY && connected) {
+            scanRetries++
+            Log.w(TAG, "list incomplete ${scanOrder.size}/$scanTotal, retry $scanRetries")
+            post { provisionListener?.onWifiScanRetry(scanRetries, scanOrder.size, scanTotal) }
+            sendScanRequest()
+            return
+        }
+        finishScan(0, null)
     }
 
     /**
      * 解析一行 `序号|RSSI|AUTH|SSID`。
      *
      * SSID 在最后一段，因此它含逗号、竖线都不会切错 —— 这是协议刻意的排布。
+     *
+     * @return `序号 to AP`；序号解析失败时返回 0（调用方会换占位键）
      */
-    private fun parseApLine(raw: ByteArray): WifiAp? {
+    private fun parseApLine(raw: ByteArray): Pair<Int, WifiAp>? {
         val line = raw.toString(Charsets.UTF_8).trim()
         if (line.isEmpty()) return null
         val p1 = line.indexOf('|')
@@ -665,11 +910,14 @@ class BleWiFiClient(private val context: Context) {
         val p3 = line.indexOf('|', p2 + 1)
         if (p3 < 0) return null
 
+        val seq = line.substring(0, p1).trim().toIntOrNull() ?: 0
         val rssi = line.substring(p1 + 1, p2).trim().toIntOrNull() ?: return null
+        // AUTH 是单字符数字。固件若用 %c 传了数值而非数字字符会解析成 UNKNOWN，
+        // 此时按最保守处理（要求输密码），而不是把整条记录丢掉。
         val auth = line.substring(p2 + 1, p3).trim().toIntOrNull() ?: WifiAp.Auth.UNKNOWN
         val ssid = line.substring(p3 + 1)
         if (ssid.isBlank()) return null
-        return WifiAp(ssid, rssi, auth)
+        return seq to WifiAp(ssid, rssi, auth)
     }
 
     /** 旧格式：`SSID,RSSI\r\n` 多行。SSID 可能含逗号，因此从**最后一个逗号**右切。 */
@@ -685,14 +933,9 @@ class BleWiFiClient(private val context: Context) {
                 val rssi = s.substring(i + 1).trim().toIntOrNull() ?: return@forEach
                 val ssid = s.substring(0, i)
                 if (ssid.isBlank()) return@forEach
-                mergeAp(WifiAp(ssid, rssi, WifiAp.Auth.UNKNOWN))
+                legacySeq++
+                scanOrder[-legacySeq] = WifiAp(ssid, rssi, WifiAp.Auth.UNKNOWN)
             }
-    }
-
-    /** 同 SSID 合并：保留 RSSI 更强的那条（Mesh / 多频同名场景） */
-    private fun mergeAp(ap: WifiAp) {
-        val old = scanAps[ap.ssid]
-        if (old == null || ap.rssi > old.rssi) scanAps[ap.ssid] = ap
     }
 
     // ==================== 配置 WiFi ====================
@@ -821,10 +1064,16 @@ class BleWiFiClient(private val context: Context) {
             Log.w(TAG, "no packet to send (empty TLV?)")
             return false
         }
-        val g = gatt ?: return false
         val char = writeChar ?: return false
 
         for (packet in packets) {
+            // 🔴 每片发之前都要确认链路还在：
+            //    设备中途掉线时如果继续往死链路上写，会连累下一次连接（ATT 队列里塞满无效请求）。
+            if (!connected || writeAborted) {
+                Log.w(TAG, "link gone, abort remaining ${packets.size - packet.no} packet(s)")
+                return false
+            }
+            val g = gatt ?: return false
             val seq = sendSequence.getAndIncrement()
             packet.buildPacket(seq, false)
             if (!gattWrite(g, char, packet.packageInfo)) {
@@ -836,7 +1085,14 @@ class BleWiFiClient(private val context: Context) {
     }
 
     /**
-     * 写一片并等待 `onCharacteristicWrite` 回调（官方 `gattWrite`）。
+     * 写一片并等待 `onCharacteristicWrite` 回调（官方 `gattWrite` + 现场加固）。
+     *
+     * 加固点（对应客户现场「公钥发送失败（分片写超时）」）：
+     *  1. `writeCharacteristic` 立即返回非 SUCCESS（最常见是 `GATT_WRITE_REQUEST_BUSY`，
+     *     即上一条 ATT 操作还没收尾）时**重试**，而不是直接判整条消息失败；
+     *  2. 回调 1s 未到也重试 —— 链路抖动时重发一片的代价远小于让用户重连；
+     *  3. 回调 status 非 SUCCESS（如 133 GATT_ERROR）按失败处理，不误判为成功；
+     *  4. 断连会 `countDown` 放行等待线程，这里用 [writeAborted] 识别并返回失败。
      */
     @SuppressLint("MissingPermission")
     private fun gattWrite(
@@ -844,44 +1100,84 @@ class BleWiFiClient(private val context: Context) {
         char: BluetoothGattCharacteristic,
         data: ByteArray
     ): Boolean {
-        emitTraffic(">>>", data)
-        val latch = CountDownLatch(1)
-        synchronized(writeLock) { writeCallbackLatch = latch }
+        var attempt = 0
+        while (attempt < WRITE_MAX_ATTEMPT) {
+            attempt++
+            if (!connected || writeAborted) {
+                Log.w(TAG, "gattWrite aborted (connected=$connected)")
+                return false
+            }
+            emitTraffic(if (attempt == 1) ">>>" else ">>>R$attempt", data)
 
-        val submitted: Boolean
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // API 33+ 的新重载返回 BluetoothStatusCodes 状态码（Int），
-            // 而非旧版的 Boolean。SUCCESS == 0。
-            val status = g.writeCharacteristic(
-                char, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-            )
-            submitted = status == android.bluetooth.BluetoothStatusCodes.SUCCESS
-        } else {
-            @Suppress("DEPRECATION")
-            char.value = data
-            @Suppress("DEPRECATION")
-            char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-            @Suppress("DEPRECATION")
-            submitted = g.writeCharacteristic(char)
-        }
+            val latch = CountDownLatch(1)
+            lastWriteStatus = 0
+            synchronized(writeLock) { writeCallbackLatch = latch }
 
-        if (!submitted) {
-            Log.e(TAG, "writeCharacteristic returned false")
+            val submitted: Boolean
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // API 33+ 的新重载返回 BluetoothStatusCodes 状态码（Int），
+                // 而非旧版的 Boolean。SUCCESS == 0。
+                val status = g.writeCharacteristic(
+                    char, data, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                )
+                submitted = status == android.bluetooth.BluetoothStatusCodes.SUCCESS
+                if (!submitted) {
+                    Log.w(TAG, "writeCharacteristic rejected, code=$status (attempt $attempt)")
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                char.value = data
+                @Suppress("DEPRECATION")
+                char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                @Suppress("DEPRECATION")
+                submitted = g.writeCharacteristic(char)
+                if (!submitted) {
+                    Log.w(TAG, "writeCharacteristic returned false (attempt $attempt)")
+                }
+            }
+
+            if (!submitted) {
+                synchronized(writeLock) { writeCallbackLatch = null }
+                if (attempt < WRITE_MAX_ATTEMPT) {
+                    // 退避递增：GATT busy 往往是上一条 ATT 操作（CCCD 写）还没收尾，
+                    // 固定间隔重试容易连续撞同一堵墙
+                    sleepQuietly(WRITE_RETRY_GAP_MS * attempt)
+                    continue
+                }
+                return false
+            }
+
+            val got = try {
+                latch.await(WRITE_CALLBACK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                false
+            }
+            val status = lastWriteStatus
             synchronized(writeLock) { writeCallbackLatch = null }
-            return false
-        }
 
-        val ok = try {
-            latch.await(WRITE_CALLBACK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            if (writeAborted) {
+                Log.w(TAG, "gattWrite aborted while waiting callback")
+                return false
+            }
+            if (got && status == BluetoothGatt.GATT_SUCCESS) return true
+
+            Log.w(
+                TAG,
+                "write attempt $attempt failed (callback=$got status=$status, " +
+                    "${WRITE_CALLBACK_TIMEOUT_MS}ms)"
+            )
+            if (attempt < WRITE_MAX_ATTEMPT) sleepQuietly(WRITE_RETRY_GAP_MS * attempt)
+        }
+        return false
+    }
+
+    private fun sleepQuietly(ms: Long) {
+        try {
+            Thread.sleep(ms)
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
-            false
         }
-        synchronized(writeLock) { writeCallbackLatch = null }
-        if (!ok) {
-            Log.w(TAG, "wait onCharacteristicWrite timeout (${WRITE_CALLBACK_TIMEOUT_MS}ms)")
-        }
-        return ok
     }
 
     private fun releaseWriteWait() {
@@ -930,18 +1226,26 @@ class BleWiFiClient(private val context: Context) {
         // 官方：flag & LAST_PACKET_MASK == 0 表示这是最后一片，可以解码
         if ((packet.flag.toInt() and BleConstants.PACKET_FLAG_LAST_PACKET_MASK) != 0) return
 
-        val tlvs = recvBuffer!!.decode(aesKey)
+        // 保留重复行的解码结果：0x8E 一条消息里可能带多条 0x88
+        val tlvList = recvBuffer!!.decodeAll(aesKey)
         recvBuffer = null
-        if (tlvs == null) {
+        if (tlvList == null) {
             Log.w(TAG, "decode tlv failed")
             return
         }
 
         when (cmd) {
-            BleConstants.PACKET_RESP_CMD_KEY_EXCHANGE -> onKeyExchange(tlvs)
-            BleConstants.PACKET_RESP_CMD_QUERY_CONFIG -> onDeviceInfo(tlvs)
-            BleConstants.PACKET_RESP_CMD_CONFIG_STA -> onConfigSta(tlvs)
-            BleConstants.PACKET_RESP_CMD_WIFI_SCAN -> onWifiScan(tlvs)
+            BleConstants.PACKET_RESP_CMD_WIFI_SCAN -> onWifiScan(tlvList)
+            else -> {
+                // 其余响应按「类型唯一」使用，转成 Map 即可
+                val tlvs = HashMap<Int, ByteArray>(tlvList.size)
+                tlvList.forEach { tlvs[it.type] = it.value }
+                when (cmd) {
+                    BleConstants.PACKET_RESP_CMD_KEY_EXCHANGE -> onKeyExchange(tlvs)
+                    BleConstants.PACKET_RESP_CMD_QUERY_CONFIG -> onDeviceInfo(tlvs)
+                    BleConstants.PACKET_RESP_CMD_CONFIG_STA -> onConfigSta(tlvs)
+                }
+            }
         }
     }
 

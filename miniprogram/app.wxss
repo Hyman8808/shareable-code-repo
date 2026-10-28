@@ -1,0 +1,315 @@
+/* ============================================================================
+   拇指相机 · 设计 Token（照搬 App V2.0「墨标 Inkmark」）
+   ============================================================================
+   一句话：墨色做骨架、荧光黄绿做标记、暖纸做底、衬线体当主角。
+
+   三条公理（冲突时按此裁决）：
+     A. 一屏最多两种表面 —— 纸底 + 白卡；列表用「行」不用「卡」
+     B. 英文永远是主角 —— 英文视觉权重 ≥ 中文 2 倍
+     C. 荧光色只做填充 —— brand_accent 永不做细线、不做浅底文字
+
+   换算：设计稿 1dp = 2rpx（375dp 屏宽 = 750rpx）。下文注释里的 dp 是 App 原值。
+   ========================================================================== */
+
+page {
+  /* ① 墨（品牌） */
+  --ink: #172742;              /* brand_primary */
+  --ink-hover: #0e1b30;
+  --ink-light: #e7eaf2;        /* 浅底块：提示条 / 选中底 */
+  --ink-soft: #d9e0ee;
+  --accent: #d9f24f;           /* 荧光笔：只做填充 */
+  --accent-soft: #f1f8c8;
+  --accent-graphics: #7c8f14;
+
+  /* ② 文字 4 阶 */
+  --t1: #1a1917;
+  --t2: #57534a;
+  --t3: #6e695e;
+  --t4: #a8a29a;
+  --on-ink: #ffffff;
+  --on-accent: #172742;
+
+  /* ③ 表面 */
+  --paper: #f4f2ec;
+  --card: #ffffff;
+  --card-alt: #f7f5ee;
+  --divider: #e6e2d8;
+  --stroke-soft: #e4e0d6;
+  --stroke-strong: #d3cdbe;
+
+  /* ④ 语义 */
+  --success: #16794f;
+  --warning: #8a5200;
+  --danger: #b4281c;
+
+  background: var(--paper);
+  color: var(--t1);
+  font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 衬线：英文词头的专属字体。模板感的对立面就从这里来 */
+.serif {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+}
+
+/* ---------- 字阶（12 阶的子集，对应 App text_* ） ---------- */
+/* 22sp page title */
+.t-page {
+  font-size: 44rpx;
+  line-height: 56rpx;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--t1);
+}
+/* 17sp section */
+.t-section {
+  font-size: 34rpx;
+  line-height: 48rpx;
+  font-weight: 500;
+  color: var(--t1);
+}
+/* 19sp 英文词头（列表行） */
+.t-headword {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 38rpx;
+  line-height: 48rpx;
+  letter-spacing: -0.01em;
+  color: var(--t1);
+}
+/* 34sp 英文词头（详情页主角） */
+.t-headword-xl {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 68rpx;
+  line-height: 80rpx;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+}
+/* 15sp 中文（列表行释义） */
+.t-cjk {
+  font-size: 30rpx;
+  line-height: 40rpx;
+  color: var(--t2);
+}
+/* 15sp 正文 */
+.t-body {
+  font-size: 30rpx;
+  line-height: 48rpx;
+  color: var(--t2);
+}
+/* 13sp 次级正文 / 按钮小号 */
+.t-sm {
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: var(--t3);
+}
+/* 12sp 说明 / 时间 */
+.t-caption {
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: var(--t3);
+}
+/* 11sp meta：字距 +0.06，这是替代加粗的关键手段 */
+.t-label {
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
+/* 14sp 音标（保留行高，别裁掉 ˈ 的上半截） */
+.t-phonetic {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  letter-spacing: 0.02em;
+  color: var(--t3);
+}
+
+/* ---------- 页面骨架 ---------- */
+/* 页边距 20dp = 40rpx */
+.page {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx;
+  box-sizing: border-box;
+}
+.page-flush {
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+/* ---------- 白卡（只给真浮起来的那一层） ---------- */
+.card {
+  background: var(--card);
+  border-radius: 40rpx;  /* radius_lg 20dp */
+  border: 1rpx solid var(--stroke-soft);
+  box-sizing: border-box;
+}
+/* 浮起态：阴影更强，同时表达「浮在内容上」。全页最多一处 */
+.card-float {
+  border: 0;
+  box-shadow: 0 2rpx 16rpx rgba(23, 39, 66, 0.06);
+}
+
+/* ---------- 分隔线 ---------- */
+.hairline {
+  height: 1rpx;
+  background: var(--divider);
+}
+/* 列表行分隔：marginStart 76dp 对齐文字，不切图 */
+.hairline-row {
+  height: 1rpx;
+  background: var(--divider);
+  margin-left: 156rpx;
+}
+
+/* ---------- 按钮 ---------- */
+.btn-primary {
+  height: 104rpx;         /* 52dp */
+  border-radius: 28rpx;   /* radius_md 14dp */
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-primary:active {
+  background: var(--ink-hover);
+}
+.btn-secondary {
+  height: 88rpx;          /* 44dp */
+  border-radius: 28rpx;
+  background: var(--ink-light);
+  color: var(--ink);
+  font-size: 26rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-secondary:active {
+  background: var(--ink-soft);
+}
+.btn-ghost {
+  height: 72rpx;          /* 36dp */
+  border-radius: 20rpx;   /* radius_sm 10dp */
+  color: var(--ink);
+  font-size: 26rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost.danger {
+  color: var(--danger);
+}
+/* 触控热区兜底：视觉小、热区 44dp */
+.tap44 {
+  min-width: 88rpx;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- 空状态：虚线环（「等着被填满」，不是「出错了」） ---------- */
+.empty-ring {
+  width: 176rpx;          /* 88dp */
+  height: 176rpx;
+  border-radius: 50%;
+  border: 2rpx dashed var(--stroke-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.empty-title {
+  margin-top: 32rpx;
+  font-size: 30rpx;
+  line-height: 44rpx;
+  color: var(--t2);
+  text-align: center;
+}
+.empty-sub {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: var(--t3);
+  text-align: center;
+}
+
+/* ---------- 提示条：左侧 3dp 竖条，取代整块彩底 ---------- */
+.hint {
+  display: flex;
+  align-items: flex-start;
+  background: var(--ink-light);
+  border-radius: 28rpx;
+  padding: 20rpx 24rpx 20rpx 0;
+  overflow: hidden;
+}
+.hint-bar {
+  width: 6rpx;
+  align-self: stretch;
+  background: var(--ink);
+  margin-right: 20rpx;
+  flex: none;
+}
+.hint-bar.warn {
+  background: var(--warning);
+}
+.hint-text {
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: var(--ink);
+  flex: 1;
+}
+
+/* ---------- chip（设备切换） ---------- */
+.chip {
+  height: 56rpx;          /* 28dp */
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: var(--card-alt);
+  color: var(--t2);
+  font-size: 22rpx;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+}
+.chip.on {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+/* ---------- 通用 ---------- */
+.row {
+  display: flex;
+  align-items: center;
+}
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+/* 文案里的 \n（App 的多行空态）必须保留换行 */
+.pre {
+  white-space: pre-wrap;
+  line-height: 44rpx;
+}
+
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mono {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}

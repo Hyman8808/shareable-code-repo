@@ -1,0 +1,236 @@
+/* 账号 / 微信登录页 —— 墨标 V2.0
+   一屏两种表面：暖纸底 + 一块白（已登录时才用白卡）。荧光色不出现，这里不需要强调任何东西。 */
+
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx 60rpx;
+  box-sizing: border-box;
+}
+
+/* ---------- 顶栏 ---------- */
+.nav {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-back {
+  width: 88rpx;
+}
+.nav-ico {
+  width: 48rpx;
+  height: 48rpx;
+}
+.nav-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* ---------- 未登录：标题区 ---------- */
+.hero {
+  padding: 56rpx 0 0;
+}
+.hero-title {
+  font-size: 60rpx;
+  line-height: 76rpx;
+  letter-spacing: -0.02em;
+}
+/* 英文权重 ≥ 中文 2 倍：这里标题本身就是拉丁字母时再放大一档 */
+.hero-lead {
+  margin-top: 24rpx;
+  color: var(--t2);
+}
+
+/* ---------- 按钮 ---------- */
+.act {
+  margin-top: 64rpx;
+}
+.btn-wechat {
+  gap: 16rpx;
+}
+.btn-ico {
+  width: 40rpx;
+  height: 40rpx;
+}
+.skip {
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  color: var(--t3);
+}
+
+/* ---------- 提示区 ---------- */
+.tip {
+  margin-top: 40rpx;
+  padding: 32rpx;
+  border-radius: 24rpx;
+  box-sizing: border-box;
+}
+.tip-strong {
+  background: var(--ink-light);
+}
+.tip-warn {
+  background: #fbf0ea;
+}
+.tip-ok {
+  background: var(--accent-soft);
+}
+.tip-title {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  font-weight: 500;
+  color: var(--ink);
+}
+.tip-warn .tip-title {
+  color: var(--warning);
+}
+.tip-body {
+  margin-top: 12rpx;
+  color: var(--t2);
+}
+
+/* ---------- 已登录 ---------- */
+.acc {
+  margin-top: 24rpx;
+  padding: 8rpx 0 40rpx;
+  display: flex;
+  align-items: center;
+}
+.avatar-btn {
+  width: 128rpx;
+  height: 128rpx;
+  padding: 0;
+  margin: 0 32rpx 0 0;
+  background: transparent;
+  border-radius: 64rpx;
+  line-height: 1;
+  flex: none;
+}
+.avatar-btn::after {
+  border: 0;
+}
+.avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 64rpx;
+  display: block;
+}
+.avatar-ph {
+  background: var(--ink-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-ico {
+  width: 56rpx;
+  height: 56rpx;
+}
+.acc-main {
+  flex: 1;
+  min-width: 0;
+}
+.nickname {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 44rpx;
+  line-height: 60rpx;
+  color: var(--t1);
+  height: 60rpx;
+}
+.nick-ph {
+  font-family: -apple-system, "PingFang SC", sans-serif;
+  font-size: 32rpx;
+  color: var(--t4);
+}
+.acc-id {
+  margin-top: 8rpx;
+  color: var(--t4);
+}
+
+/* ---------- 设置行（button 重置） ---------- */
+.group {
+  background: var(--card);
+  border-radius: 32rpx;
+  border: 1rpx solid var(--stroke-soft);
+  overflow: hidden;
+}
+.set-row {
+  width: 100%;
+  min-height: 112rpx;
+  padding: 0 32rpx;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 30rpx;
+  line-height: 1.4;
+  color: var(--t1);
+  box-sizing: border-box;
+}
+.set-row::after {
+  border: 0;
+}
+.set-row:active {
+  background: var(--card-alt);
+}
+.set-ico {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 24rpx;
+  flex: none;
+}
+.set-main {
+  flex: 1;
+  min-width: 0;
+}
+.set-main.danger {
+  color: var(--danger);
+}
+.set-val {
+  color: var(--t3);
+  font-size: 26rpx;
+  margin-left: 16rpx;
+}
+.link {
+  margin-left: 16rpx;
+  color: var(--ink);
+  font-size: 26rpx;
+  font-weight: 500;
+  text-decoration: underline;
+}
+.hairline-48 {
+  height: 1rpx;
+  background: var(--divider);
+  margin-left: 96rpx;
+}
+
+/* ---------- 说明区 ---------- */
+.notes {
+  margin-top: 56rpx;
+}
+.note {
+  display: flex;
+  align-items: flex-start;
+  padding: 28rpx 0;
+  border-top: 1rpx solid var(--divider);
+}
+.note-h {
+  color: var(--t1);
+  letter-spacing: 0.02em;
+}
+.note-b {
+  margin-top: 10rpx;
+  color: var(--t3);
+  line-height: 40rpx;
+}
+.note-ico {
+  width: 40rpx;
+  height: 40rpx;
+  margin: 6rpx 20rpx 0 0;
+  flex: none;
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}

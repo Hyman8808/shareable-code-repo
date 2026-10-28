@@ -1,0 +1,57 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="nav">
+    <view class="tap44" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-section">{{t.lang_title}}</view>
+    <view class="nav-holder"></view>
+  </view>
+
+  <!-- ===== 当前语言 ===== -->
+  <view class="card cur">
+    <view class="t-label">{{t.lang_current}}</view>
+    <view class="serif cur-val">{{curName}}</view>
+    <view class="t-sm desc">{{t.lang_desc}}</view>
+  </view>
+
+  <!-- ===== 物品名称语言 10 项 ===== -->
+  <view class="group-label">{{t.lang_title}}</view>
+  <view class="group">
+    <block wx:for="{{nameList}}" wx:key="code">
+      <view class="pick" bindtap="onPickName" data-code="{{item.code}}">
+        <view class="grow">
+          <view class="pick-title {{item.sel ? 'on' : ''}}">{{item.title}}</view>
+          <view class="t-label pick-sub">{{item.sub}}</view>
+        </view>
+        <view class="ring {{item.sel ? 'on' : ''}}">
+          <image class="check-ico" wx:if="{{item.sel}}" src="{{icons.check}}" />
+        </view>
+      </view>
+      <view class="hairline-48" wx:if="{{index < nameList.length - 1}}"></view>
+    </block>
+  </view>
+
+  <view class="note t-label">{{t.lang_note}}</view>
+
+  <!-- ===== 界面语言 4 档 ===== -->
+  <view class="group-label">{{t.ui_lang_title}}</view>
+  <view class="t-sm ui-desc">{{t.ui_lang_desc}}</view>
+  <view class="group">
+    <block wx:for="{{uiList}}" wx:key="tag">
+      <view class="pick" bindtap="onPickUi" data-tag="{{item.tag}}">
+        <view class="grow">
+          <view class="pick-title {{item.sel ? 'on' : ''}}">{{item.title}}</view>
+          <view class="t-label pick-sub">{{item.sub}}</view>
+        </view>
+        <view class="ring {{item.sel ? 'on' : ''}}">
+          <image class="check-ico" wx:if="{{item.sel}}" src="{{icons.check}}" />
+        </view>
+      </view>
+      <view class="hairline-48" wx:if="{{index < uiList.length - 1}}"></view>
+    </block>
+  </view>
+
+  <view style="height:80rpx"></view>
+</view>

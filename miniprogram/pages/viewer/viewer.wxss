@@ -1,0 +1,197 @@
+/* 全屏看图：底色用近黑的暖墨（不是纯黑，纯黑会让暖色调的相纸图发灰） */
+.viewer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: #141310;
+  overflow: hidden;
+}
+
+.area {
+  width: 100%;
+  height: 100%;
+  background: #141310;
+}
+
+.mv {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pic {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 顶栏：渐变遮罩保证白字可读 ===== */
+.bar-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding-bottom: 8rpx;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.ico-back,
+.ico-dl {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.top-mid {
+  flex: 1;
+  text-align: center;
+  padding: 0 12rpx;
+  min-width: 0;
+}
+
+.t-title {
+  font-size: 30rpx;
+  line-height: 42rpx;
+  color: #f6f4ef;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.t-pos {
+  font-size: 22rpx;
+  line-height: 30rpx;
+  color: rgba(246, 244, 239, 0.66);
+  letter-spacing: 0.06em;
+}
+
+/* ===== 左右热区 ===== */
+.edge {
+  position: absolute;
+  top: 30%;
+  bottom: 30%;
+  width: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edge.left {
+  left: 0;
+}
+
+.edge.right {
+  right: 0;
+}
+
+.edge-ico {
+  width: 40rpx;
+  height: 40rpx;
+  display: block;
+  opacity: 0.72;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}
+
+/* ===== 底栏 ===== */
+.bar-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24rpx 40rpx 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.styles {
+  display: flex;
+}
+
+.style {
+  height: 56rpx;
+  padding: 0 24rpx;
+  margin-right: 12rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  line-height: 56rpx;
+}
+
+.style.on {
+  background: #d9f24f;
+  color: #172742;
+  font-weight: 500;
+}
+
+/* 未开通的档位：不隐藏，但明确「灰」，避免用户以为是加载失败 */
+.style.off {
+  border: 2rpx solid rgba(246, 244, 239, 0.22);
+  color: rgba(246, 244, 239, 0.42);
+  line-height: 52rpx;
+}
+
+.hint-line {
+  margin-top: 20rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  color: rgba(246, 244, 239, 0.6);
+}
+
+.btn-save {
+  margin-top: 20rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 14rpx;
+  background: #f6f4ef;
+  color: #172742;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-save:active {
+  background: #e6e2d8;
+}
+
+/* ===== 状态 ===== */
+.center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.err-text {
+  font-size: 28rpx;
+  color: rgba(246, 244, 239, 0.8);
+  padding: 0 60rpx;
+  text-align: center;
+  line-height: 42rpx;
+}
+
+.mt {
+  margin-top: 32rpx;
+  width: 280rpx;
+}
+
+.spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(246, 244, 239, 0.2);
+  border-top-color: #d9f24f;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

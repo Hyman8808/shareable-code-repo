@@ -1,0 +1,50 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="top">
+    <view class="t-page">{{t.nav_cards}}</view>
+    <view class="t-label count" wx:if="{{all.length}}">{{countText}}</view>
+  </view>
+
+  <!-- 搜索框：pill 全圆角、无描边（带描边会被读成表单，这里是筛选器） -->
+  <view class="search" wx:if="{{all.length}}">
+    <image class="search-ico" src="{{searchIcon}}" />
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="{{t.cards_search_hint}}"
+      placeholder-class="search-ph"
+      confirm-type="search"
+      bindinput="onSearch"
+    />
+  </view>
+
+  <view class="list" wx:if="{{list.length}}">
+    <card-row
+      wx:for="{{list}}"
+      wx:key="id"
+      item="{{item}}"
+      fav="{{true}}"
+      show-line="{{index < list.length - 1}}"
+      bind:rowtap="onTapRow"
+      bind:rowfav="onFavRow"
+    />
+  </view>
+
+  <!-- 空态：还没收藏 -->
+  <view class="empty-box" wx:elif="{{!keyword}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title">{{t.cards_empty_fav}}</view>
+    <view class="btn-ghost empty-btn" bindtap="goToday">{{t.home_today}}</view>
+  </view>
+
+  <!-- 空态：搜不到 -->
+  <view class="empty-box" wx:else>
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title">{{noResultText}}</view>
+  </view>
+</view>

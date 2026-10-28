@@ -1,0 +1,145 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(60rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  margin-top: 12rpx;
+}
+
+.back {
+  margin-left: -20rpx;
+  margin-right: 4rpx;
+}
+
+.ico-back {
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
+}
+
+.count {
+  flex: none;
+}
+
+/* ===== 设备行 ===== */
+.list {
+  margin-top: 8rpx;
+}
+
+.dev {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.dev-main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.dev-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 28rpx;
+  background: var(--card-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-right: 28rpx;
+}
+
+.dev-ico {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.dev-name {
+  font-size: 34rpx;
+  line-height: 46rpx;
+  font-weight: 500;
+  color: var(--t1);
+  max-width: 320rpx;
+}
+
+.dev-id {
+  margin-top: 4rpx;
+}
+
+.dev-meta {
+  margin-top: 2rpx;
+  color: var(--t3);
+}
+
+.tag {
+  flex: none;
+  margin-left: 12rpx;
+  height: 36rpx;
+  padding: 0 12rpx;
+  border-radius: 8rpx;
+  background: var(--ink-light);
+  color: var(--ink);
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+}
+
+/* 当前设备：荧光底 + 墨字（11.93:1） */
+.tag-on {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.dots {
+  font-size: 32rpx;
+  letter-spacing: 0.1em;
+  color: var(--t3);
+}
+
+/* ===== 添加 ===== */
+.add {
+  margin-top: 56rpx;
+}
+
+.add-ico {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 12rpx;
+  display: block;
+}
+
+.state {
+  padding: 100rpx 0 0;
+  text-align: center;
+}
+
+.empty-ico {
+  width: 64rpx;
+  height: 64rpx;
+  display: block;
+}
+
+.link {
+  margin-top: 40rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: var(--ink);
+}
+
+.tip {
+  margin-top: 48rpx;
+  text-align: center;
+  font-size: 24rpx;
+  line-height: 40rpx;
+  color: var(--t3);
+}

@@ -1,0 +1,153 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(150rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.top {
+  padding-top: 16rpx;
+  min-height: 88rpx;
+}
+
+/* ===== 账号行 88dp ===== */
+.account {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0 20rpx;
+  min-height: 88rpx;
+}
+
+.account:active {
+  background: #edeae1;
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #edeae1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  margin-right: 24rpx;
+}
+
+.avatar-ico {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.acc-name {
+  font-size: 32rpx;
+  line-height: 44rpx;
+  color: var(--t1);
+  font-weight: 500;
+}
+
+.acc-meta {
+  margin-top: 4rpx;
+}
+
+/* ===== 当前设备卡 ===== */
+.dev-card {
+  margin-top: 16rpx;
+  padding: 36rpx 40rpx;
+  display: flex;
+  align-items: center;
+}
+
+.dev-id {
+  margin-top: 8rpx;
+}
+
+.tag {
+  flex: none;
+  margin-right: 12rpx;
+  height: 36rpx;
+  padding: 0 14rpx;
+  border-radius: 8rpx;
+  background: var(--ink-light);
+  color: var(--ink);
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+}
+
+.chev {
+  width: 36rpx;
+  height: 36rpx;
+  flex: none;
+  margin-left: 8rpx;
+  display: block;
+}
+
+/* ===== 分组 ===== */
+.group-label {
+  margin: 44rpx 0 12rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
+
+.group {
+  background: transparent;
+}
+
+/* 设置行 56dp：无底无描边，靠 divider */
+.set-row {
+  display: flex;
+  align-items: center;
+  height: 112rpx;
+}
+
+.set-row:active {
+  background: #edeae1;
+}
+
+.set-ico {
+  width: 40rpx;
+  height: 40rpx;
+  flex: none;
+  display: block;
+}
+
+.set-main {
+  flex: 1;
+  margin-left: 24rpx;
+  font-size: 30rpx;
+  line-height: 44rpx;
+  color: var(--t1);
+}
+
+.set-val {
+  font-size: 24rpx;
+  color: var(--t2);
+  margin-left: 12rpx;
+}
+
+/* divider 从主字起（48dp = 96rpx 含图标与间距） */
+.hairline-48 {
+  height: 1rpx;
+  background: var(--divider);
+  margin-left: 64rpx;
+}
+
+.add-demo {
+  margin-top: 56rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: var(--ink);
+}
+
+.foot {
+  margin-top: 56rpx;
+  text-align: center;
+  font-size: 22rpx;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}

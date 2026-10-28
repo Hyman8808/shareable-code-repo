@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/today/today",
+    "pages/favorites/favorites",
+    "pages/profile/profile",
+    "pages/cards/cards",
+    "pages/detail/detail",
+    "pages/viewer/viewer",
+    "pages/language/language",
+    "pages/diagnose/diagnose",
+    "pages/ai/ai",
+    "pages/devices/devices",
+    "pages/provision/provision",
+    "pages/login/login"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#f4f2ec",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#6e695e",
+    "selectedColor": "#172742",
+    "backgroundColor": "#f4f2ec",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/today/today", "text": "记录" },
+      { "pagePath": "pages/favorites/favorites", "text": "收藏" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

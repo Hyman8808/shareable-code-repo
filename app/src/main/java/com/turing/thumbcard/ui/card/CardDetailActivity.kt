@@ -33,6 +33,7 @@ import com.turing.thumbcard.data.i18n.HantConverter
 import com.turing.thumbcard.data.i18n.LanguagePrefs
 import com.turing.thumbcard.data.i18n.NameLanguage
 import com.turing.thumbcard.data.i18n.NameResolver
+import com.turing.thumbcard.data.i18n.UiLanguage
 import com.turing.thumbcard.data.i18n.inHant
 import com.turing.thumbcard.data.repo.RecordRepository
 import com.turing.thumbcard.databinding.ActivityCardDetailBinding
@@ -516,7 +517,9 @@ class CardDetailActivity : AppCompatActivity() {
         if (lang.isSource || lang.isNone) {
             binding.tvDetailLangTag.visibility = View.GONE
         } else {
-            binding.tvDetailLangTag.text = "${lang.native}   ${lang.label}"
+            // 中文名只在中文界面显示；英文/阿语界面用英文名，否则阿语用户看到的是中文方块字
+            binding.tvDetailLangTag.text =
+                "${lang.native}   ${lang.labelFor(UiLanguage.storedTag(this))}"
             binding.tvDetailLangTag.visibility = View.VISIBLE
         }
 
@@ -529,10 +532,11 @@ class CardDetailActivity : AppCompatActivity() {
         }
 
         if (!lang.isChinese && !d.translated) {
+            val langName = lang.labelFor(UiLanguage.storedTag(this))
             binding.tvLangNotice.text = if (d.pending) {
-                getString(R.string.detail_translating_fmt, lang.label)
+                getString(R.string.detail_translating_fmt, langName)
             } else {
-                getString(R.string.detail_no_translation_fmt, lang.label)
+                getString(R.string.detail_no_translation_fmt, langName)
             }
             binding.tvLangNotice.visibility = View.VISIBLE
         } else {

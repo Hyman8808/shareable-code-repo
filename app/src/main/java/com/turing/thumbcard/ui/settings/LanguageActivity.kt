@@ -17,7 +17,7 @@ import com.turing.thumbcard.databinding.ItemLanguageBinding
 /**
  * 物品名称语言选择页。
  *
- * 共 9 项：无（仅英文）+ 中文（简体，原始识别结果）+ 中文（繁体，本机转换）+ 日韩西法德俄。
+ * 共 10 项：无（仅英文）+ 中文（简体，原始识别结果）+ 中文（繁体，本机转换）+ 日韩西法德俄 + 阿拉伯语。
  *
  * 选择即生效（写入 SP 并通知首页/单词卡页重绘），不强制关闭页面，
  * 方便用户来回切换看效果。
@@ -55,15 +55,17 @@ class LanguageActivity : AppCompatActivity() {
         binding.tvCurrentValue.text = current.native
 
         val langs = NameLanguage.values().toList()
+        // 副标题的中文名只在中文界面出现；英文/阿语界面给英文名，否则阿语用户看到的是「阿拉伯语」四个方块字
+        val uiTag = UiLanguage.storedTag(this)
 
         langs.forEachIndexed { index, lang ->
             val row = ItemLanguageBinding.inflate(layoutInflater, binding.llLangList, false)
             row.tvNative.text = lang.native
-            // 副标题只留「中文名 · 代码」。不再挂「翻译服务开发中」——
+            // 副标题只留「展示名 · 代码」。不再挂「翻译服务开发中」——
             // 语言是按次同步下发的，逐行挂一个长期标签既不准也吵；
             // 全局状态由顶部说明条统一讲一次。
             row.tvLabel.text = buildString {
-                append(lang.label)
+                append(lang.labelFor(uiTag))
                 append("  ·  ")
                 append(lang.code)
             }
@@ -115,11 +117,13 @@ class LanguageActivity : AppCompatActivity() {
             lang.isHant -> getString(R.string.lang_switched_hant)
             lang.isSource -> getString(R.string.lang_switched_src)
             NameResolver.translator is PendingNameTranslator ->
-                getString(R.string.lang_switched_pending_fmt, lang.label)
-            else -> getString(R.string.lang_switched_fmt, lang.label)
+                getString(R.string.lang_switched_pending_fmt, lang.labelFor(uiTag()))
+            else -> getString(R.string.lang_switched_fmt, lang.labelFor(uiTag()))
         }
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
+
+    private fun uiTag(): String = UiLanguage.storedTag(this)
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 }

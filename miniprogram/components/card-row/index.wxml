@@ -1,0 +1,21 @@
+<view class="row-card" hover-class="row-card-hover" bindtap="onTap">
+  <view class="thumb">
+    <image wx:if="{{item.img}}" class="thumb-img" src="{{item.img}}" mode="aspectFill" lazy-load />
+    <view wx:else class="thumb-ph"></view>
+  </view>
+
+  <view class="texts">
+    <view class="hw ellipsis">{{item.headword}}</view>
+    <view class="meta ellipsis" wx:if="{{item.meta}}">{{item.meta}}</view>
+    <view class="cjk ellipsis" wx:if="{{item.cjk}}">{{item.cjk}}</view>
+  </view>
+
+  <view class="fav tap44" wx:if="{{showFav}}" catchtap="onFav">
+    <view class="heart {{fav ? 'on' : ''}}">
+      <image class="heart-ico" src="{{fav ? heartOn : heartOff}}" />
+    </view>
+  </view>
+</view>
+
+<!-- 行间分隔：从文字处起（76dp），不切图 -->
+<view class="row-line" wx:if="{{showLine}}"></view>

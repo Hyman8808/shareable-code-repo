@@ -1,0 +1,106 @@
+{
+  "description": "拇指相机（拍学机）小程序 — 墨标 Inkmark V2.0 视觉系统",
+  "appid": "wx7a0b5e69cb79a2d4",
+  "compileType": "miniprogram",
+  "projectname": "thumbcamera-miniprogram",
+  "libVersion": "3.5.5",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "urlCheck": false,
+    "coverView": true,
+    "showShadowRootInWxmlPanel": true,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false
+  },
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "今天（首页）",
+          "pathName": "pages/today/today",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "收藏",
+          "pathName": "pages/favorites/favorites",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "详情（id=445）",
+          "pathName": "pages/detail/detail",
+          "query": "id=445",
+          "scene": null
+        },
+        {
+          "name": "配网（真机调试用）",
+          "pathName": "pages/provision/provision",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "语言设置",
+          "pathName": "pages/language/language",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "诊断信息",
+          "pathName": "pages/diagnose/diagnose",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "AI 美化（说明）",
+          "pathName": "pages/ai/ai",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "大图预览（id=445）",
+          "pathName": "pages/viewer/viewer",
+          "query": "ids=445&index=0",
+          "scene": null
+        },
+        {
+          "name": "我的相机",
+          "pathName": "pages/devices/devices",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "账号 / 微信登录",
+          "pathName": "pages/login/login",
+          "query": "",
+          "scene": null
+        }
+      ]
+    }
+  },
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {}
+}

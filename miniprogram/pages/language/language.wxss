@@ -1,0 +1,124 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(60rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+/* ===== 顶栏：返回 + 标题 ===== */
+.nav {
+  display: flex;
+  align-items: center;
+  height: 96rpx;
+}
+
+.ico-back {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+.nav-holder {
+  width: 88rpx;
+  flex: none;
+}
+
+/* ===== 当前语言卡 ===== */
+.cur {
+  margin-top: 16rpx;
+  padding: 32rpx 36rpx 36rpx;
+}
+
+.cur-val {
+  margin-top: 10rpx;
+  font-size: 52rpx;
+  line-height: 64rpx;
+  color: var(--t1);
+}
+
+.desc {
+  margin-top: 14rpx;
+  color: var(--t2);
+  /* 文案里带 \n，必须保留换行，否则会挤成一整段 */
+  white-space: pre-wrap;
+}
+
+/* ===== 选择行 56dp ===== */
+.group-label {
+  margin: 44rpx 0 12rpx;
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+}
+
+.pick {
+  display: flex;
+  align-items: center;
+  min-height: 112rpx;
+  padding: 8rpx 0;
+  box-sizing: border-box;
+}
+
+.pick:active {
+  background: #edeae1;
+}
+
+.pick-title {
+  font-size: 30rpx;
+  line-height: 44rpx;
+  color: var(--t1);
+}
+
+.pick-title.on {
+  font-weight: 500;
+}
+
+/* 副标题 11sp：语言列表里它是「解释」，不该抢主标题 */
+.pick-sub {
+  margin-top: 2rpx;
+}
+
+/* 单选圈 40dp：未选＝1rpx 描边，选中＝墨底 + 白勾 */
+.ring {
+  flex: none;
+  width: 44rpx;
+  height: 44rpx;
+  margin-left: 16rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--divider);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring.on {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.check-ico {
+  width: 26rpx;
+  height: 26rpx;
+  display: block;
+}
+
+.hairline-48 {
+  height: 1rpx;
+  background: var(--divider);
+  margin-left: 0;
+}
+
+/* ===== 说明段 ===== */
+.note {
+  margin-top: 24rpx;
+  color: var(--t3);
+  white-space: pre-wrap;
+}
+
+.ui-desc {
+  margin: 0 0 8rpx;
+  color: var(--t2);
+}

@@ -1,0 +1,51 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="top">
+    <view class="tap44 back" bindtap="onBack">
+      <image class="ico-back" src="{{icons.back}}" />
+    </view>
+    <view class="t-page grow">{{t.profile_camera}}</view>
+    <view class="t-label count" wx:if="{{list.length}}">{{countText}}</view>
+  </view>
+
+  <view class="list" wx:if="{{list.length}}">
+    <view class="dev" wx:for="{{list}}" wx:key="deviceId">
+      <view class="dev-main" bindtap="onTapItem" data-id="{{item.deviceId}}">
+        <view class="dev-icon">
+          <image class="dev-ico" src="{{icons.bt}}" />
+        </view>
+        <view class="grow">
+          <view class="row">
+            <view class="dev-name ellipsis">{{item.name}}</view>
+            <view class="tag" wx:if="{{item.isDemo}}">{{t.mp_demo_tag}}</view>
+            <view class="tag tag-on" wx:if="{{item.isCurrent}}">{{t.device_state_current}}</view>
+          </view>
+          <view class="t-label dev-id ellipsis">{{item.deviceId}}</view>
+          <view class="t-caption dev-meta ellipsis" wx:if="{{item.isDemo}}">{{t.mp_demo_device}}</view>
+          <view class="t-caption dev-meta ellipsis" wx:else>{{item.fw ? 'FW ' + item.fw : 'FW -'}} · {{item.apikeyMasked}}</view>
+        </view>
+      </view>
+      <view class="tap44" bindtap="onMore" data-id="{{item.deviceId}}">
+        <view class="dots">···</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="btn-primary add" bindtap="onAdd">
+    <image class="add-ico" src="{{icons.plus}}" />
+    <text>{{t.device_add}}</text>
+  </view>
+
+  <view class="state" wx:if="{{!list.length}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{icons.bt}}" />
+    </view>
+    <view class="empty-title">{{t.device_empty}}</view>
+    <view class="empty-sub pre">{{t.home_pair_hint}}</view>
+  </view>
+
+  <view class="link" wx:if="{{!list.length}}" bindtap="onUseDemo">{{t.mp_skip_demo}} →</view>
+
+  <view class="tip">{{t.device_switch_hint}}</view>
+</view>

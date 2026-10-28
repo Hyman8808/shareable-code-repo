@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    App name for the "ai" flavor in Arabic.
+    Only app_name is overridden here - the other 437 keys fall back to
+    main/res/values-ar/strings.xml on purpose. Keep it that way, otherwise
+    every future string change would have to be duplicated into this file.
+-->
+<resources>
+    <string name="app_name">كاميرا بطاقات الكلمات AI</string>
+</resources>

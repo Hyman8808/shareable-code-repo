@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  阿拉伯语（العربية）。
+  ⚠️ key 集合必须与 values/strings.xml 完全一致（现 437 条），
+     少一个键在阿语界面下会直接回落成中文（不崩，但用户看不懂）。
+  ⚠️ 阿语是 RTL：段落方向由系统按 locale 自动处理，本文件**不需要** bidi 控制符。
+     但文本内自带的方向性符号必须按 RTL 改写：
+       ‹ ›  （前进/更多）→ 阿语下用 ‹（指向左）
+       →    （推导）    → 阿语下用 ←
+  ⚠️ 占位符必须原样保留（%1$s / %2$d …）并按阿语语序重排编号，
+     删掉占位符会直接抛 IllegalFormatException。
+  ⚠️ 品牌与渠道名保留原样：WeChat / Alipay / ThumbCard / AI / Wi-Fi。
+-->
+<resources>
+    <string name="app_name">كاميرا بطاقات الكلمات</string>
+
+    <!-- ============ 通用 ============ -->
+    <string name="common_ok">حسنًا</string>
+    <string name="common_cancel">إلغاء</string>
+    <string name="common_retry">إعادة المحاولة</string>
+    <string name="common_loading">جارٍ التحميل…</string>
+    <string name="common_syncing">جارٍ المزامنة…</string>
+    <string name="common_back">رجوع</string>
+    <string name="common_copied">تم النسخ</string>
+
+    <!-- ============ 底部导航 ============ -->
+    <string name="nav_home">السجلات</string>
+    <string name="nav_cards">المحفوظات</string>
+    <string name="nav_devices">الأجهزة</string>
+    <string name="nav_profile">حسابي</string>
+
+    <!-- ============ 首页 ============ -->
+    <string name="home_subtitle">صوّر بكاميرا الإبهام لإنشاء بطاقات كلمات</string>
+    <string name="home_add_device">إضافة جهاز</string>
+    <string name="home_my_cards">بطاقات كلماتي</string>
+    <string name="home_my_devices">إدارة الأجهزة</string>
+    <string name="home_no_device">لا يوجد جهاز مرتبط بعد\nأضف كاميرا الإبهام للبدء</string>
+    <string name="home_devices_btn">الأجهزة</string>
+    <string name="home_report_title">تقرير التعلّم</string>
+    <string name="home_today">اليوم</string>
+    <string name="home_week">هذا الأسبوع</string>
+    <string name="home_unit_photos">صورة</string>
+    <string name="home_unit_words">كلمة</string>
+    <string name="home_report_hint">تصوير الشيء نفسه أكثر من مرة يُحتسب كلمة واحدة</string>
+    <string name="home_shoot_hint">اضغط زر التصوير — ما تصوّره يصبح بطاقة كلمة تلقائيًا</string>
+    <string name="home_section_all">كل السجلات</string>
+    <string name="home_section_earlier">سجلات أقدم</string>
+    <string name="home_total_label">الإجمالي</string>
+    <string name="home_today_more_fmt">%1$d أخرى اليوم · عرض الكل ‹</string>
+    <string name="home_all">الكل ‹</string>
+    <string name="home_batch_entry">معالجة دفعية</string>
+    <string name="home_fav_hint">اضغط مطوّلًا على أي بطاقة لحفظها. المحفوظة تظهر في «المحفوظات».</string>
+    <string name="home_empty">لا شيء هنا بعد\n\nاضغط زر التصوير — ما تصوّره سيظهر هنا\nاضغط مطوّلًا على البطاقة لحفظها</string>
+    <string name="home_empty_today">لا جديد اليوم\n\nاضغط «الكل ‹» لرؤية الصور السابقة</string>
+
+    <string name="home_pair_hint">اضغط زر التشغيل 3 ثوانٍ\nانتظر وميض المؤشر ثم اضغط هنا للاقتران</string>
+    <string name="home_slogan">صوّرها، تَعرَّف عليها\n\nالاسم · الاسم بالإنجليزية · النطق · بطاقات قابلة للحفظ</string>
+    <string name="home_default_device">كاميرا الإبهام</string>
+    <string name="home_total_fmt">%1$d صورة · %2$d كلمة إجمالًا</string>
+    <string name="home_count_fmt">%1$d صورة</string>
+    <string name="home_multi_device_fmt">  ·  %1$d أجهزة</string>
+
+    <!-- ============ 扫描 / 配网 ============ -->
+    <string name="scan_title">اختيار جهاز</string>
+    <string name="scan_hint">جارٍ البحث عن أجهزة قريبة…</string>
+    <string name="scan_empty">لم يتم العثور على جهاز\nتأكد من تشغيل الجهاز ووميض مؤشر البلوتوث</string>
+    <string name="scan_permission_denied">يلزم إذن البلوتوث للبحث عن الأجهزة</string>
+    <string name="scan_signal_fmt">%1$s · الإشارة %2$d dBm · البروتوكول v%3$d.%4$d</string>
+    <string name="wifi_title">الاتصال بـ Wi-Fi</string>
+    <string name="wifi_title_setting">إعداد Wi-Fi</string>
+    <string name="wifi_hint">يدعم شبكات 2.4G فقط</string>
+    <string name="wifi_device_fmt">الجهاز: %1$s  ·  يدعم شبكات 2.4G فقط</string>
+    <string name="wifi_ssid">اسم شبكة Wi-Fi</string>
+    <string name="wifi_password">كلمة مرور Wi-Fi</string>
+    <string name="wifi_start">بدء الاقتران</string>
+    <string name="wifi_connecting">جارٍ الاقتران، لا تبتعد…</string>
+    <string name="wifi_copy_log">نسخ سجل التصحيح</string>
+    <string name="wifi_log_connect_fmt">جارٍ الاتصال بالجهاز %1$s</string>
+    <string name="wifi_log_connecting">جارٍ الاتصال…</string>
+    <string name="wifi_log_connected">تم اتصال الجهاز</string>
+    <string name="wifi_ssid_empty">أدخل اسم شبكة Wi-Fi</string>
+    <string name="wifi_pwd_empty">أدخل كلمة مرور Wi-Fi</string>
+
+    <!-- 配网 V1.2：设备扫描 + 列表点选 -->
+    <string name="wifi_ap_title">الشبكات المتاحة</string>
+    <string name="wifi_scan_loading">جارٍ الحصول على قائمة الشبكات من الجهاز…</string>
+    <string name="wifi_scan_empty">لم يتم العثور على شبكة 2.4G\nتأكد من تفعيل 2.4G في الراوتر ثم اضغط التحديث من الأعلى</string>
+    <string name="wifi_scan_failed">فشل مسح الجهاز للشبكات. اضغط التحديث من الأعلى للمحاولة مجددًا.</string>
+    <string name="wifi_scan_slow">ما زلنا ننتظر قائمة الشبكات من الجهاز…\nيمكنك الانتظار أو الإدخال يدويًا</string>
+    <string name="wifi_manual_entry">إدخال Wi-Fi يدويًا</string>
+    <string name="wifi_manual_title">إدخال Wi-Fi يدويًا</string>
+    <string name="wifi_manual_ssid_label">اسم الشبكة (SSID، حسّاس لحالة الأحرف)</string>
+    <string name="wifi_manual_5g_warn">هاتفك متصل بشبكة 5G (%2$dMHz): %1$s. الكاميرا تدعم 2.4G فقط — غيّر الاسم إذا كان خاصًا بـ 5G</string>
+    <string name="wifi_manual_pwd_label">كلمة المرور (اتركها فارغة للشبكة المفتوحة)</string>
+    <string name="wifi_scan_wait">الجهاز يمسح الشبكات، يُرجى الانتظار</string>
+    <string name="wifi_refresh">تحديث قائمة الشبكات</string>
+    <string name="wifi_refresh_wait">انتظر 3 ثوانٍ قبل التحديث</string>
+    <string name="wifi_pwd_dialog_title">أدخل كلمة مرور «%1$s»</string>
+    <string name="wifi_connect">اتصال</string>
+    <string name="wifi_configuring">جارٍ الاتصال بـ Wi-Fi…</string>
+    <string name="wifi_binding">جارٍ إنشاء الربط…</string>
+    <string name="wifi_encrypted_cd">مشفّرة</string>
+    <string name="wifi_pick_cd">اختيار هذه الشبكة</string>
+
+    <!-- ============ 单词卡 / 详情 ============ -->
+    <string name="cards_title">بطاقات الكلمات</string>
+    <string name="cards_empty_old">لا توجد بطاقات بعد\nصوّر لإنشاء بطاقة</string>
+    <string name="cards_empty_unbound">لا يوجد جهاز مرتبط\n\nبعد الاقتران تظهر الصور في الرئيسية\nاحفظها بـ ♡ لتظهر في البطاقات</string>
+    <string name="cards_empty_fav">لا محفوظات بعد\n\nاضغط مطوّلًا على أي بطاقة في «اليوم» لحفظها\nستظهر المحفوظة هنا</string>
+    <string name="cards_go_add">إضافة جهاز</string>
+    <string name="cards_count_fmt">%1$d بطاقة</string>
+    <string name="cards_no_result_fmt">لا نتيجة لـ «%1$s»</string>
+    <string name="cards_search_hint">ابحث بالاسم الصيني / الإنجليزي</string>
+
+    <string name="card_title">بطاقات الكلمات</string>
+    <string name="card_empty">لا توجد بطاقات بعد\nصوّر لإنشاء بطاقة</string>
+
+    <!-- 全部单词记录页（从首页「全部 ›」进入，与「单词卡」Tab 是两件事） -->
+    <string name="cardlist_title">كل سجلات الكلمات</string>
+    <string name="cardlist_empty">لا توجد صور بعد\nصوّر وستظهر هنا تلقائيًا</string>
+    <string name="home_all_records_fmt">عرض كل سجلات الكلمات (%1$d) ‹</string>
+    <string name="a11y_favorite">حفظ</string>
+    <string name="a11y_play_us">تشغيل النطق الأمريكي</string>
+    <string name="a11y_play_uk">تشغيل النطق البريطاني</string>
+    <string name="wifi_ssid_hint">أدخل اسم شبكة Wi-Fi</string>
+    <string name="wifi_pwd_hint">أدخل كلمة مرور Wi-Fi</string>
+    <string name="cards_search_placeholder">ابحث بالصينية أو الإنجليزية</string>
+    <string name="card_detail_title">تفاصيل الكلمة</string>
+    <string name="card_play_chinese">النطق الصيني</string>
+    <string name="card_play_english">النطق الإنجليزي</string>
+    <string name="detail_play_cn_origin">النطق الصيني الأصلي</string>
+    <string name="detail_pinyin">بينيين</string>
+    <string name="detail_phonetic">الرمز الصوتي</string>
+    <string name="detail_us">أمريكي</string>
+    <string name="detail_uk">بريطاني</string>
+    <string name="detail_meaning">المعنى</string>
+    <string name="detail_dict_en">القاموس</string>
+    <string name="detail_dict_cn">القاموس الصيني</string>
+    <string name="detail_dict_loading">جارٍ البحث في القاموس…</string>
+    <string name="detail_cn_loading">جارٍ البحث في القاموس الصيني…</string>
+    <string name="detail_retry">إعادة المحاولة</string>
+    <string name="detail_examples">أمثلة</string>
+    <string name="detail_phrases">تراكيب شائعة</string>
+    <string name="detail_compounds">كلمات مركّبة</string>
+    <string name="detail_delete">حذف هذه البطاقة</string>
+    <string name="detail_delete_title">حذف البطاقة</string>
+    <string name="detail_delete_msg">الحذف غير مدعوم في السحابة بعد. ستحذف البطاقة محليًا فقط وستعود بعد المزامنة التالية.\n\nهل تريد المتابعة؟</string>
+    <string name="detail_time_fmt">وقت التصوير  %1$s</string>
+    <string name="detail_cn_origin_fmt">النص الصيني   %1$s</string>
+    <string name="detail_translating_fmt">لا يوجد اسم «%1$s» لهذه الكلمة بعد — يُعرض النص الصيني الأصلي. سيُحدَّث بعد المزامنة التالية.</string>
+    <string name="detail_no_translation_fmt">لا توجد ترجمة «%1$s» لهذه الكلمة بعد، يُعرض النص الصيني الأصلي.</string>
+    <string name="detail_dict_en_failed">تعذّر الوصول إلى القاموس الإنجليزي. يمكنك المحاولة مجددًا.</string>
+    <string name="detail_dict_cn_failed">تعذّر الوصول إلى القاموس الصيني. يمكنك المحاولة مجددًا.</string>
+    <string name="detail_stop">إيقاف</string>
+
+    <!-- 短语拆解（多词短语逐词查） -->
+    <string name="phrase_title">تحليل الكلمات</string>
+    <string name="phrase_hint">تُقسَّم العبارة إلى كلمات مفردة لترى كيف بُنيت</string>
+    <string name="phrase_count_fmt">%1$d كلمة</string>
+    <string name="phrase_loading">جارٍ البحث عن كل كلمة…</string>
+    <string name="phrase_formula_fmt">ترجمة حرفية　%1$s　←　%2$s</string>
+    <string name="phrase_word_missing">غير موجود في القاموس</string>
+    <string name="a11y_play_word_fmt">تشغيل نطق «%1$s»</string>
+    <string name="a11y_play_word_us_fmt">تشغيل النطق الأمريكي لـ «%1$s»</string>
+    <string name="a11y_play_word_uk_fmt">تشغيل النطق البريطاني لـ «%1$s»</string>
+
+    <!-- 词条类型 -->
+    <string name="pos_en_word">كلمة إنجليزية</string>
+    <string name="pos_en_phrase">عبارة إنجليزية</string>
+    <string name="pos_en">الإنجليزية</string>
+    <string name="pos_cn_word">كلمة صينية</string>
+    <string name="pos_cn_char">حرف صيني</string>
+    <string name="pos_cn_idiom">تعبير اصطلاحي صيني</string>
+    <string name="pos_pinyin">بينيين</string>
+    <string name="dict_synonym">مرادفات</string>
+    <string name="dict_antonym">أضداد</string>
+    <string name="dict_radical_fmt">المكوّن %1$s    </string>
+    <string name="dict_structure_fmt">البنية %1$s    </string>
+    <string name="dict_strokes_fmt">%1$s خطوة</string>
+
+    <!-- ============ 设备 ============ -->
+    <string name="device_count_fmt">%1$d جهاز</string>
+    <string name="device_long_press">اضغط مطوّلًا على الجهاز لإعادة التسمية أو فك الربط</string>
+    <string name="device_empty">لا يوجد جهاز مرتبط بعد</string>
+    <string name="device_add">إضافة جهاز جديد</string>
+    <string name="device_connect">اتصال</string>
+    <string name="device_default_name">كاميرا الإبهام</string>
+    <string name="device_menu_cards">عرض البطاقات</string>
+    <string name="device_menu_rename">إعادة التسمية</string>
+    <string name="device_menu_unbind">فك ربط الجهاز</string>
+    <string name="device_rename_title">إعادة التسمية</string>
+    <string name="device_rename_hint">اسم الجهاز</string>
+    <string name="device_unbind_title">فك ربط الجهاز</string>
+    <string name="device_unbind_title_alt">إلغاء الربط</string>
+    <string name="device_unbind_msg">فك الربط يمحو ربط الجهاز وذاكرة البطاقات من هذا الهاتف.\n\nيجب الضغط مطوّلًا على زر الجهاز لإعادة ضبطه قبل الاقتران مرة أخرى.</string>
+    <string name="device_unbind_msg_alt">فك الربط يمحو ربط الجهاز وذاكرة البطاقات من هذا الهاتف.\n\nيجب إعادة اقتران الجهاز لاستخدامه.</string>
+    <string name="device_unbind_ok">فك الربط</string>
+    <string name="device_sync_at_fmt"> · تمت المزامنة %1$s</string>
+    <string name="device_not_synced"> · لم تتم المزامنة</string>
+    <string name="device_unbound">تم فك الربط</string>
+    <string name="device_renamed">تمت إعادة التسمية</string>
+
+    <string name="device_connected_toast">تم الاقتران بنجاح</string>
+    <string name="provision_temp_mode_toast">التخزين محدود — يُعرض في وضع مؤقت</string>
+
+    <!-- ============ 我的 ============ -->
+    <string name="profile_login">تسجيل الدخول</string>
+    <string name="profile_account_meta">WeChat / Alipay / رقم الهاتف (قريبًا)</string>
+    <string name="profile_group_lang">تفضيلات اللغة</string>
+    <string name="profile_group_other">المزيد</string>
+    <string name="profile_camera">كاميرتي</string>
+    <string name="profile_group_device">الجهاز</string>
+    <string name="profile_camera_unbound">غير مقترن</string>
+    <string name="cards_count_unit_fmt">%1$d</string>
+    <string name="profile_name_lang">لغة أسماء العناصر</string>
+    <string name="profile_ui_lang">لغة التطبيق</string>
+    <string name="profile_quota">رصيد التجميل / الكرتون</string>
+    <string name="profile_developing">قريبًا</string>
+    <string name="profile_diag">معلومات التشخيص</string>
+    <string name="profile_privacy">سياسة الخصوصية وشروط الاستخدام</string>
+    <string name="profile_about">حول التطبيق</string>
+    <string name="profile_version_fmt">كاميرا البطاقات v%1$s</string>
+    <string name="profile_quota_toast">الرصيد والباقات قريبًا</string>
+    <string name="profile_privacy_toast">ستُضاف سياسة الخصوصية قبل النشر</string>
+    <string name="profile_about_toast">كاميرا الإبهام · تَعرَّف على العالم بالتصوير</string>
+
+    <!-- ============ 语言设置 ============ -->
+    <string name="lang_title">لغة أسماء العناصر</string>
+    <string name="lang_current">اللغة الحالية</string>
+    <string name="lang_desc">بعد تعرّف الكاميرا على العنصر، يُعرض اسمه في التطبيق باللغة المختارة.\nيبقى الاسم الإنجليزي دائمًا في السطر الثاني.</string>
+    <string name="lang_note">الصينية هي نتيجة التعرّف الأصلية ولا تُترجم. الصينية التقليدية تُحوَّل على الجهاز دون الخادم. اليابانية والكورية والإسبانية والفرنسية والألمانية والروسية والعربية تُرسَل من الخادم باللغة المختارة وتُطبَّق في المزامنة التالية.</string>
+
+    <string name="ui_lang_title">لغة التطبيق</string>
+    <string name="ui_lang_desc">تغيّر نصوص التطبيق فقط، ولا تؤثر على «لغة أسماء العناصر».</string>
+    <string name="ui_lang_row_zh_sub">افتراضي · واجهة صينية مبسّطة</string>
+    <string name="ui_lang_row_tw_sub">واجهة صينية تقليدية</string>
+    <string name="ui_lang_row_en_sub">واجهة إنجليزية</string>
+    <string name="ui_lang_row_ar_sub">واجهة عربية</string>
+    <string name="ui_lang_zh">中文</string>
+    <string name="ui_lang_en">English</string>
+    <string name="ui_lang_changed_fmt">تم تغيير لغة التطبيق إلى %1$s</string>
+
+    <!-- ============ 登录 ============ -->
+    <string name="login_title">تسجيل الدخول / إنشاء حساب</string>
+    <string name="login_desc">سجّل الدخول لمزامنة بطاقاتك\nلا تفقدها عند تغيير الهاتف</string>
+    <string name="login_developing">قريبًا\nالحسابات تعتمد على الخادم ولم تُجهَّز بعد</string>
+    <string name="login_wechat">المتابعة عبر WeChat</string>
+    <string name="login_alipay">المتابعة عبر Alipay</string>
+    <string name="login_phone">المتابعة برقم الهاتف</string>
+    <string name="login_terms">بتسجيل الدخول فإنك توافق على شروط الاستخدام وسياسة الخصوصية\nعلى القُصَّر استخدام التطبيق تحت إشراف شخص بالغ</string>
+    <string name="login_not_ready_fmt">تسجيل الدخول عبر %1$s قريبًا\nواجهة الخادم لم تُجهَّز بعد</string>
+
+    <!-- ============ 诊断 / 全局提示 ============ -->
+    <string name="login_channel_wechat">WeChat</string>
+    <string name="login_channel_alipay">Alipay</string>
+    <string name="login_channel_phone">رقم الهاتف</string>
+    <string name="diag_title">معلومات التشخيص</string>
+    <string name="diag_sub">لاستكشاف الأعطال ومشاكل التوافق. انسخها وأرسلها للدعم.</string>
+    <string name="diag_back">رجوع</string>
+    <string name="diag_clear">مسح السجل</string>
+    <string name="diag_copy">نسخ</string>
+    <string name="diag_checking">جارٍ الفحص…</string>
+    <string name="diag_cloud_check">فحص اتصال السحابة</string>
+    <string name="detail_card_missing">البطاقة غير موجودة</string>
+    <string name="diag_ok">✅ واجهة السحابة و apikey سليمة.</string>
+    <string name="diag_ok_detail">إذا أظهر هذا الجهاز 0 سجلات فهذا يعني أنه لم يرفع أي سجل بنجاح بعد.</string>
+    <string name="diag_ref_zero">⚠️ الجهاز المرجعي يظهر 0 أيضًا — قد يكون apikey غير صحيح أو مُسحت بيانات الخادم.</string>
+    <string name="diag_unreachable">❌ تعذّر الوصول إلى السحابة. تحقّق من الشبكة.</string>
+    <string name="detail_missing_card_info">معلومات البطاقة ناقصة</string>
+    <string name="detail_no_audio">لا يوجد ملف نطق لهذه البطاقة</string>
+    <string name="detail_play_failed">فشل التشغيل، تحقّق من الشبكة</string>
+    <string name="detail_deleted">تم حذف البطاقة محليًا</string>
+    <string name="cardlist_missing_device">معلومات الجهاز ناقصة</string>
+    <string name="cardlist_temp_mode">وضع مؤقت: لا يُحفظ شيء، أعد الدخول بعد إعادة التشغيل</string>
+    <string name="diag_cleared">تم مسح سجل التشخيص</string>
+    <string name="diag_copied_toast">تم نسخ التقرير — الصقه وأرسله للدعم</string>
+    <string name="diag_clip_label">تقرير التشخيص</string>
+    <string name="wifi_log_clip_label">سجل تصحيح الاقتران</string>
+    <string name="main_compat_title">تنبيه التوافق</string>
+    <string name="main_crash_prefix">تعطّل التشغيل السابق:</string>
+    <string name="main_startup_prefix">مشاكل عند بدء التشغيل:</string>
+    <string name="main_compat_msg">%1$s\n\nخُفِّض التطبيق تلقائيًا ليبقى قابلًا للاستخدام. اضغط «عرض التشخيص» للتفاصيل.</string>
+    <string name="main_view_diag">عرض التشخيص</string>
+    <string name="main_got_it">فهمت</string>
+
+    <!-- ============ 动态文案（占位符）============ -->
+    <string name="common_sync_failed_fmt">فشلت المزامنة: %1$s</string>
+    <string name="home_fav_added">تم الحفظ — أُضيفت إلى بطاقاتك</string>
+    <string name="home_fav_removed">أُزيلت من المحفوظات</string>
+    <string name="cards_fav_removed">أُزيلت من بطاقاتك</string>
+    <string name="card_meta_pending_fmt">%1$s · بانتظار الترجمة</string>
+    <string name="lang_pending_toast">بعد التبديل تظهر الأسماء باللغة الجديدة في المزامنة التالية. الكلمات التي لا اسم لها بهذه اللغة تُعرض بالصينية الأصلية.</string>
+    <string name="lang_ready_toast">خدمة الترجمة متاحة. ستتبع الأسماء اللغة المختارة.</string>
+    <string name="lang_switched_src">تم التبديل إلى الصينية (نتيجة التعرّف الأصلية)</string>
+    <string name="lang_switched_hant">تم التبديل إلى الصينية التقليدية (تحويل على الجهاز)</string>
+    <string name="lang_switched_pending_fmt">تم التبديل إلى %1$s — الترجمة غير متاحة بعد، يُعرض النص الصيني الأصلي</string>
+    <string name="lang_switched_fmt">تم التبديل إلى %1$s</string>
+    <string name="login_privacy_toast">ستُضاف سياسة الخصوصية والشروط قبل النشر</string>
+    <string name="cards_synced_fmt">%1$d جديد (%2$d موجودة محليًا ولم تُنزَّل مجددًا)</string>
+    <string name="cards_up_to_date_fmt">محدّث، %1$d صورة محليًا</string>
+    <string name="cardlist_empty_reason_fmt">لا سجلات لهذا الجهاز في السحابة.\n\nمعرّف الجهاز المستخدم:\n%1$s\n\nأسباب محتملة:\n① لم ينجح رفع الجهاز (يحتاج Wi-Fi وتشغيلًا في الخلفية)\n② تأخير في الرفع — اسحب للتحديث لاحقًا</string>
+    <string name="cardlist_count_fmt">%1$d صورة</string>
+
+    <!-- ==================== v2.2.0：原图预览 / 存相册 / AI 美化 ====================
+         四语必须逐键对齐（values / values-en / values-zh-rTW / values-ar），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="preview_title">عرض الصورة</string>
+    <string name="preview_save">حفظ في الصور</string>
+    <string name="preview_saved">تم الحفظ في الصور: %1$s</string>
+    <string name="preview_save_failed">تعذّر الحفظ، أعد المحاولة</string>
+    <string name="preview_save_wait">الصورة قيد التجهيز، لحظة</string>
+    <string name="preview_need_permission">يلزم إذن التخزين للحفظ في الصور</string>
+    <string name="preview_no_image">لا توجد صورة لهذا السجل</string>
+    <string name="preview_hint">قرّب بإصبعين · انقر مرتين للتكبير · الحفظ من الأعلى</string>
+    <string name="preview_hint_swipe">اسحب للتبديل · قرّب بإصبعين · انقر مرتين للتكبير · الحفظ من الأعلى</string>
+    <string name="preview_prev">السابق</string>
+    <string name="preview_next">التالي</string>
+    <string name="preview_zoom_locked">مكبّرة · انقر مرتين للإرجاع ثم اسحب</string>
+    <string name="preview_a11y_pos_fmt">الصورة %1$d من %2$d، %3$s</string>
+    <string name="preview_load_failed">تعذّر تحميل الصورة. انقر للمحاولة.</string>
+    <string name="preview_a11y_pos_fail_fmt">الصورة %1$d من %2$d، %3$s، فشل التحميل</string>
+    <string name="preview_style_original">الأصلية</string>
+    <string name="preview_beautify">تجميل هذه الصورة</string>
+    <string name="preview_beautify_switch">نمط آخر</string>
+    <string name="ai_title">تحسين AI</string>
+    <string name="ai_vip_debug">نسخة VIP</string>
+    <string name="ai_choose_style">اختر التأثير</string>
+    <string name="ai_style_hd">استعادة عالية الدقة</string>
+    <string name="ai_style_hd_desc">يحافظ على ما التقطته الكاميرا ويعيد رسم الصورة منخفضة الدقة بدقة 2K</string>
+    <string name="ai_style_cartoon">رسم كرتوني</string>
+    <string name="ai_style_cartoon_desc">يتحول العنصر إلى شخصية كرتونية بسيطة مع خلفية مبسّطة</string>
+    <string name="ai_badge_hd">HD</string>
+    <string name="ai_badge_cartoon">كرتون</string>
+    <string name="ai_badge_exists">تم</string>
+    <string name="ai_generate">إنشاء</string>
+    <string name="ai_generating_button">جارٍ الإنشاء…</string>
+    <string name="ai_again">إنشاء أخرى</string>
+    <string name="ai_running">جارٍ إنشاء صورة عالية الدقة</string>
+    <string name="ai_running_hint">يستغرق دقيقة تقريبًا. يمكنك مغادرة الصفحة وسنُخطرك عند الانتهاء</string>
+    <string name="ai_status_done">تم. تعرض البطاقة الصورة الجديدة الآن</string>
+    <string name="ai_status_done_px">تم بدقة %1$s. تعرض البطاقة الصورة الجديدة الآن</string>
+    <string name="ai_status_existing">تعرض البطاقة حاليًا صورة «%1$s»</string>
+    <string name="ai_status_switch_hint">لدى البطاقة صورة «%1$s» بالفعل. اختر النمط الآخر لإنشاء واحدة جديدة</string>
+    <string name="ai_status_reverted">عادت الصورة الأصلية. صورة AI محفوظة ويمكن العودة إليها</string>
+    <string name="ai_quota_free">بقيت %1$d عملية إنشاء مجانية</string>
+    <string name="ai_quota_credits">بقيت %1$d عملية إنشاء (مُشتراة)</string>
+    <string name="ai_quota_both">بقيت %1$d عملية (مجانية %2$d + مُشتراة %3$d)</string>
+    <string name="ai_quota_none">استُهلك الرصيد المجاني. اشترِ المزيد للمتابعة</string>
+    <string name="ai_no_quota">استُهلك الرصيد. اشترِ بعض العمليات قبل الإنشاء</string>
+    <string name="ai_buy_entry">شراء المزيد</string>
+    <string name="ai_buy_title">شراء أرصدة صور AI</string>
+    <string name="ai_buy_sub">بقيت %1$d عملية (منها %2$d مجانية). الأرصدة صالحة للاستعادة عالية الدقة والكرتون معًا.</string>
+    <string name="ai_buy_debug_note">نسخة تجريبية: التأكيد يضيف الأرصدة فقط دون أي دفع</string>
+    <string name="ai_buy_confirm">تأكيد (محاكاة)</string>
+    <string name="ai_buy_done">أُضيفت %1$d عملية</string>
+    <string name="ai_tier_count_fmt">%1$d صورة</string>
+    <string name="ai_tier_hint_10">~0.50 ¥ للصورة · جرّب بضع كلمات</string>
+    <string name="ai_tier_hint_50">~0.40 ¥ للصورة · فصل دراسي</string>
+    <string name="ai_tier_hint_100">~0.30 ¥ للصورة · يكفي سنة دراسية</string>
+    <string name="ai_tier_hint_1000">تُشارك بين عدة أجهزة</string>
+    <string name="ai_save_to_gallery">حفظ في الصور</string>
+    <string name="ai_view_full">عرض بالحجم الكامل</string>
+    <string name="ai_use_original">استخدام الأصلية</string>
+    <string name="ai_disclaimer">صورة AI تستبدل صورة البطاقة فقط، ويمكنك العودة إلى الأصلية في أي وقت</string>
+    <string name="ai_err_network">لا يوجد اتصال بالشبكة، تحقّق وأعد المحاولة</string>
+    <string name="ai_err_timeout">انتهت مهلة الإنشاء، أعد المحاولة لاحقًا (لم يُخصم رصيد)</string>
+    <string name="ai_err_auth">الخدمة غير مصرّح بها، تواصل مع الدعم</string>
+    <string name="ai_err_rate">الطلبات كثيرة الآن، أعد المحاولة بعد قليل</string>
+    <string name="ai_err_content">لم تجتز الصورة مراجعة المحتوى، جرّب صورة أخرى</string>
+    <string name="ai_err_server">فشل الإنشاء، أعد المحاولة لاحقًا (لم يُخصم رصيد)</string>
+    <string name="ai_err_no_source">تعذّر الحصول على الصورة الأصلية، افتحها مرة على الشبكة ثم أعد المحاولة</string>
+    <string name="detail_view_original">عرض الصورة</string>
+    <string name="detail_ai_entry">حسّن هذه الصورة بـ AI</string>
+    <string name="detail_ai_entry_done">صورة AI مفعّلة · جرّب أخرى</string>
+    <string name="profile_quota_remaining">بقي %1$d</string>
+
+    <!-- ==================== v2.3.0：批量修复 / 不限额设备 ====================
+         四语必须逐键对齐（values / values-en / values-zh-rTW / values-ar），
+         少一个键在对应语言下会直接回落成中文，测试很难发现。 -->
+    <string name="cards_select">اختيار</string>
+    <string name="cards_select_done">تم</string>
+    <string name="cards_selected_fmt">%1$d محددة</string>
+    <string name="cards_select_all">تحديد الكل</string>
+    <string name="cards_select_none">إلغاء التحديد</string>
+    <string name="cards_batch_cartoon">كرتون</string>
+    <string name="cards_batch_hint">اضغط مطوّلًا على أي بطاقة لبدء التحديد</string>
+    <string name="ai_quota_unlimited">بلا حدود على هذا الجهاز (وحدة عرض)</string>
+    <string name="ai_quota_unlimited_short">بلا حدود</string>
+    <string name="ai_quota_left_short">بقي %1$d</string>
+    <string name="batch_title">استعادة دفعية</string>
+    <string name="batch_sub_hd">استعادة عالية الدقة · %1$d صورة</string>
+    <string name="batch_sub_cartoon">كرتون · %1$d صورة</string>
+    <string name="batch_counter_fmt">%1$d / %2$d</string>
+    <string name="batch_now_fmt">جارٍ المعالجة: %1$s</string>
+    <string name="batch_stats_fmt">نجح %1$d · تخطّى %2$d · فشل %3$d</string>
+    <string name="batch_confirm_title">بدء الاستعادة الدفعية</string>
+    <string name="batch_confirm_msg">ستُعالَج %1$d صورة، دقيقة تقريبًا لكل منها. يمكنك الإيقاف في أي وقت.\n%2$s</string>
+    <string name="batch_confirm_cost_fmt">ستُستهلك %1$d من الرصيد، ويبقى %2$d.</string>
+    <string name="batch_confirm_unlimited">هذا الجهاز بلا حد، ولا يُستهلك رصيد.</string>
+    <string name="batch_start">بدء</string>
+    <string name="batch_stop_confirm_title">إيقاف الاستعادة؟</string>
+    <string name="batch_stop_confirm_msg">الصور المكتملة تُحفظ، والباقي لن يستهلك رصيدًا.</string>
+    <string name="batch_done_title">اكتملت الاستعادة الدفعية</string>
+    <string name="batch_done_msg">نجح %1$d، تخطّى %2$d، فشل %3$d.</string>
+    <string name="batch_skipped_hint">«تخطّى» يعني أن الصورة أُنشئت سابقًا. افتح البطاقة لإنشاء واحدة جديدة.</string>
+    <string name="batch_nothing_to_do">كل ما حددته سبق تجهيزه</string>
+    <string name="batch_stop_btn">إيقاف</string>
+    <string name="batch_finish">تم</string>
+
+    <!-- ===== v2.4 后台生成（前台服务 + 断点续跑） ===== -->
+    <string name="batch_bg_hint">يمكنك مغادرة هذه الصفحة. يستمر الإنشاء في الخلفية وسنُخطرك عند الانتهاء.</string>
+    <string name="batch_stopping_hint">إنهاء الصورة الحالية ثم الإيقاف.</string>
+    <string name="batch_to_background">تشغيل في الخلفية</string>
+    <string name="batch_bg_toast">انتقل إلى الخلفية، سنُخطرك عند الانتهاء</string>
+    <string name="batch_stopping_toast">جارٍ الإيقاف — ستنتهي الصورة الحالية فقط</string>
+    <string name="batch_confirm_bg">يمكنك مغادرة هذه الصفحة بعد البدء. تستمر المعالجة في الخلفية وسنُخطرك عند الانتهاء.</string>
+    <string name="batch_quota_paused">الرصيد غير كافٍ، أُوقف مؤقتًا (اكتمل %1$d). اشترِ المزيد للمتابعة.</string>
+    <string name="batch_preparing">جارٍ تجهيز الصورة الأولى…</string>
+    <string name="batch_start_failed">تعذّر البدء، أعد المحاولة</string>
+    <string name="ai_busy">هناك عملية إنشاء أخرى جارية. أعد المحاولة بعد انتهائها</string>
+    <string name="ai_err_generic">لم ينجح الإنشاء، أعد المحاولة لاحقًا (لم يُخصم رصيد)</string>
+    <string name="ai_err_interrupted">قاطع النظام عملية الإنشاء. اضغط «إنشاء» للمحاولة مجددًا</string>
+    <string name="ai_resuming">استئناف من حيث توقف…</string>
+
+    <string name="ai_notif_channel">إنشاء صور AI</string>
+    <string name="ai_notif_channel_desc">تقدّم الإنشاء في الخلفية وتنبيهات الاكتمال</string>
+    <string name="ai_notif_progress_title">جارٍ إنشاء صور AI %1$d/%2$d</string>
+    <string name="ai_notif_progress_text">الآن: %1$s</string>
+    <string name="ai_notif_progress_idle">يمكنك مغادرة التطبيق، سنُخطرك عند الانتهاء</string>
+    <string name="ai_notif_preparing">جارٍ التجهيز…</string>
+    <string name="ai_notif_stopping">جارٍ الإيقاف (ستنتهي الحالية)</string>
+    <string name="ai_notif_cancel">إيقاف</string>
+    <string name="ai_notif_done_title">صورة AI جاهزة</string>
+    <string name="ai_notif_done">اكتمل %1$d. انقر للاطّلاع</string>
+    <string name="ai_notif_done_mixed">اكتمل %1$d · تخطّى %2$d · فشل %3$d</string>
+    <string name="ai_notif_done_quota">اكتمل %1$d. الرصيد غير كافٍ — اشترِ للمتابعة</string>
+    <string name="ai_notif_done_cancel">أُوقف، اكتمل %1$d</string>
+
+    <string name="ai_resume_title">لم تكتمل العملية السابقة</string>
+    <string name="ai_resume_msg">بقيت %1$d بطاقة دون معالجة. تابع من حيث توقف — المكتمل لن يُخصم مجددًا.</string>
+    <string name="ai_resume_continue">متابعة</string>
+    <string name="ai_resume_later">لاحقًا</string>
+    <string name="ai_resume_discard">تجاهل الباقي</string>
+    <string name="ai_resume_discarded">تم تجاهل المهام المتبقية</string>
+    <!-- ============ 从相册找回已生成的 AI 图（仅 AI 版） ============ -->
+    <string name="profile_restore_gallery">استعادة من معرض الصور</string>
+    <string name="restore_free_hint">مجانًا</string>
+    <string name="restore_scanning">جارٍ فحص المعرض…</string>
+    <string name="restore_none_empty">لا توجد صور في ألبوم «كاميرا البطاقات» بعد. بعد الحفظ في المعرض من شاشة المعاينة يمكنك استعادتها من هنا.</string>
+    <string name="restore_none_found_fmt">فُحصت %1$d صورة، لا شيء قابل للاستعادة (%2$s).</string>
+    <string name="restore_done_title_fmt">استُعيدت %1$d صورة</string>
+    <string name="restore_done_guessed_fmt">%1$d منها طابقت بالاسم الإنجليزي فقط (الصور القديمة بلا علامة). يُستحسن التحقق من تلك البطاقات.</string>
+    <string name="restore_done_skip_fmt">%1$d أخرى متخطاة: %2$s.</string>
+    <string name="restore_reason_local">موجودة محليًا %1$d</string>
+    <string name="restore_reason_unknown">لا بطاقة مطابقة %1$d</string>
+    <string name="restore_reason_dup">اسم مكرر %1$d</string>
+    <string name="restore_reason_small">الحجم صغير %1$d</string>
+    <string name="restore_reason_unreadable">غير قابلة للقراءة %1$d</string>
+    <string name="restore_reason_local_short">موجودة محليًا</string>
+    <string name="restore_reason_unknown_short">البطاقة غير موجودة في المكتبة</string>
+    <string name="restore_reason_dup_short">الاسم الإنجليزي يطابق عدة بطاقات</string>
+    <string name="restore_reason_small_short">الحجم صغير (مصغّرة أو صورة بطاقة)</string>
+    <string name="restore_reason_unreadable_short">غير قابلة للقراءة</string>
+    <string name="restore_progress_fmt">جارٍ الاستعادة %1$d/%2$d…</string>
+    <string name="restore_failed_fmt">فشل %1$d</string>
+    <string name="restore_need_permission">يلزم إذن قراءة المعرض</string>
+    <string name="restore_error">تعذّرت قراءة المعرض. تحقّق من الإذن وأعد المحاولة.</string>
+    <string name="restore_need_sync">وُجدت %1$d صورة، لكن لا بطاقات مطابقة محليًا بعد. اسحب للتحديث في الرئيسية أولًا ثم أعد المحاولة.</string>
+    <string name="restore_busy">الصور قيد الإنشاء، أعد المحاولة بعد انتهاء الدفعة</string>
+
+    <string name="ai_tier_price_fmt">%1$d ¥</string>
+    <string name="ai_buy_confirm_price_fmt">شراء · %1$d ¥</string>
+    <string name="ai_tier_hint_500">~0.20 ¥ للصورة · مدارس أو أجهزة متعددة</string>
+    <string name="profile_device_lang">لغة الجهاز</string>
+    <string name="device_lang_title">لغة الجهاز</string>
+    <string name="device_lang_saved_fmt">ضُبطت على %1$s، وستُرسَل عند الاتصال التالي</string>
+    <string name="device_lang_pending_fmt">%1$s (بالانتظار)</string>
+    <string name="profile_cloud_storage">التخزين السحابي</string>
+    <string name="cloud_storage_default">7 أيام (افتراضي)</string>
+    <string name="cloud_storage_days_fmt">%1$d يومًا</string>
+    <string name="cloud_storage_title">التخزين السحابي</string>
+    <string name="cloud_storage_body">تُحفظ الصور في السحابة 7 أيام افتراضيًا ثم تُنظَّف (النسخ المحفوظة على هاتفك لا تتأثر). بالاشتراك يمكنك إطالة المدة حسب المساحة والمدة (شهري أو سنوي).</string>
+    <string name="cloud_storage_plan_btn">عرض الباقات</string>
+    <string name="cloud_storage_soon">الباقات والدفع قريبًا</string>
+    <string name="common_close">إغلاق</string>
+    <string name="profile_camera_one_bound">جهاز واحد مرتبط</string>
+    <string name="profile_camera_bound_fmt">%1$d أجهزة مرتبطة</string>
+    <string name="profile_camera_bound_current_fmt">%1$d · %2$s</string>
+    <string name="device_state_current">الحالي</string>
+    <string name="device_state_switch">تبديل</string>
+    <string name="device_switch_hint">انقر على كاميرا للتبديل، وتتبعها الرئيسية والمحفوظات</string>
+    <string name="device_already_current">أنت تعرض هذه بالفعل</string>
+    <string name="device_switched_fmt">تم التبديل إلى %1$s</string>
+    <string name="device_menu_set_current">تعيين كجهاز حالي</string>
+    <string name="cardlist_chip_all">كل الأجهزة</string>
+    <string name="cardlist_all_synced_fmt">تمت مزامنة %1$d جهاز، %2$d جديد</string>
+    <string name="cardlist_all_partial_fmt">نجح %1$d، فشل %2$d</string>
+    <string name="detail_pos_fmt">%1$d / %2$d</string>
+    <string name="detail_swipe_first">هذه أول بطاقة</string>
+    <string name="detail_swipe_last">هذه آخر بطاقة</string>
+</resources>

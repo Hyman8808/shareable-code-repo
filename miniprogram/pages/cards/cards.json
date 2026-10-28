@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "card-row": "/components/card-row/index"
+  },
+  "navigationStyle": "custom",
+  "backgroundColor": "#f4f2ec"
+}

@@ -223,13 +223,14 @@ Saved cards show up here.</string>
     <string name="lang_title">Item name language</string>
     <string name="lang_current">Current</string>
     <string name="lang_desc">After the camera recognises an object, the name shown in the app uses the selected language.\nThe English name always stays as the second line.</string>
-    <string name="lang_note">Chinese is the raw recognition result and is never translated. Traditional Chinese is converted on the device, without the server. Japanese, Korean, Spanish, French, German and Russian are delivered by the server in the selected language and take effect on the next sync.</string>
+    <string name="lang_note">Chinese is the raw recognition result and is never translated. Traditional Chinese is converted on the device, without the server. Japanese, Korean, Spanish, French, German, Russian and Arabic are delivered by the server in the selected language and take effect on the next sync.</string>
 
     <string name="ui_lang_title">App language</string>
     <string name="ui_lang_desc">Changes app text only. It does not affect “Item name language”.</string>
     <string name="ui_lang_row_zh_sub">Default · Simplified Chinese</string>
     <string name="ui_lang_row_tw_sub">Traditional Chinese interface</string>
     <string name="ui_lang_row_en_sub">English interface</string>
+    <string name="ui_lang_row_ar_sub">Arabic interface (right to left)</string>
     <string name="ui_lang_zh">中文</string>
     <string name="ui_lang_en">English</string>
     <string name="ui_lang_changed_fmt">App language switched to %1$s</string>

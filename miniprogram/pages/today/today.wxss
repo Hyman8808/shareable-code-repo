@@ -1,0 +1,163 @@
+.wrap {
+  min-height: 100vh;
+  background: var(--paper);
+  padding: 0 40rpx calc(150rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+/* ===== 顶栏：44dp 高 ===== */
+.top {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  padding-top: 16rpx;
+}
+
+.sub {
+  margin-top: 4rpx;
+  text-transform: none;
+}
+
+.ico-l {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+/* ===== 今日卡 ===== */
+.today {
+  margin-top: 24rpx;
+  padding: 36rpx 40rpx 32rpx;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.head-left {
+  display: flex;
+  align-items: center;
+}
+
+/* 3dp×16dp 荧光竖条：提示条/标题前的那一笔，只用填充 */
+.accent-bar {
+  width: 6rpx;
+  height: 32rpx;
+  border-radius: 3rpx;
+  background: var(--accent);
+  margin-right: 14rpx;
+}
+
+.go {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* 三指标：数字用窄比例，形成仪表盘感；颜色统一墨，不抢注意力 */
+.metrics {
+  display: flex;
+  align-items: flex-end;
+  margin-top: 24rpx;
+}
+
+.metric {
+  display: flex;
+  align-items: baseline;
+}
+
+.num {
+  font-size: 60rpx;
+  line-height: 64rpx;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+  font-family: "DIN Alternate", "Roboto Condensed", -apple-system, sans-serif;
+}
+
+.unit {
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--t3);
+  margin-left: 8rpx;
+}
+
+.sep {
+  width: 1rpx;
+  height: 56rpx;
+  background: var(--divider);
+  margin: 0 28rpx 4rpx;
+  align-self: center;
+}
+
+.rule {
+  height: 1rpx;
+  background: var(--divider);
+  margin: 26rpx 0 20rpx;
+}
+
+.week-line {
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: var(--t3);
+}
+
+/* ===== 演示提示条 ===== */
+.demo-hint {
+  margin-top: 20rpx;
+}
+
+.hint-act {
+  flex: none;
+  font-size: 24rpx;
+  color: var(--ink);
+  font-weight: 500;
+  padding: 0 24rpx;
+  align-self: center;
+}
+
+/* ===== 区块头 ===== */
+.sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 0 12rpx;
+}
+
+/* ===== 列表：行与行靠 divider 分隔，不铺白卡 ===== */
+/* 负边距抵消页面 padding，让行自己用 40rpx 内边距贴到屏边 */
+.list {
+  margin: 0 -40rpx;
+}
+
+/* ===== 空态 ===== */
+.empty-box {
+  padding: 100rpx 0 40rpx;
+}
+
+.empty-ico {
+  width: 64rpx;
+  height: 64rpx;
+  display: block;
+}
+
+.empty-btn {
+  margin: 40rpx auto 0;
+  width: 100%;
+}
+
+.link {
+  margin-top: 28rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: var(--ink);
+}
+
+/* 文案里带 \n（App 的多行空态），必须保留换行 */
+.pre {
+  white-space: pre-wrap;
+  line-height: 44rpx;
+}

@@ -1,0 +1,104 @@
+/* 行卡：88dp 定高、纸底直排、无白底无圆角无描边 */
+.row-card {
+  display: flex;
+  align-items: center;
+  min-height: 176rpx;
+  padding: 24rpx 40rpx;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+/* 方形 ripple，不是圆角卡片的按压态 */
+.row-card-hover {
+  background: #edeae1;
+}
+
+/* 缩略图 64dp / 圆角 10dp（比大卡小一半，圆角也小一档） */
+.thumb {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: var(--card-alt, #f7f5ee);
+  flex: none;
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.thumb-ph {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, #efece3, #efece3);
+}
+
+.texts {
+  flex: 1;
+  min-width: 0;
+  margin-left: 28rpx;
+}
+
+/* 英文词头：19sp serif / 字距 -0.01 / 不加粗 */
+.hw {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 38rpx;
+  line-height: 48rpx;
+  letter-spacing: -0.01em;
+  color: var(--t1, #1a1917);
+}
+
+/* meta 行：13sp serif，属于「注脚」不是正文 */
+.meta {
+  font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  font-size: 26rpx;
+  line-height: 38rpx;
+  margin-top: 2rpx;
+  color: var(--t3, #6e695e);
+}
+
+/* 中文释义：15sp sans，第二层级 */
+.cjk {
+  font-size: 30rpx;
+  line-height: 40rpx;
+  margin-top: 2rpx;
+  color: var(--t2, #57534a);
+}
+
+/* 心：视觉 30dp，热区 44dp */
+.fav {
+  flex: none;
+  margin-left: 8rpx;
+}
+
+.heart {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 120ms ease;
+}
+
+/* 荧光圆底：全 App 三个合法场合之一 */
+.heart.on {
+  background: #d9f24f;
+}
+
+.heart-ico {
+  width: 36rpx;
+  height: 36rpx;
+  display: block;
+}
+
+/* 行间分隔：从文字处起（40 padding + 128 图 + 28 gap = 196rpx），不切图 */
+.row-line {
+  height: 1rpx;
+  background: #e6e2d8;
+  margin-left: 196rpx;
+  margin-right: 40rpx;
+}

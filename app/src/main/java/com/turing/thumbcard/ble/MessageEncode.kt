@@ -16,6 +16,16 @@ import java.io.ByteArrayOutputStream
  */
 class MessageEncode {
 
+    /**
+     * 一个解码出来的 TLV。
+     *
+     * ⚠️ **必须用列表而不是 Map 承载**：TLV 类型**允许重复**。
+     * 典型场景是 `0x8E` 的扫描列表 —— 固件为了少发几帧，会把 2~3 条 `0x88`
+     * 塞进同一条消息里。若按 `Map<Int, ByteArray>` 收，后一条会把前一条覆盖掉，
+     * 于是「设备上报 10 个、App 只显示 8 个」这类丢条问题就出现了。
+     */
+    data class Tlv(val type: Int, val value: ByteArray)
+
     /** 编码后的帧列表 */
     private val messagePacketList = ArrayList<MessagePacket>()
 
@@ -138,6 +148,19 @@ class MessageEncode {
      * @return 解析出的 TLV 集合；失败返回 null
      */
     fun decode(aesKey: ByteArray?): Map<Int, ByteArray>? {
+        val list = decodeAll(aesKey) ?: return null
+        val map = HashMap<Int, ByteArray>(list.size)
+        list.forEach { map[it.type] = it.value }
+        return map
+    }
+
+    /**
+     * 合并分片并解码为**保留重复项**的 TLV 列表（按到达顺序）。
+     *
+     * 需要「同类型可能出现多次」的场景（`0x8E` 的 `0x88` 列表）必须用这个，
+     * [decode] 会按类型覆盖，只留最后一条。
+     */
+    fun decodeAll(aesKey: ByteArray?): List<Tlv>? {
         if (messagePacketList.isEmpty()) return null
 
         var flag: Byte = 0
@@ -158,8 +181,8 @@ class MessageEncode {
             data = AesUtils.decrypt(data, aesKey) ?: return null
         }
 
-        // 按 TLV 拆解
-        tlvMap.clear()
+        // 按 TLV 拆解（保留顺序与重复）
+        val out = ArrayList<Tlv>()
         var i = 0
         while (i < data.size) {
             if (i + 2 > data.size) return null
@@ -167,11 +190,11 @@ class MessageEncode {
             val length = data[i + 1].toInt() and 0xFF
             i += 2
             if (i + length > data.size) return null
-            tlvMap[type] = data.copyOfRange(i, i + length)
+            out.add(Tlv(type, data.copyOfRange(i, i + length)))
             i += length
         }
-        // 返回副本：避免调用方持有的引用在下次 decode() 时被 clear() 清空
-        return HashMap(tlvMap)
+        // 返回独立副本，避免调用方持有的引用在下次 decode 时被清空
+        return out
     }
 
     /** 加入一个收到的帧（用于多帧合并） */

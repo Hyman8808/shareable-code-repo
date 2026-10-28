@@ -66,6 +66,16 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
     private var configHandled = false
     private var plaintextFallbackTried = false
 
+    /**
+     * 是否已经为「公钥发送失败」换过一条干净链路重试。
+     *
+     * 现场反馈「提示公钥发送失败，重启 App 也不行，反复重启多次后才正常」——
+     * 这是 ATT 队列被上一条未收尾的操作堵住的典型表现（GATT 层面脏状态），
+     * **只有重建 GATT 才能清掉**。所以这里自动断开重连一次，
+     * 免去用户手动杀进程。只重试一次，避免死循环。
+     */
+    private var gattRetried = false
+
     /** 是否正在等设备回列表 */
     private var scanning = false
 
@@ -271,7 +281,22 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
             showListState(getString(R.string.wifi_scan_empty), allowManual = true)
             return
         }
-        appendLog("收到 ${result.aps.size} 个热点（已按信号排序）")
+        // 把「设备报了几条 / 实际收到几条 / 合并了几条」全写出来：
+        // 客户对账时最常问的就是「设备上报 10 个，App 为什么只显示 8 个」。
+        appendLog(
+            buildString {
+                append("收到 ${result.aps.size} 个热点（已按信号排序）")
+                if (result.total >= 0) {
+                    append("；设备上报 ${result.total} 条")
+                    if (result.received > result.aps.size) {
+                        append("，其中 ${result.duplicates} 条同名已合并")
+                    }
+                    if (!result.complete) {
+                        append("；⚠ 未收齐（${result.received}/${result.total}）")
+                    }
+                }
+            }
+        )
         hideListState()
         apAdapter.submit(result.aps)
         if (result.authUnknown) {
@@ -282,6 +307,16 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
     override fun onWifiScanBusy() {
         // 设备正在扫：静默等待，不弹错（协议 §4.9.1）
         appendLog("设备回复「扫描进行中」，等这一轮结束")
+    }
+
+    override fun onWifiScanRetry(attempt: Int, received: Int, total: Int) {
+        // 自动重发 0x0E：不是错误，别弹提示，但要让用户看到「还在动」
+        scanning = true
+        appendLog(
+            "本轮没发完（已收 $received" + (if (total >= 0) "/$total" else "") +
+                " 条），自动重试第 $attempt 次…"
+        )
+        armSlowScanHint()
     }
 
     // ==================== 选网 + 配网 ====================
@@ -460,6 +495,18 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
 
         appendLog("✗ $message")
 
+        // ---- 分支 1：等列表期间设备掉线 ----
+        // 现场「第 7 次扫描必断连」走的就是这条。要点是把话说清楚，
+        // 否则用户只会看到一句「设备连接已断开」而不知道该重连还是换设备。
+        if (code == BleConstants.STATUS_NOT_CONNECTED) {
+            scanning = false
+            configBusy = false
+            cancelSlowScanHint()
+            appendLog("→ 设备在等列表期间掉线。请返回重新扫描设备后再试")
+            showListState(getString(R.string.wifi_scan_failed), allowManual = true)
+            return
+        }
+
         // ---- 分支 2：扫描失败 ----
         if (code == BleConstants.STATUS_WIFI_SCAN) {
             scanning = false
@@ -469,7 +516,26 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
             return
         }
 
-        // ---- 分支 3：明文降级 ----
+        // ---- 分支 3：换一条干净链路重试（公钥/密钥阶段失败） ----
+        // 「重启 App 也不行、反复重启多次才正常」说明脏状态在 GATT 客户端里，
+        // 断开 + 重建连接能清掉；自动做掉，别让用户去杀进程。
+        if ((code == BleConstants.STATUS_GATT_WRITE ||
+                code == BleConstants.STATUS_NEGOTIATE_SECRET_KEY) &&
+            !gattRetried && !infoHandled && !configBusy
+        ) {
+            gattRetried = true
+            appendLog("→ 链路状态异常，断开后重建连接重试（第 2 次）…")
+            bleClient.disconnect()
+            binding.root.postDelayed({
+                if (!isFinishing && !isDestroyed) {
+                    appendLog("开始连接设备 $deviceMac（第 2 次）")
+                    bleClient.connect(deviceMac, this)
+                }
+            }, 600)
+            return
+        }
+
+        // ---- 分支 4：明文降级 ----
         // 密钥协商失败/超时时，断开重连后跳过加密直接完成配网。
         if (!infoHandled && message.contains("密钥") && !plaintextFallbackTried) {
             plaintextFallbackTried = true
@@ -656,9 +722,10 @@ class WifiConfigActivity : AppCompatActivity(), BleWiFiClient.ProvisionListener 
         /**
          * 多久没收到列表就亮出手动输入。
          *
-         * 取 6s：新固件扫 10 个热点约 2~4s，留一倍余量；
-         * 老固件（不实现 0x88）此时已经确定回不来，不用再干等 10s 超时。
+         * 取 9s：新固件扫 10 个热点实测 2~9s（弱信号/信道多时偏慢），
+         * 比旧值 6s 留了一倍余量 —— 6s 就到点会让用户以为已经失败，
+         * 而实际上 App 还在自动重试（协议允许 2 次），提示与事实相反。
          */
-        const val SLOW_SCAN_HINT_MS = 6000L
+        const val SLOW_SCAN_HINT_MS = 9000L
     }
 }

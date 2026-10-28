@@ -1,0 +1,115 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="top">
+    <view class="t-page">{{t.nav_profile}}</view>
+  </view>
+
+  <!-- ===== 账号行：微信登录（未登录点进登录页） ===== -->
+  <view class="account" bindtap="onAccount">
+    <view class="avatar">
+      <image class="avatar-ico" src="{{icons.me}}" />
+    </view>
+    <view class="grow">
+      <view class="acc-name">{{acctName}}</view>
+      <view class="t-label acc-meta">{{acctMeta}}</view>
+    </view>
+    <image class="chev" src="{{icons.chevron}}" />
+  </view>
+
+  <!-- ===== 设备 ===== -->
+  <view class="group-label">{{t.profile_group_device}}</view>
+  <view class="group">
+    <view class="set-row" bindtap="goDevices">
+      <image class="set-ico" src="{{icons.camera}}" />
+      <view class="set-main">{{t.profile_camera}}</view>
+      <view class="set-val ellipsis">{{hasDevice ? camName : t.profile_camera_unbound}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="goProvision">
+      <image class="set-ico" src="{{icons.bt}}" />
+      <view class="set-main">{{t.device_add}}</view>
+      <view class="set-val">{{t.mp_ble_pair}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+  </view>
+
+  <!-- ===== 语言偏好 ===== -->
+  <view class="group-label">{{t.profile_group_lang}}</view>
+  <view class="group">
+    <view class="set-row" bindtap="goLanguage">
+      <image class="set-ico" src="{{icons.speak}}" />
+      <view class="set-main">{{t.profile_name_lang}}</view>
+      <view class="set-val">{{nameLangLabel}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="goLanguage">
+      <image class="set-ico" src="{{icons.speak}}" />
+      <view class="set-main">{{t.profile_ui_lang}}</view>
+      <view class="set-val">{{uiLangLabel}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onDeviceLang">
+      <image class="set-ico" src="{{icons.bt}}" />
+      <view class="set-main">{{t.profile_device_lang}}</view>
+      <view class="set-val">{{t.profile_developing}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+  </view>
+
+  <!-- ===== 其他 ===== -->
+  <view class="group-label">{{t.profile_group_other}}</view>
+  <view class="group">
+    <view class="set-row" bindtap="goAi">
+      <image class="set-ico" src="{{icons.speak}}" />
+      <view class="set-main">{{t.profile_quota}}</view>
+      <view class="set-val">{{t.profile_developing}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onRestore">
+      <image class="set-ico" src="{{icons.download}}" />
+      <view class="set-main">{{t.profile_restore_gallery}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onCloudStorage">
+      <image class="set-ico" src="{{icons.camera}}" />
+      <view class="set-main">{{t.profile_cloud_storage}}</view>
+      <view class="set-val">{{t.cloud_storage_default}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="goDiagnose">
+      <image class="set-ico" src="{{icons.diag}}" />
+      <view class="set-main">{{t.profile_diag}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onClearCache">
+      <image class="set-ico" src="{{icons.refresh}}" />
+      <view class="set-main">{{t.diag_clear}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onPrivacy">
+      <image class="set-ico" src="{{icons.camera}}" />
+      <view class="set-main">{{t.profile_privacy}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+    <view class="hairline-48"></view>
+    <view class="set-row" bindtap="onAbout">
+      <image class="set-ico" src="{{icons.camera}}" />
+      <view class="set-main">{{t.profile_about}}</view>
+      <view class="set-val">v{{version}}</view>
+      <image class="chev" src="{{icons.chevron}}" />
+    </view>
+  </view>
+
+  <view class="add-demo" wx:if="{{!deviceCount}}" bindtap="onAddDemo">{{t.mp_add_demo}}</view>
+
+  <view class="foot">{{t.mp_footer}}</view>
+</view>

@@ -1,0 +1,63 @@
+<view class="wrap">
+  <view style="height:{{statusBar}}px"></view>
+
+  <view class="top">
+    <view class="tap44 back" bindtap="onBack">
+      <image class="ico-back" src="{{back}}" />
+    </view>
+    <view class="t-page grow">{{t.home_section_all}}</view>
+    <view class="t-label count" wx:if="{{total}}">{{countText}}</view>
+  </view>
+
+  <view class="search" wx:if="{{all.length}}">
+    <image class="search-ico" src="{{searchIcon}}" />
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="{{t.cards_search_hint}}"
+      placeholder-class="search-ph"
+      confirm-type="search"
+      bindinput="onSearch"
+    />
+  </view>
+
+  <view class="list" wx:if="{{list.length}}">
+    <card-row
+      wx:for="{{list}}"
+      wx:key="id"
+      item="{{item}}"
+      fav="{{item.fav}}"
+      show-line="{{index < list.length - 1}}"
+      bind:rowtap="onTapRow"
+      bind:rowfav="onFavRow"
+    />
+  </view>
+
+  <view class="foot" wx:if="{{list.length}}">
+    <text wx:if="{{loading}}">{{t.common_loading}}</text>
+    <text wx:elif="{{hasMore}}">↓</text>
+    <text wx:else>{{countText}}</text>
+  </view>
+
+  <view class="state" wx:elif="{{err}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title">{{err}}</view>
+    <view class="btn-ghost empty-btn" bindtap="onRetry">{{t.common_retry}}</view>
+  </view>
+
+  <view class="state" wx:elif="{{!loading && keyword}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title">{{noResultText}}</view>
+  </view>
+
+  <view class="state" wx:elif="{{!loading}}">
+    <view class="empty-ring">
+      <image class="empty-ico" src="{{cameraIcon}}" />
+    </view>
+    <view class="empty-title pre">{{t.cardlist_empty}}</view>
+  </view>
+</view>
