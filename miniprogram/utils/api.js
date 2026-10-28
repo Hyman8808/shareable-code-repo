@@ -55,13 +55,30 @@ function isOk(body) {
   return body && (body.code === 200 || body.code === 0)
 }
 
-function request(path, params) {
+/**
+ * 参数拼到 query 上（GET / POST 都一样）。
+ *
+ * 🔴 不能交给 `wx.request` 的 `data`：它在 POST 时会当成 body 发出去，
+ *    而 `/api/device/lang` **不解析 POST 的 JSON body** —— 参数放 body 会拿到
+ *    `4005 apikey信息错误`，看起来像密钥错，实际只是位置错。手动拼 query 才是对的。
+ */
+function toQuery(params) {
+  const p = params || {}
+  const parts = []
+  Object.keys(p).forEach((k) => {
+    const v = p[k]
+    if (v === undefined || v === null) return
+    parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v))
+  })
+  return parts.length ? '?' + parts.join('&') : ''
+}
+
+function request(path, params, method) {
   return new Promise((resolve, reject) => {
     const t0 = Date.now()
     wx.request({
-      url: BASE + path,
-      data: params || {},
-      method: 'GET',
+      url: BASE + path + toQuery(params),
+      method: (method || 'GET').toUpperCase(),
       timeout: 12000,
       success(res) {
         pushLatency(Date.now() - t0)
@@ -110,4 +127,43 @@ function recordDetail(p) {
   return request('/api/record/detail', { id: p.id, key: p.apikey }).then((d) => d.record || d)
 }
 
-module.exports = { BASE, listRecords, recordDetail, latencyStats, clearLatency }
+// ---------- 设备语言设定（2026-10-28 云端上线） ----------
+//
+// 为什么必须调：云端改成「**拍摄时**按 deviceId 查语言并固化进记录」，
+// 识别请求不再接受 lang 参数。所以用户在设置页选的语言必须写到云端，
+// 只存本地 storage 等于没设 —— 拍出来还是中文。
+//
+// 🔴 语言码白名单：zh / zh-Hant / en / ja / ko / es / fr / de / ru / ar
+//    **没有 none**。小程序里「无（仅英文）」是本地模式开关，上报时要映射成 en
+//    （见 language.js 的 cloudCodeOf）。
+// 🔴 幂等：重复提交同一个 lang 返回 200，可以安全重试。
+
+/**
+ * 写入一台设备的名称语言
+ * @param {{apikey:string, deviceId:string, lang:string}} p
+ */
+function setDeviceLang(p) {
+  return request(
+    '/api/device/lang',
+    { key: p.apikey, deviceId: p.deviceId, lang: p.lang },
+    'POST'
+  )
+}
+
+/**
+ * 读取一台设备当前的名称语言（`data.device_id` + `data.lang`）
+ * @param {{apikey:string, deviceId:string}} p
+ */
+function getDeviceLang(p) {
+  return request('/api/device/lang', { key: p.apikey, deviceId: p.deviceId })
+}
+
+module.exports = {
+  BASE,
+  listRecords,
+  recordDetail,
+  setDeviceLang,
+  getDeviceLang,
+  latencyStats,
+  clearLatency,
+}

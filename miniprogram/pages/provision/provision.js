@@ -3,6 +3,8 @@ const store = require('../../utils/store')
 const fmt = require('../../utils/fmt')
 const i18n = require('../../utils/i18n')
 const icons = require('../../utils/icons')
+const prefs = require('../../utils/prefs')
+const langSync = require('../../utils/langSync')
 
 // step: ready 准备 / scan 搜设备 / connect 连接+读信息 / wifi 选热点 / run 下发中 / done 成功 / fail 失败
 
@@ -255,6 +257,11 @@ Page({
     })
     store.setCurrentId(info.deviceId)
     this._log('已保存设备，共 ' + devices.length + ' 台')
+
+    // 新设备的云端语言还是默认 zh（study_device_lang 里没这行），
+    // 必须把用户当前选的语言立刻写进去，否则这台机器第一次拍照按中文出名称。
+    // push 会遍历全部已绑设备，顺带把之前失败的 pending 一起补上。
+    langSync.push(prefs.getNameLang().code)
   },
 
   _fail(msg, hint) {

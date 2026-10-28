@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.turing.thumbcard.R
+import com.turing.thumbcard.data.device.DeviceLangSync
 import com.turing.thumbcard.data.i18n.LanguagePrefs
 import com.turing.thumbcard.data.i18n.NameLanguage
 import com.turing.thumbcard.data.i18n.NameResolver
@@ -38,6 +39,10 @@ class LanguageActivity : AppCompatActivity() {
 
         current = LanguagePrefs.current(this)
         binding.btnBack.setOnClickListener { finish() }
+
+        // 上次没上报成功（没配网 / 断网 / 还没读到 apikey）就补一次。
+        // 没有 pending 时这个方法直接返回，不会白打请求。
+        DeviceLangSync.flushPendingAsync(this)
 
         val pending = NameResolver.translator is PendingNameTranslator
         binding.tvServiceNotice.text = if (pending) {
@@ -102,6 +107,12 @@ class LanguageActivity : AppCompatActivity() {
 
         if (!changed) return
 
+        // 🔴 必须同时写云端，否则「选了日语、拍出来还是中文」。
+        //    2026-10-28 起云端在识别时按 deviceId 查语言设定并固化进记录，
+        //    识别请求不再接受 lang 参数 —— 只写本地 SP 等于没设。
+        //    异步执行，不阻塞 UI；失败会自动记 pending，见 DeviceLangSync。
+        DeviceLangSync.pushAsync(this, lang)
+
         // 选了「无（仅英文）」→ 界面语言自动切到 English。
         // 理由：这个选项本身就是「一切中文退场」的模式，界面还留着中文等于自相矛盾；
         // 而且选它的人基本是海外使用场景，要求「只有英文」就是要求整个 App 只有英文。
@@ -116,8 +127,9 @@ class LanguageActivity : AppCompatActivity() {
         val msg = when {
             lang.isHant -> getString(R.string.lang_switched_hant)
             lang.isSource -> getString(R.string.lang_switched_src)
-            NameResolver.translator is PendingNameTranslator ->
-                getString(R.string.lang_switched_pending_fmt, lang.labelFor(uiTag()))
+            // 🔴 不再走 lang_switched_pending_fmt（「译名服务接入中，当前显示中文原词」）：
+            //    云端 2026-10-28 起在拍摄时按 deviceId 出名称，这句话已经不成立，
+            //    留着会让用户以为多语言功能没做。
             else -> getString(R.string.lang_switched_fmt, lang.labelFor(uiTag()))
         }
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()

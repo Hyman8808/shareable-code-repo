@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.turing.thumbcard.data.db.AppDatabase
 import com.turing.thumbcard.data.db.BoundDeviceEntity
+import com.turing.thumbcard.data.device.DeviceLangSync
+import com.turing.thumbcard.data.i18n.LanguagePrefs
 import com.turing.thumbcard.ble.model.DeviceInfoResult
 import com.turing.thumbcard.util.CredentialStore
 
@@ -42,6 +44,9 @@ sealed class BindResult {
  *    返回空列表 / 失败结果，绝不抛异常。
  */
 class BindRepository(context: Context) {
+
+    /** 配网成功后要把语言同步到云端，需要 context */
+    private val appContext: Context = context.applicationContext
 
     private val db: AppDatabase? = AppDatabase.get(context)
     private val boundDao = db?.boundDeviceDao()
@@ -84,7 +89,12 @@ class BindRepository(context: Context) {
                     lastSyncTime = existing?.lastSyncTime
                 )
             )
-            BindResult.Success(deviceId)
+            BindResult.Success(deviceId).also {
+                // 新设备刚绑上：先把当前语言写进云端，否则这台机器第一次拍照
+                // 会按云端默认（zh）出中文名 —— 用户明明在设置里选过日语。
+                // 异步执行，失败自动留 pending，不影响配网结果。
+                DeviceLangSync.pushAsync(appContext, LanguagePrefs.current(appContext))
+            }
         } catch (t: Throwable) {
             Log.e(TAG, "bind failed: ${t.javaClass.simpleName}")
             BindResult.StorageUnavailable("${t.javaClass.simpleName}: ${t.message}")

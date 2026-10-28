@@ -10,6 +10,7 @@ import com.turing.thumbcard.R
 import com.turing.thumbcard.ThumbCardApp
 import com.turing.thumbcard.data.ai.AiTaskCenter
 import com.turing.thumbcard.data.ai.AiTaskStore
+import com.turing.thumbcard.data.device.DeviceLangSync
 import com.turing.thumbcard.data.repo.BindRepository
 import com.turing.thumbcard.databinding.ActivityMainBinding
 import com.turing.thumbcard.ui.card.CardsFragment
@@ -54,6 +55,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // 上次没上报成功的语言变更（断网 / 当时还没配网）在这里补一次。
+        // 没有 pending 时内部直接返回，不发请求。
+        DeviceLangSync.flushPendingAsync(this)
 
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {

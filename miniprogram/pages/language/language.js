@@ -10,6 +10,7 @@
 const prefs = require('../../utils/prefs')
 const i18n = require('../../utils/i18n')
 const icons = require('../../utils/icons')
+const langSync = require('../../utils/langSync')
 
 Page({
   data: {
@@ -25,6 +26,8 @@ Page({
   onLoad() {
     this.setData({ statusBar: (getApp().globalData || {}).statusBar || 20 })
     this.render()
+    // 上次没报成功（没配网 / 断网 / 还没 apikey）就补一次；没有 pending 时直接返回，不发请求
+    langSync.flush()
   },
 
   render() {
@@ -64,12 +67,20 @@ Page({
     const lang = prefs.nameLang(code)
     this.render()
 
-    // 提示口径照搬 App：中文＝识别原文；繁体＝本机转换；其他＝等下一次同步
+    // 🔴 必须报给云端，否则「选了日语、拍出来还是中文」。
+    //    云端在识别时按 deviceId 查语言并固化进记录，识别请求不收 lang 参数，
+    //    只写本地 storage 等于没设。失败会自动留 pending，下次进本页补报。
+    //
+    // 不弹「同步失败」：本地已切好，云端这条会自己补；多弹一句只会让用户以为设置没成。
+    langSync.push(code)
+
+    // 提示口径照搬 App：中文＝识别原文；繁体＝本机转换；其他＝已切换
+    // 🔴 不再用 lang_switched_pending_fmt（「译名服务接入中」）——
+    //    云端 2026-10-28 已上线按 deviceId 出名称，这句会误导用户以为功能没做。
     let msg = ''
     if (code === 'zh') msg = i18n.t('lang_switched_src')
     else if (code === 'zh-Hant') msg = i18n.t('lang_switched_hant')
-    else if (code === 'none') msg = i18n.t('lang_switched_fmt').replace('%1$s', lang.native)
-    else msg = i18n.t('lang_switched_pending_fmt').replace('%1$s', lang.native)
+    else msg = i18n.t('lang_switched_fmt').replace('%1$s', lang.native)
     wx.showToast({ title: msg, icon: 'none', duration: 2200 })
   },
 
