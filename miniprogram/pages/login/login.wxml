@@ -30,7 +30,6 @@
     </view>
     <view class="tip tip-warn" wx:if="{{kind === 'fail'}}">
       <view class="tip-title">{{tipTitle}}</view>
-      <view class="t-sm tip-body">{{t.mp_login_retry}}</view>
     </view>
   </block>
 
