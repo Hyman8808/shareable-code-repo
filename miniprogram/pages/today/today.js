@@ -89,8 +89,7 @@ Page({
         deviceId: device.deviceId,
         page: 1,
         size: FETCH,
-        // 名称语言：中文/繁体/仅英文都不带（繁体本机转），其余带 code 让云端下发 name_localized
-        lang: prefs.langParam(),
+        // 不传 lang：语言由云端按 deviceId 的设定语言下发（lang 参数已失效，见 utils/api.js）
       })
       .then((data) => {
         const list = (data && data.list) || []

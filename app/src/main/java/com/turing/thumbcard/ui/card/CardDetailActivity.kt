@@ -266,8 +266,17 @@ class CardDetailActivity : AppCompatActivity() {
             if (card == null) {
                 toast(getString(R.string.detail_card_missing)); finish(); return@launch
             }
-            chineseUrl = card.ttsChineseUrl
+            // 发音：语言在**拍摄时**就固化了，云端已按 deviceId 产出 tts_url_localized。
+            // 目标语言不是中文时，第一个按钮改播该语言的音频 —— 否则选了日语却只能听中文，
+            // 用户会认为多语言没做。没有本地化音频时回落中文（文档 6 节的回落链）。
+            val lang0 = LanguagePrefs.current(this@CardDetailActivity)
+            val localized = card.ttsLocalizedUrl
+            val playLocalized = !lang0.isChinese && !lang0.isNone && !localized.isNullOrBlank()
+            chineseUrl = if (playLocalized) localized else card.ttsChineseUrl
             englishUrl = card.ttsEnglishUrl
+            binding.btnPlayChinese.text =
+                if (playLocalized) getString(R.string.detail_play_lang_fmt, lang0.native)
+                else getString(R.string.card_play_chinese)
 
             renderCardImage(card)
             renderAiEntry(card)

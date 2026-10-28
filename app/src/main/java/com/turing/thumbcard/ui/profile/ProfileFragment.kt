@@ -9,6 +9,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -541,33 +543,32 @@ class ProfileFragment : Fragment() {
     private fun pickUiLanguage() {
         val current = UiLanguage.storedTag(requireContext())
         val view = layoutInflater.inflate(R.layout.dialog_ui_language, null)
-        view.findViewById<View>(R.id.tvUiCheckZh).visibility =
-            if (current == UiLanguage.ZH) View.VISIBLE else View.INVISIBLE
-        view.findViewById<View>(R.id.tvUiCheckTw).visibility =
-            if (current == UiLanguage.TW) View.VISIBLE else View.INVISIBLE
-        view.findViewById<View>(R.id.tvUiCheckEn).visibility =
-            if (current == UiLanguage.EN) View.VISIBLE else View.INVISIBLE
-        view.findViewById<View>(R.id.tvUiCheckAr).visibility =
-            if (current == UiLanguage.AR) View.VISIBLE else View.INVISIBLE
+        val container = view.findViewById<LinearLayout>(R.id.uiLangContainer)
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.ui_lang_title)
             .setView(view)
             .setNegativeButton(R.string.common_cancel, null)
-            .show()
+            .create()
 
-        view.findViewById<View>(R.id.rowUiZh).setOnClickListener {
-            applyUiLanguage(dialog, UiLanguage.ZH)
+        // 10 档统一按 UiLanguage.ALL 渲染：顺序、本地写法、副标题都在那里，
+        // 布局文件里不再写死任何语言 —— 否则每加一种语言就要动一次 XML。
+        UiLanguage.ALL.forEachIndexed { index, option ->
+            val row = layoutInflater.inflate(R.layout.item_ui_language, container, false)
+            row.findViewById<TextView>(R.id.tvUiLangName).text = option.name
+            row.findViewById<TextView>(R.id.tvUiLangSub).setText(option.subRes)
+            row.findViewById<View>(R.id.ivUiLangCheck).visibility =
+                if (option.tag == current) View.VISIBLE else View.INVISIBLE
+            // 最后一行不要分隔线，否则弹窗底部会多一条贴边的横线
+            row.findViewById<View>(R.id.dividerUiLang).visibility =
+                if (index == UiLanguage.ALL.lastIndex) View.GONE else View.VISIBLE
+            row.findViewById<View>(R.id.rowUiLang).setOnClickListener {
+                applyUiLanguage(dialog, option.tag)
+            }
+            container.addView(row)
         }
-        view.findViewById<View>(R.id.rowUiTw).setOnClickListener {
-            applyUiLanguage(dialog, UiLanguage.TW)
-        }
-        view.findViewById<View>(R.id.rowUiEn).setOnClickListener {
-            applyUiLanguage(dialog, UiLanguage.EN)
-        }
-        view.findViewById<View>(R.id.rowUiAr).setOnClickListener {
-            applyUiLanguage(dialog, UiLanguage.AR)
-        }
+
+        dialog.show()
     }
 
     private fun applyUiLanguage(dialog: AlertDialog, target: String) {

@@ -12,12 +12,26 @@
 const K_UI = 'tc.uiLang'
 const K_NAME = 'tc.nameLang'
 
-/** 界面语言 4 档。name 用各自语言写自己，**不翻译** */
+/**
+ * 界面语言 10 档（本版支持的**全部**界面语言）。
+ *
+ * `name` 用各自语言写自己，**不翻译**：阿语用户要能认出「العربية」，
+ * 写「阿拉伯语」等于没写；同理德语用户只认「Deutsch」。
+ * 副标题走 `subKey` → i18n 查表，跟随当前界面语言。
+ *
+ * 顺序：中文系 → 英文 → 东亚 → 欧洲 → 阿拉伯（RTL 置尾）。
+ */
 const UI_LANGS = [
-  { tag: 'zh-CN', name: '中文', sub: '默认 · 简体中文界面' },
-  { tag: 'zh-TW', name: '繁體中文', sub: '繁体中文界面' },
-  { tag: 'en', name: 'English', sub: '英语界面' },
-  { tag: 'ar', name: 'العربية', sub: '阿拉伯语界面（从右到左）' },
+  { tag: 'zh-CN', name: '中文（简体）', subKey: 'ui_lang_row_zh_sub' },
+  { tag: 'zh-TW', name: '中文（繁體）', subKey: 'ui_lang_row_tw_sub' },
+  { tag: 'en', name: 'English', subKey: 'ui_lang_row_en_sub' },
+  { tag: 'ja', name: '日本語', subKey: 'ui_lang_row_ja_sub' },
+  { tag: 'ko', name: '한국어', subKey: 'ui_lang_row_ko_sub' },
+  { tag: 'es', name: 'Español', subKey: 'ui_lang_row_es_sub' },
+  { tag: 'fr', name: 'Français', subKey: 'ui_lang_row_fr_sub' },
+  { tag: 'de', name: 'Deutsch', subKey: 'ui_lang_row_de_sub' },
+  { tag: 'ru', name: 'Русский', subKey: 'ui_lang_row_ru_sub' },
+  { tag: 'ar', name: 'العربية', subKey: 'ui_lang_row_ar_sub', rtl: true },
 ]
 
 /**
@@ -46,15 +60,24 @@ const DEFAULT_UI = 'zh-CN'
 const DEFAULT_NAME = 'zh'
 
 /**
- * 任意 tag 收敛到 4 档之一
+ * 任意 tag 收敛到 10 档之一
  * 🔴 新增语言必须在这里加分支：漏了会被 `else` 静默吞成中文，
  *    表现为「设置里显示阿语、界面还是中文」，而且不报任何错。
+ *
+ * 手机系统语言常常带地区后缀（ja-JP / ko-KR / es-419 / fr-CA / de-AT / ru-RU），
+ * 一律按**前缀**归并；繁体三种写法（zh-TW / zh-HK / zh-Hant）都落到同一份资源。
  */
 function normalizeUi(tag) {
   if (!tag) return DEFAULT_UI
   const t = String(tag)
   if (t.indexOf('en') === 0) return 'en'
-  if (t.indexOf('zh-TW') === 0 || t.indexOf('zh-HK') === 0) return 'zh-TW'
+  if (t.indexOf('zh-TW') === 0 || t.indexOf('zh-HK') === 0 || t.indexOf('zh-Hant') === 0) return 'zh-TW'
+  if (t.indexOf('ja') === 0) return 'ja'
+  if (t.indexOf('ko') === 0) return 'ko'
+  if (t.indexOf('es') === 0) return 'es'
+  if (t.indexOf('fr') === 0) return 'fr'
+  if (t.indexOf('de') === 0) return 'de'
+  if (t.indexOf('ru') === 0) return 'ru'
   if (t.indexOf('ar') === 0) return 'ar'
   return DEFAULT_UI
 }
@@ -71,7 +94,7 @@ function setUiLang(tag) {
 function uiDisplayName(tag) {
   const t = normalizeUi(tag)
   const f = UI_LANGS.find((x) => x.tag === t)
-  return f ? f.name : '中文'
+  return f ? f.name : UI_LANGS[0].name
 }
 
 function isRtl(tag) {
@@ -108,7 +131,12 @@ function needsCloudName(code) {
   return c !== 'zh' && c !== 'zh-Hant' && c !== 'none'
 }
 
-/** 列表/详情请求要带的 lang 参数（不带 = 服务端默认中文） */
+/**
+ * 已废弃：列表/详情请求**不再需要** lang 参数（2026-10-28 实测失效）。
+ *
+ * 语言在拍摄时由云端按 deviceId 设定固化进 `name_localized` / `tts_url_localized`，
+ * 换语言不会回溯旧记录。保留本函数只为兼容老调用点，不要在新代码里用。
+ */
 function langParam(code) {
   const c = nameLang(code).code
   return needsCloudName(c) ? c : ''

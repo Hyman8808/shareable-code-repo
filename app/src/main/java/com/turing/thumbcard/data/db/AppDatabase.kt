@@ -32,6 +32,13 @@ data class WordCardEntity(
     val imageUrl: String?,
     val ttsChineseUrl: String?,
     val ttsEnglishUrl: String?,
+    /**
+     * 拍摄时设定语言的发音地址（v4 新增）。
+     *
+     * 2026-10-28 起云端按 deviceId 的设定语言在识别时固化音频，
+     * 与 `ttsChineseUrl` / `ttsEnglishUrl` 并列。老记录没有这一列 → null，播放时回落英文再回落中文。
+     */
+    val ttsLocalizedUrl: String?,
     /** 云端 create_time 原文，"yyyy-MM-dd HH:mm:ss" */
     val createTime: String?,
     /** 本地写入时间，用于排序兜底 */
@@ -193,7 +200,7 @@ interface BoundDeviceDao {
 
 @Database(
     entities = [WordCardEntity::class, BoundDeviceEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -232,6 +239,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v3 → v4：word_card 增加 ttsLocalizedUrl（拍摄时设定语言的发音地址）。
+         *
+         * 可空、无默认值 —— 实体侧必须是 `String?`，否则 Room schema 校验对不上。
+         * 老记录该列为 null，播放时按「localized → english → 中文」回落，不需要回填。
+         */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE word_card ADD COLUMN ttsLocalizedUrl TEXT")
+            }
+        }
+
         /** 上次初始化失败的原因；null 表示正常 */
         @Volatile
         var lastInitError: String? = null
@@ -257,7 +276,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "thumbcard.db"
                     )
-                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                         .fallbackToDestructiveMigration()
                         .build()
                         .also {

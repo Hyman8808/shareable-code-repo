@@ -226,11 +226,12 @@ class RecordRepository(context: Context) {
             partial = true
         }
 
-        // 服务端已按语言下发名称 → 顺手写进译名缓存（零额外请求）。
-        // 这里对**整页数据**都写，这样切换语言后老卡片也能刷新译名。
-        if (langCode != null) {
-            persistLocalizedNames(fetched, langCode)
-        }
+        // 服务端随记录下发名称 → 顺手写进译名缓存（零额外请求）。
+        // 🔴 不再依赖请求参数：2026-10-28 起云端按 **deviceId 的设定语言**在拍摄时固化
+        //    `name_localized` / `name_localized_lang`，请求带不带 lang 都一样下发。
+        //    以前写成 `if (langCode != null)` 时，一旦调用方不传 lang，译名就永远进不了缓存，
+        //    「选了日语却一直显示中文 + 待翻译」正是这个条件造成的。
+        persistLocalizedNames(fetched, langCode)
 
         // 只保存本地没有的 —— 已下载过的直接跳过，不重复写库
         val fresh = fetched.filter { it.id !in knownIds }
@@ -497,21 +498,24 @@ class RecordRepository(context: Context) {
     /**
      * 把服务端随记录下发的译名写入本地缓存。
      *
-     * 只接受 `name_localized_lang` 与请求语言一致的结果——防止服务端在未支持
-     * 该语言时把中文原样塞进 `name_localized`，那样会让 UI 误以为是真译名。
+     * 语言以 **`name_localized_lang` 回显值为准**（其次才是本次请求带的 lang）：
+     * 云端在拍摄时按 deviceId 的设定语言产出名称，与请求参数无关；
+     * 拿回显值能同时挡住「服务端未支持该语言、把中文原样塞进 name_localized」的情况。
      */
-    private fun persistLocalizedNames(items: List<RecordItem>, langCode: String) {
-        val lang = NameLanguage.fromCode(langCode)
-        // 中文（含繁体）不走译名缓存：简体用原始结果，繁体在本机转换，
-        // 两者都不该把服务端下发的 name_localized 当译名存起来。
-        if (lang.isChinese) return
+    private fun persistLocalizedNames(items: List<RecordItem>, requestedLang: String?) {
+        var count = 0
         items.forEach { item ->
             val text = item.nameLocalized?.trim()?.takeIf { it.isNotBlank() } ?: return@forEach
-            val echoed = item.nameLocalizedLang
-            if (echoed != null && !echoed.equals(langCode, ignoreCase = true)) return@forEach
+            val code = item.nameLocalizedLang?.trim()?.takeIf { it.isNotBlank() }
+                ?: requestedLang
+                ?: return@forEach
+            val lang = NameLanguage.fromCode(code)
+            // 中文（含繁体）不走译名缓存：简体用原始结果，繁体在本机转换
+            if (lang.isChinese) return@forEach
             runCatching { NameStore.write(appContext, item.id, lang, item.nameChinese, text) }
+            count++
         }
-        Log.d(TAG, "localized names cached: lang=$langCode count=${items.size}")
+        Log.d(TAG, "localized names cached: requested=$requestedLang hit=$count/${items.size}")
     }
 
     private fun RecordItem.toEntity(deviceId: String) = WordCardEntity(
@@ -525,6 +529,7 @@ class RecordRepository(context: Context) {
         imageUrl = imageUrl,
         ttsChineseUrl = ttsChineseUrl,
         ttsEnglishUrl = ttsEnglishUrl,
+        ttsLocalizedUrl = ttsLocalizedUrl,
         createTime = createTime,
         savedAt = System.currentTimeMillis()
     )

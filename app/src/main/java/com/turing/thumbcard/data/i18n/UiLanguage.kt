@@ -1,14 +1,16 @@
 package com.turing.thumbcard.data.i18n
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import com.turing.thumbcard.R
 
 /**
- * App **界面语言**（简体中文 / 繁体中文 / English / 阿拉伯语），默认简体中文。
+ * App **界面语言**（10 档，对应 `values/`、`values-en/`、`values-ja/` … 各份 strings.xml），默认简体中文。
  *
  * ⚠️ 与 [NameLanguage]（物品名称语言）是**两件互不相干的事**，不要混：
- *  - 本类改的是 App 自己的界面文案（`values/`、`values-zh-rTW/`、`values-en/`、`values-ar/` 的 strings.xml）；
+ *  - 本类改的是 App 自己的界面文案（`values/`、`values-zh-rTW/`、`values-en/` … 的 strings.xml）；
  *  - [NameLanguage] 改的是「相机拍到的物品在 App 里显示成哪国语言」。
  *  一个用户完全可以「界面用阿语 + 物品名用英语」。
  *
@@ -39,8 +41,53 @@ object UiLanguage {
     /** 英文 */
     const val EN = "en"
 
+    /** 日语 */
+    const val JA = "ja"
+
+    /** 韩语 */
+    const val KO = "ko"
+
+    /** 西班牙语 */
+    const val ES = "es"
+
+    /** 法语 */
+    const val FR = "fr"
+
+    /** 德语 */
+    const val DE = "de"
+
+    /** 俄语 */
+    const val RU = "ru"
+
     /** 阿拉伯语（RTL，对应 `values-ar/`） */
     const val AR = "ar"
+
+    /**
+     * 语言选择项。
+     *
+     * 🔴 [name] 是**该语言自己的写法**（中文（简体）/ 日本語 / Русский / العربية），
+     *    不能用 strings 资源：那样切到阿语后「日本語」也会变成阿语，用户反而认不出自己那项。
+     *    [subRes] 才是跟随当前界面语言的说明文字。
+     */
+    data class Option(val tag: String, val name: String, @StringRes val subRes: Int)
+
+    /**
+     * 全部 10 档，顺序：中文系 → 英文 → 东亚 → 欧洲 → 阿拉伯（RTL 置尾）。
+     *
+     * ⚠️ 只在这一处维护顺序：设置弹窗按本列表渲染，新增语言只改这里 + `normalize` + 资源目录。
+     */
+    val ALL: List<Option> = listOf(
+        Option(ZH, "中文（简体）", R.string.ui_lang_row_zh_sub),
+        Option(TW, "中文（繁體）", R.string.ui_lang_row_tw_sub),
+        Option(EN, "English", R.string.ui_lang_row_en_sub),
+        Option(JA, "日本語", R.string.ui_lang_row_ja_sub),
+        Option(KO, "한국어", R.string.ui_lang_row_ko_sub),
+        Option(ES, "Español", R.string.ui_lang_row_es_sub),
+        Option(FR, "Français", R.string.ui_lang_row_fr_sub),
+        Option(DE, "Deutsch", R.string.ui_lang_row_de_sub),
+        Option(RU, "Русский", R.string.ui_lang_row_ru_sub),
+        Option(AR, "العربية", R.string.ui_lang_row_ar_sub),
+    )
 
     private const val SP = "thumbcard_ui"
     private const val KEY_TAG = "ui_lang_tag"
@@ -70,11 +117,9 @@ object UiLanguage {
      * 🔴 阿拉伯语返回的是**阿语原文**「العربية」而不是「阿拉伯语」：
      *    这一列的值要能让不认识中文的人认出自己的语言，写中文等于没写。
      */
-    fun displayNameOf(tag: String): String = when {
-        tag.startsWith("en", ignoreCase = true) -> "English"
-        tag.startsWith("zh-TW", ignoreCase = true) -> "繁體中文"
-        tag.startsWith("ar", ignoreCase = true) -> "العربية"
-        else -> "中文"
+    fun displayNameOf(tag: String): String {
+        val t = normalize(tag)
+        return ALL.firstOrNull { it.tag == t }?.name ?: ALL[0].name
     }
 
     /**
@@ -91,7 +136,10 @@ object UiLanguage {
     }
 
     /**
-     * 把任意 tag 收敛到四档之一（防止脏数据让界面变回「半中半英」）。
+     * 把任意 tag 收敛到 10 档之一（防止脏数据让界面变回「半中半英」）。
+     *
+     * 系统语言常带地区后缀（ja-JP / ko-KR / es-419 / fr-CA / de-AT / ru-RU），一律按前缀归并；
+     * 繁体三种写法（zh-TW / zh-HK / zh-Hant）落到同一份 `values-zh-rTW`。
      *
      * ⚠️ 新增语言时必须在这里加分支：漏了会被 `else -> ZH` 静默吞成中文，
      *    表现为「设置里显示阿语、界面还是中文」，而且不报任何错。
@@ -100,7 +148,14 @@ object UiLanguage {
         tag.isNullOrBlank() -> ZH
         tag.startsWith("en", ignoreCase = true) -> EN
         tag.startsWith("zh-TW", ignoreCase = true) ||
-            tag.startsWith("zh-HK", ignoreCase = true) -> TW
+            tag.startsWith("zh-HK", ignoreCase = true) ||
+            tag.startsWith("zh-Hant", ignoreCase = true) -> TW
+        tag.startsWith("ja", ignoreCase = true) -> JA
+        tag.startsWith("ko", ignoreCase = true) -> KO
+        tag.startsWith("es", ignoreCase = true) -> ES
+        tag.startsWith("fr", ignoreCase = true) -> FR
+        tag.startsWith("de", ignoreCase = true) -> DE
+        tag.startsWith("ru", ignoreCase = true) -> RU
         tag.startsWith("ar", ignoreCase = true) -> AR
         else -> ZH
     }

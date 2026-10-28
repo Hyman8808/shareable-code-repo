@@ -1,7 +1,7 @@
 // 界面语言：文案查表
 //
-// 语言包来自 App 的 res/values*/strings.xml（438 条 × 4 语），
-// 由脚本导出、与 App 一字不差 —— 不是另写一套翻译。
+// 语言包由 tools/i18n_gen.js 从 tools/i18n_src/ 生成，
+// 键集合与 App 的 res/values*/strings.xml 同源（小程序多出 mp_ 前缀的独有条目）。
 //
 // 用法：
 //   页面 onLoad / onShow 里  this.setData(i18n.page())
@@ -16,6 +16,12 @@ const PACKS = {
   'zh-CN': require('./lang/zh-CN'),
   'zh-TW': require('./lang/zh-TW'),
   en: require('./lang/en'),
+  ja: require('./lang/ja'),
+  ko: require('./lang/ko'),
+  es: require('./lang/es'),
+  fr: require('./lang/fr'),
+  de: require('./lang/de'),
+  ru: require('./lang/ru'),
   ar: require('./lang/ar'),
 }
 

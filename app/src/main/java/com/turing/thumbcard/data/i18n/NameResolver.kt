@@ -53,21 +53,19 @@ object NameResolver {
     }
 
     /**
-     * 同步请求该带什么语言参数。
+     * 同步请求该带什么语言参数。**现在恒为 null。**
      *
-     * - 中文（简/繁）→ 不带：中文是服务端默认结果，繁体在本机转换，
-     *   传上去只会让云端白翻一遍（繁体的字形由 [HantConverter] 负责）
-     * - 「无（仅英文）」→ 不带：英文本来就在记录里
-     * - 其余 → 带该语言代码，云端按它下发 `name_localized` / `tts_url_localized`
+     * 2026-10-28 实测（只读）结论：`/api/record/list` 的 `lang` 参数**已经不生效** ——
+     * 带 `lang=en` 与不带返回完全一致。语言在**拍摄时**由云端按该 deviceId 的设定语言
+     * 固化成 `name_localized` / `name_localized_lang` / `tts_url_localized`，
+     * 换个语言再同步也拿不到旧记录的另一种译名。
      *
-     * 2026-10-25 起不再等 [translator] 就绪：多语言改成「云端按 `lang` 下发」，
-     * App 侧不做翻译。云端返回的 `name_localized` 由 RecordRepository 写进译名缓存，
-     * 列表与详情读缓存即可——链路里没有客户端补译这一步了。
+     * 🔴 所以这里不再传 lang：继续传会让人误以为「换语言能改历史数据」，
+     *    而真实生效路径是设备侧的设定语言（见接口文档 5.2）。
+     *    函数保留只为【调用点签名稳定】，不要在别处重新拼 lang 参数。
      */
-    fun requestLangParam(context: Context): String? {
-        val lang = LanguagePrefs.current(context)
-        return lang.code.takeIf { !lang.isChinese && !lang.isNone }
-    }
+    @Suppress("UNUSED_PARAMETER")
+    fun requestLangParam(context: Context): String? = null
 
     fun resolve(
         context: Context,

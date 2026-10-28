@@ -53,6 +53,14 @@ data class RecordItem(
     @SerializedName("information") val information: Information? = null,
     @SerializedName("tts_url") val ttsUrl: List<String>? = null,
     @SerializedName("tts_url_english") val ttsUrlEnglish: List<String>? = null,
+    /**
+     * 按**拍摄时设定语言**产出的发音地址（服务端已按 deviceId 匹配好语言）。
+     *
+     * 2026-10-28 起云端在识别时就把语言固化进记录，因此这份地址与
+     * [tts_url] / [tts_url_english] 并列存在，不随请求参数变化。
+     * 简体中文记录通常不带本字段（等价于 tts_url）。
+     */
+    @SerializedName("tts_url_localized") val ttsUrlLocalized: List<String>? = null,
     @SerializedName("create_time") val createTime: String? = null,
     // ---- 多语言名称（服务端翻译接口就绪后下发，当前恒为 null）----
     /** 按请求的 lang 下发的名称；为 null 表示服务端尚未支持该语言 */
@@ -68,6 +76,14 @@ data class RecordItem(
 
     /** 英文发音地址（取第一个） */
     val ttsEnglishUrl: String? get() = ttsUrlEnglish?.firstOrNull()
+
+    /**
+     * 设定语言的发音地址。**没有时返回 null，由调用方回落到英文再回落到中文**。
+     *
+     * 回落顺序对齐接口文档：localized → english → tts_url → 静音。
+     * 不要在这里一次性兜底到中文，否则「选了日语却播中文」会被当成 bug。
+     */
+    val ttsLocalizedUrl: String? get() = ttsUrlLocalized?.firstOrNull()
 
     /** 拼音 */
     val pinyin: String? get() = information?.pinyin

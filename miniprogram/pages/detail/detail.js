@@ -145,7 +145,7 @@ Page({
     // 三路音频的标签：设定语言用该语言的本地写法，其余用 App 的固定文案
     const langName = nv.lang === 'none' ? '' : names.langNative(nv.lang)
     if (first(r.tts_url_localized)) {
-      audios.push({ key: 'localized', label: langName || i18n.t('card_play_english'), url: first(r.tts_url_localized) })
+      audios.push({ key: 'localized', label: langName ? i18n.fmt('detail_play_lang_fmt', [langName]) : i18n.t('card_play_english'), url: first(r.tts_url_localized) })
     }
     if (first(r.tts_url_english)) audios.push({ key: 'en', label: i18n.t('card_play_english'), url: first(r.tts_url_english) })
     if (!nv.isNone && first(r.tts_url)) audios.push({ key: 'zh', label: i18n.t('card_play_chinese'), url: first(r.tts_url) })

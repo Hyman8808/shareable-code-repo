@@ -95,7 +95,9 @@ function listRecords(p) {
     deviceId: p.deviceId,
     page: p.page || 1,
     size: Math.min(p.size || 20, 100), // 🔴 上限 100，超了服务端直接报错
-    lang: p.lang || '',
+    // 🔴 不再传 lang：2026-10-28 实测该参数已失效（带与不带返回一致）。
+    //    语言在**拍摄时**由云端按 deviceId 的设定固化进 name_localized / tts_url_localized，
+    //    传 lang 只会让人误以为「换语言能改历史记录」。
   })
 }
 

@@ -502,4 +502,17 @@
     <string name="detail_pos_fmt">%1$d / %2$d</string>
     <string name="detail_swipe_first">已经是第一张了</string>
     <string name="detail_swipe_last">已经是最后一张了</string>
+    <string name="ui_lang_ja">日本語</string>
+    <string name="ui_lang_ko">한국어</string>
+    <string name="ui_lang_es">Español</string>
+    <string name="ui_lang_fr">Français</string>
+    <string name="ui_lang_de">Deutsch</string>
+    <string name="ui_lang_ru">Русский</string>
+    <string name="ui_lang_row_ja_sub">日语界面</string>
+    <string name="ui_lang_row_ko_sub">韩语界面</string>
+    <string name="ui_lang_row_es_sub">西班牙语界面</string>
+    <string name="ui_lang_row_fr_sub">法语界面</string>
+    <string name="ui_lang_row_de_sub">德语界面</string>
+    <string name="ui_lang_row_ru_sub">俄语界面</string>
+    <string name="detail_play_lang_fmt">%1$s 发音</string>
 </resources>

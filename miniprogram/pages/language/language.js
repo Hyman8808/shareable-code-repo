@@ -48,8 +48,10 @@ Page({
         uiList: prefs.UI_LANGS.map((l) => ({
           tag: l.tag,
           title: l.name,
-          sub: l.sub,
+          // 副标题跟随当前界面语言；语言名本身不翻译
+          sub: i18n.t(l.subKey),
           sel: l.tag === curUi,
+          rtl: !!l.rtl,
         })),
       })
     )

@@ -56,7 +56,6 @@ Page({
         deviceId: device.deviceId,
         page,
         size: PAGE,
-        lang: prefs.langParam(),
       })
       .then((data) => {
         const raw = (data && data.list) || []

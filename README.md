@@ -185,10 +185,17 @@ com.turing.thumbcard
 
 ### 3.4 多语言
 
-- 界面语言 9 项：仅英文 / 简体 / 繁体 / 日 / 韩 / 西 / 法 / 德 / 俄
+- **界面语言 10 档**：简体 / 繁體 / English / 日本語 / 한국어 / Español / Français / Deutsch / Русский / العربية
+  - App 资源对应 `values/`、`values-zh-rTW/`、`values-en/`、`values-ja/` …、`values-ar/` 各一份 `strings.xml`，每份 451 条
+  - 小程序 10 份语言包 `miniprogram/utils/lang/*.js`，各 531 键
+  - 两端**同源生成**：译表在 `tools/i18n_src/*.tsv`，改文案改译表 + 重跑 `node tools/i18n_gen.js`，不手改生成物
+- **物品名称语言 9 项**：简 / 繁 / 日 / 韩 / 西 / 法 / 德 / 俄 / 阿，另有 `none` 开关（不显示译名，只显示原词）。比界面语言少一个 English —— 英文是历史第 4 档，同时充当外语兜底
 - 繁体在本机转换（`HantConverter`），**永不写回 DB 与云端**
-- 物品名称的语言由请求参数决定，云端返回 `name_localized`
+- 🔴 **语言在拍摄时固化**，`/api/record/list` 的 `lang` 参数**已无作用**（实测：带与不带返回完全一致）。云端按 `deviceId` 命中用户设定语言，写入 `name_localized` / `name_localized_lang` / `tts_url_localized`
+- 译名取值优先用响应回显的 `name_localized_lang`，可挡住「服务端未支持该语言、把中文原样塞进 `name_localized`」
+- 朗读回落链：`tts_url_localized` → `tts_url_english` → `tts_url` → 静音
 - 🔴 **历史卡不跟随语言**：译名在识别时落库即为终值，用户之后切语言不回改已有记录；只有切换之后新拍的卡才按新语言生成
+- 🔴 阿拉伯语为 RTL：布局全部用 Start/End（无 left/right）、方向图标 `autoMirrored`、`‹ › →` 在阿语 strings 里手写成 `‹` `←`
 
 ### 3.5 AI 图片美化（仅 AI 版）
 
@@ -405,7 +412,10 @@ apikey 是**整批设备公用**的应用级密钥，泄露即影响该应用下
 | UI 设计系统 V2.0（墨标 Inkmark） | [`docs/UI设计系统_V2.0_年轻白领.md`](docs/UI设计系统_V2.0_年轻白领.md) |
 | UI 交互系统 V2.0 | [`docs/UI交互系统_V2.0.md`](docs/UI交互系统_V2.0.md) |
 | 词典接口实测报告 | [`docs/词典接口实测报告_2026-10-20.md`](docs/词典接口实测报告_2026-10-20.md) |
-| 多语言排版核对（9 语言 × 4 界面） | [`docs/v2.9.0_多语言排版核对.html`](docs/v2.9.0_多语言排版核对.html) |
+| 多语言排版核对（v2.9.0 历史截图，9 语言 × 4 界面） | [`docs/v2.9.0_多语言排版核对.html`](docs/v2.9.0_多语言排版核对.html) |
+| **多语言 10 档与 App 最新接口对齐**（2026-10-28） | [`docs/多语言10档与App最新接口对齐_2026-10-28.md`](docs/多语言10档与App最新接口对齐_2026-10-28.md) |
+| 阿语支持验收说明（RTL / 译名 / 朗读边界） | [`docs/阿语支持_验收说明_2026-10-27.md`](docs/阿语支持_验收说明_2026-10-27.md) |
+| 拍学机设备端对接说明（客户版，无工单号） | [`docs/拍学机_设备端对接说明_V3.1-HW_客户版_2026-10-28.md`](docs/拍学机_设备端对接说明_V3.1-HW_客户版_2026-10-28.md) |
 
 > **产品与商务文档不在本仓库**（PRD、立项报告、成本测算、定价策略），见私有仓库 `thumbcard-product-docs`，访问需由项目负责人开通。
 
@@ -415,11 +425,11 @@ apikey 是**整批设备公用**的应用级密钥，泄露即影响该应用下
 
 | # | 项 | 说明 |
 |---|---|---|
-| 1 | **多语言 TTS 未打通** | 云端未识别语言参数；`RecordItem` 只到 `tts_url_english`；播放层只有 4 个按钮且绑死中英。正解在新云端 `tts_url_localized` + 固件 `item_lang`。**阿拉伯语尚未覆盖（含 RTL 排版与阿语音色）** |
+| 1 | **阿语 TTS 缺音色** | 文本层已全通（`tts_url_localized` 已接、阿语界面与 RTL 已做），但老栈 TTS 为单音色 `x2xiaoxue-v4`，CosyVoice 通道语种为 zh/en/ja/ko/yue **不含 ar** → 阿语当前「能显示不能读」。两条路：降级播英文 / 换引擎，待定 |
 | 2 | **固件未实现 `0x12` DEVICE_CONFIG** | App 可以把语言下发下去，但设备不会应用，也不会回执 |
 | 3 | **固件未实现 `0x0E` 热点列表** | 只回一行空列表，因此手输 SSID 是客户必需路径（v2.11.1 已做预填） |
-| 4 | **新云端未接入** | 仍走老 nglearn；切新协议需重做数据层映射（`code:0` 不是 200、`id` 为 UUID、一机一令牌、cursor 分页） |
-| 5 | 老 nglearn 无语言维度 | 真机演示实际只有中英双语 |
+| 4 | **不使用 `thumbcamera-api` 新栈** | `#2835` 那套 V2.1 新协议不作为客户端交付面：App / 小程序代码**零处引用**该域名，`BASE_URL` 均为 `nglearn.turingapi.com`。本版以「老 nglearn 增量」交付（只加 3 个字段 + deviceId 可控），故新栈的成功码差异（`code:0`）、UUID 主键、cursor 分页均不涉及 |
+| 5 | 语言维度已上 prod，但有边界 | 10-28 `nglearn` 语言能力已上生产（`study_device_lang` 表 + `study_record` 加 3 列）。剩余：记录详情是 `data.record` 嵌套；`tts_url*` 全为 `http://`，小程序 `downloadFile` 需 https |
 | 6 | 支付为本地模拟 | 点卡购买未接真实支付通道 |
 | 7 | 密钥编在客户端 | 见 §0：必须由服务端代理，属待改造项 |
 | 8 | 图片美化依赖私人账号 | 见 §0.1，需图灵自建服务端 |

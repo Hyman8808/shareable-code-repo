@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 界面语言选择的一行：语言名（本地写法）+ 副标题（跟随界面语言）+ 勾选。
+     由 ProfileFragment.pickUiLanguage 按 UiLanguage.ALL 动态 inflate，
+     不要在这里写死语言名，否则加语言就得改布局。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/rowUiLang"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:minHeight="62dp"
+        android:orientation="horizontal"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvUiLangName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvUiLangSub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="@color/text_tertiary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivUiLangCheck"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="10dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:tint="@color/brand_primary" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/dividerUiLang"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="22dp"
+        android:background="@color/divider" />
+</LinearLayout>
